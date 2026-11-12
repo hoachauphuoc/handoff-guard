@@ -13,6 +13,7 @@ export type HandoffRecord = {
 export type ValidatorResponse = { result: boolean; errorMessage?: string };
 
 export type PanelState = {
+  issueKey: string;
   record: HandoffRecord | null;
   result: HandoffResult | null;
   viewerId: string | null;

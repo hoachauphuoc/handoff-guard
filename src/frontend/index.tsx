@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, User, UserPicker } from "@forge/react";
-import { invoke } from "@forge/bridge";
+import { invoke, rovo } from "@forge/bridge";
 import type { PanelState } from "../handoff/types";
 import type { Verdict } from "../rules/types";
 
@@ -15,6 +15,26 @@ const App = () => {
   const [error, setError] = useState<string | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [rovoNote, setRovoNote] = useState<string | null>(null);
+
+  // Rovo only explains. Whatever happens here, the verdict shown above stays the rule check's.
+  const explain = async (issueKey: string) => {
+    setRovoNote(null);
+    try {
+      if (!(await rovo.isEnabled())) {
+        setRovoNote("Rovo is not available on this site, so there is no explanation. The verdict above comes from the rule check.");
+        return;
+      }
+      await rovo.open({
+        type: "forge",
+        agentKey: "handoff-guard-agent",
+        agentName: "Handoff Guard",
+        prompt: `Explain the Handoff Guard check for ${issueKey}.`,
+      });
+    } catch (e) {
+      setRovoNote(`Rovo could not be opened: ${String(e)}. The verdict above comes from the rule check.`);
+    }
+  };
 
   // Without the metadata option, invoke resolves to the resolver's value itself.
   const call = (name: string, payload?: Record<string, unknown>) => {
@@ -88,6 +108,9 @@ const App = () => {
           Load sample decisions (demo)
         </Button>
       )}
+      <Button onClick={() => void explain(state.issueKey)}>Explain with Rovo</Button>
+      {rovoNote && <Text>{rovoNote}</Text>}
+      <Text>Rovo explains; the verdict comes from the rule check.</Text>
       <Text>Source: rule check, {state.decisionCount} stored decisions.</Text>
     </Stack>
   );

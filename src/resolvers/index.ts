@@ -16,6 +16,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
   const [decisions, record] = await Promise.all([getDecisions(), getRecord(issueId)]);
   const viewerId = ctx.accountId ?? null;
   return {
+    issueKey: ctx.extension.issue.key,
     record,
     result: record ? checkHandoff(handoffFrom(item, record), decisions) : null,
     viewerId,
