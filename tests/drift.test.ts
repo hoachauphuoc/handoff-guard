@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { acknowledge } from "../src/handoff/acknowledge";
 import { handoffFrom } from "../src/handoff/build";
-import { changesSince, driftByDecision, fingerprintOf, inputsOf, staleAcks } from "../src/handoff/drift";
+import { changesSince, driftByDecision, fingerprintOf, staleAcks, touches } from "../src/handoff/drift";
 import type { HandoffRecord } from "../src/handoff/types";
 import { checkHandoff } from "../src/rules/checkHandoff";
 import type { Decision, WorkItem } from "../src/rules/types";
@@ -56,11 +56,32 @@ describe("changesSince", () => {
   });
 });
 
-describe("inputsOf", () => {
-  it("lists the fields a decision reads", () => {
-    expect(inputsOf(due())).toEqual(["dueDate"]);
-    expect(inputsOf(due({ scope: { kind: "label", label: "x" }, constraints: [{ kind: "componentRequired", component: "web" }] })).sort()).toEqual(["components", "labels"]);
-    expect(inputsOf(due({ constraints: [{ kind: "labelForbidden", label: "draft" }] }))).toEqual(["labels"]);
+describe("touches", () => {
+  const change = (over: Partial<WorkItem>) => changesSince(fingerprintOf(item()), item(over));
+  const labelReq = due({ constraints: [{ kind: "labelRequired", label: "Legal-Reviewed" }] });
+
+  it("treats any due date change as touching a due date constraint only", () => {
+    expect(change({ dueDate: "2026-12-15" }).map((c) => touches(due(), c))).toEqual([true]);
+    expect(change({ dueDate: "2026-12-15" }).map((c) => touches(labelReq, c))).toEqual([false]);
+  });
+
+  it("ignores an unrelated label but not the one a constraint names", () => {
+    expect(change({ labels: ["launch", "unrelated"] }).map((c) => touches(labelReq, c))).toEqual([false]);
+    expect(change({ labels: ["launch", "legal-reviewed"] }).map((c) => touches(labelReq, c))).toEqual([true]);
+    expect(change({ labels: [] }).map((c) => touches(due({ constraints: [{ kind: "labelForbidden", label: "launch" }] }), c))).toEqual([true]);
+  });
+
+  it("reads a label scope as its own label only", () => {
+    const scoped = due({ scope: { kind: "label", label: "launch" } });
+    expect(change({ labels: [] }).map((c) => touches(scoped, c))).toEqual([true]);
+    expect(change({ labels: ["launch", "x"] }).map((c) => touches(scoped, c))).toEqual([false]);
+  });
+
+  it("matches components by the named value and never touches on text", () => {
+    const comp = due({ constraints: [{ kind: "componentRequired", component: "web" }] });
+    expect(change({ components: [] }).map((c) => touches(comp, c))).toEqual([true]);
+    expect(change({ components: ["web", "api"] }).map((c) => touches(comp, c))).toEqual([false]);
+    expect(change({ description: "x", summary: "y" }).map((c) => touches(comp, c))).toEqual([false, false]);
   });
 });
 
@@ -70,6 +91,10 @@ describe("staleAcks", () => {
   it("marks only decisions whose inputs changed, with the reason", () => {
     expect(staleAcks(acked.acknowledged, acked.acknowledgedWith, item({ dueDate: "2026-12-15" }), [due()])).toEqual({ d1: "due 2026-12-31 to 2026-12-15 since then" });
     expect(staleAcks(acked.acknowledged, acked.acknowledgedWith, item({ labels: ["x"] }), [due()])).toEqual({});
+    const req = due({ constraints: [{ kind: "labelRequired", label: "legal-reviewed" }] });
+    const ackedReq = { d1: fingerprintOf(item({ labels: ["legal-reviewed"] })) };
+    expect(staleAcks(["d1"], ackedReq, item({ labels: ["legal-reviewed", "unrelated"] }), [req])).toEqual({});
+    expect(staleAcks(["d1"], ackedReq, item({ labels: [] }), [req])).toEqual({ d1: "labels: removed legal-reviewed since then" });
     expect(staleAcks(acked.acknowledged, acked.acknowledgedWith, item({ description: "new" }), [due()])).toEqual({});
   });
 
