@@ -66,3 +66,18 @@ Question: can our Forge `rovo:agent` be chosen in the assignee field, and would 
 6. In the browser, open `https://one-atlas-hxpc.atlassian.net/rest/api/3/issue/TD-1/changelog` and copy the newest item whose field is "assignee" (the `from` and `to` values, and any other keys). Paste it into this file under this heading; it is the shape the code has to match.
 7. If a workflow validator is attached to a transition on TD-1, move it and note the message.
 8. Put the assignee back to the person it was, and turn the Studio toggle back if you changed it.
+
+### Live result (2026-11-12, dev 7.9.0, item MOBL-52; run by the Desktop session)
+
+No Studio or site setting was changed.
+
+1. "Handoff Guard" is in the Assignee dropdown of a work item as it stands; nothing had to be turned on.
+2. Choosing it changes the assignee for real. The field then reads "Handoff Guard with <the person who assigned>", and `GET /rest/api/3/issue/MOBL-52?fields=assignee` returns `displayName: "Handoff Guard"`, `accountType: "app"`.
+3. The changelog gains an ordinary assignee item, authored by the person who assigned: `field: "assignee"`, `from` and `to` are plain account id strings (the agent's has the form `712020:<uuid>`), `fromString: "Mitch Davis"`, `toString: "Handoff Guard"`. So `detectReassignment` gets two non-empty strings and needs no change.
+4. An agent session starts by itself on the item, with no message from anyone. Its answer began: "Handoff Guard rule check for MOBL-52: Blocked. Findings: No due date is set. The receiver has not acknowledged "Work ships by the end of 2026". …" and then "I will not start this work item: the rule check says Blocked."
+5. The findings speak of a receiver, so a handoff record existed when the agent ran, which the reassignment trigger is the only thing to have written. The panel itself was not read on this item (it did not render in the view used), so the "Detected from a change of assignee" line is not confirmed by eye.
+6. Not tested: a workflow validator on a transition of this item (none is attached on MOBL-52).
+
+What this changes: the assignee route is visible to the app, unlike the Agents button. Assigning a work item to the agent produces a detected handoff with the agent as receiver, and the agent's first act is the rule check and a refusal when the verdict is not Clear. The scene "assign it to the agent, the agent declines and names the decisions" can be filmed as is. Jira itself does not refuse the assignment; the refusal is the agent's.
+
+Left on the site: MOBL-52 is assigned to Mitch Davis again; it now has a handoff record from these two reassignments and one agent session.
