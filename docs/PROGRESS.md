@@ -1,12 +1,13 @@
 # Progress
 
 ## Next
-1. Owner: register on Devpost. Ask the Developer Community (tag `codegeist-2026`) about billing: "Forge App Hosting - Handoff Guard" asks for a payment method before 2026-12-01, which is before the submission date.
-2. Dev site is now the Codegeist demo site `one-atlas-hxpc.atlassian.net` (expires 2027-02-10). After any scope change: `forge install --upgrade -e development --demo-site --product jira`.
-3. The demo site showed no work items right after provisioning. The owner has since tested on work item MOBL-53 in the Mobile Dev space (OPS-1 does not exist on this site).
-3. Risk spikes still open: Teamwork Graph query, `rovo:mcp`. The Rovo agent and actions are built (see C1-C4 below); the owner tests them.
-4. Owner (optional): spot-check a few Muse labels in `data/labels.json`; to override one, change `verdict` and delete its `by` field.
-5. Panel semantics: the preview hands the item "from the viewer to the current assignee", so a self-assigned item reads "same person". Next product slice: pick the receiver in the panel, and store decisions so the panel has something to bind.
+1. Bug: `propose-decisions` re-proposes a decision that is already stored (seen on MOBL-53). Drop a candidate whose scope and constraints match a stored decision, and make Confirm idempotent for it.
+2. Fix Advisor: the pure core `src/rules/feasible.ts` (`suggestFixes`, `changeText`) is committed with tests; nothing calls it yet. Next: show the suggested changes in the panel and to the agent. It suggests only; it never edits the work item.
+3. Still unverified on the site: the workflow validator (not attached to any workflow), the receiver's Acknowledge and a `clear` verdict (needs a second account, e.g. Mitch Davis), the Teamwork Graph "mentioned" query (no @mention on MOBL-53), any `rovo:mcp` client call (site admin must enable external access).
+4. Submission: README figures from `npm run measure`, screenshots, video, Devpost entry. Production deploy, Marketplace listing and the Devpost submission are the owner's.
+5. Owner decision: keep or drop the two graph scopes; they now have a live caller (Teamwork Graph people in the handoff brief).
+6. Owner (optional): spot-check a few Muse labels in `data/labels.json`; to override one, change `verdict` and delete its `by` field.
+7. Dev site: `one-atlas-hxpc.atlassian.net` (Codegeist demo site, expires 2027-02-10), test item MOBL-53. After any scope change: `forge install --upgrade -e development --demo-site --product jira`. Billing: the Developer Console cost dashboard shows $0; a payment method is only needed above the free monthly allowance.
 
 ## Rule decisions (owner, 2026-11-12, after the Sonnet critique)
 - Fixed: a malformed due date is reported (`invalid_due_date`) instead of compared; labels, components and person ids match ignoring case and outer spaces; a missing sender is reported (`no_sender`, info_needed).

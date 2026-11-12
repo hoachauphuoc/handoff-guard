@@ -1,8 +1,8 @@
 import type { Constraint, Decision, Finding, Handoff, HandoffResult, Verdict, WorkItem } from "./types";
 
 // People type labels, components and ids by hand; "Legal-Reviewed " and "legal-reviewed" mean the same thing.
-const norm = (s: string): string => s.trim().toLowerCase();
-const has = (list: string[], value: string): boolean => list.some((x) => norm(x) === norm(value));
+export const norm = (s: string): string => s.trim().toLowerCase();
+export const has = (list: string[], value: string): boolean => list.some((x) => norm(x) === norm(value));
 
 // Dates are compared as strings, which is only correct for a real, zero-padded YYYY-MM-DD.
 export function isIsoDate(s: string): boolean {
