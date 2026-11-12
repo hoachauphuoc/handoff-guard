@@ -20,3 +20,4 @@ app:
 permissions:
   scopes:
     - read:jira-work
+    - storage:app

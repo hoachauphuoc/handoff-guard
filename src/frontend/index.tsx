@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Lozenge, SectionMessage, Stack, Text } from "@forge/react";
+import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, User, UserPicker } from "@forge/react";
 import { invoke } from "@forge/bridge";
-import type { HandoffResult, Verdict } from "../rules/types";
+import type { PanelState } from "../handoff/types";
+import type { Verdict } from "../rules/types";
 
 const LOOK: Record<Verdict, { text: string; appearance: "success" | "moved" | "removed" }> = {
   clear: { text: "Clear", appearance: "success" },
@@ -10,36 +11,84 @@ const LOOK: Record<Verdict, { text: string; appearance: "success" | "moved" | "r
 };
 
 const App = () => {
-  const [result, setResult] = useState<HandoffResult | null>(null);
+  const [state, setState] = useState<PanelState | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [picked, setPicked] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  // Without the metadata option, invoke resolves to the resolver's value itself.
+  const call = (name: string, payload?: Record<string, unknown>) => {
+    setBusy(true);
+    setError(null);
+    return invoke<PanelState>(name, payload)
+      .then(
+        (s) => setState(s as PanelState),
+        (e) => setError(String(e)),
+      )
+      .finally(() => setBusy(false));
+  };
 
   useEffect(() => {
-    // Without the metadata option, invoke resolves to the resolver's value itself.
-    invoke<HandoffResult>("previewHandoff").then(
-      (r) => setResult(r as HandoffResult),
-      (e) => setError(String(e)),
-    );
+    void call("getPanel");
   }, []);
 
   if (error) {
+    const consent = error.includes("Allow access");
     return (
       <SectionMessage appearance="error" title="Handoff Guard could not check this work item">
-        <Text>{error}</Text>
+        <Text>{consent ? "Allow access: Handoff Guard needs your permission to read this work item as you." : error}</Text>
       </SectionMessage>
     );
   }
-  if (!result) return <Text>Checking the handoff…</Text>;
+  if (!state) return <Text>Checking the handoff…</Text>;
 
-  const look = LOOK[result.verdict];
+  const { record, result } = state;
   return (
     <Stack space="space.100">
-      <Text>
-        Handing this from you to the current assignee: <Lozenge appearance={look.appearance}>{look.text}</Lozenge>
-      </Text>
-      {result.findings.map((f, i) => (
-        <Text key={i}>• {f.message}</Text>
-      ))}
-      <Text>Source: rule check. No recorded decisions are loaded yet.</Text>
+      <UserPicker
+        label="Receiver"
+        name="receiver"
+        onChange={(u: { id: string } | null | undefined) => setPicked(u?.id ?? null)}
+      />
+      <Button
+        appearance="primary"
+        isDisabled={busy || picked === null}
+        onClick={() => call("prepareHandoff", { toId: picked })}
+      >
+        Prepare handoff
+      </Button>
+      {record && result ? (
+        <>
+          <Text>
+            Handoff <User accountId={record.fromId} /> to <User accountId={record.toId} />:{" "}
+            <Lozenge appearance={LOOK[result.verdict].appearance}>{LOOK[result.verdict].text}</Lozenge>
+          </Text>
+          {result.findings.map((f, i) => (
+            <Text key={i}>• {f.message}</Text>
+          ))}
+          {result.binding.map((d) => (
+            <Stack key={d.id} space="space.050">
+              <Text>
+                {d.title} (source: {d.source.kind} {d.source.ref})
+              </Text>
+              {state.isReceiver && !record.acknowledged.includes(d.id) && (
+                <Button isDisabled={busy} onClick={() => call("acknowledgeDecision", { decisionId: d.id })}>
+                  Acknowledge
+                </Button>
+              )}
+              {record.acknowledged.includes(d.id) && <Text>Acknowledged.</Text>}
+            </Stack>
+          ))}
+        </>
+      ) : (
+        <Text>No handoff is prepared for this work item. Pick a receiver and prepare one.</Text>
+      )}
+      {state.decisionCount === 0 && (
+        <Button isDisabled={busy} onClick={() => call("loadSampleDecisions")}>
+          Load sample decisions (demo)
+        </Button>
+      )}
+      <Text>Source: rule check, {state.decisionCount} stored decisions.</Text>
     </Stack>
   );
 };

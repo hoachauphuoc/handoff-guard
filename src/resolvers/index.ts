@@ -1,23 +1,84 @@
 import api, { route } from "@forge/api";
 import Resolver from "@forge/resolver";
-import { checkHandoff } from "../rules/checkHandoff";
-import { toWorkItem } from "../handoff/build";
-import type { HandoffResult } from "../rules/types";
+import { acknowledge } from "../handoff/acknowledge";
+import { handoffFrom, toWorkItem } from "../handoff/build";
+import type { HandoffRecord, PanelState } from "../handoff/types";
+import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
+import type { WorkItem } from "../rules/types";
+import { mergeDecisions, sampleDecisions } from "../samples/decisions";
+import { getDecisions, getRecord, putDecisions, putRecord } from "../store";
 
 const resolver = new Resolver();
 
 // API v2 returns the description as plain text; v3 returns a document tree the rules cannot read.
 const FIELDS = "summary,description,labels,components,duedate,assignee,project";
 
-resolver.define("previewHandoff", async ({ context }): Promise<HandoffResult> => {
-  const key: string = context.extension.issue.key;
-  const res = await api.asUser().requestJira(route`/rest/api/2/issue/${key}?fields=${FIELDS}`);
-  if (!res.ok) throw new Error(`Jira returned ${res.status} for ${key}`);
-  const { fields } = await res.json();
+type Ctx = { accountId?: string; extension: { issue: { key: string; id: string } } };
 
-  const item = toWorkItem(key, fields);
-  // Preview only: the viewer hands the item to its current assignee. No decisions are stored yet.
-  return checkHandoff({ item, fromId: context.accountId ?? null, toId: item.assigneeId, acknowledged: [] }, []);
+// The panel reads as the viewer, so a person only sees what their own permissions allow. When Jira asks
+// for consent the error says so; it is never retried as the app, which would hide the missing access.
+async function readItem(key: string): Promise<{ item: WorkItem; issueId: string }> {
+  const res = await api.asUser().requestJira(route`/rest/api/2/issue/${key}?fields=${FIELDS}`);
+  if (res.status === 401 || res.status === 403) {
+    throw new Error(`Allow access: Jira did not let Handoff Guard read ${key} as you (status ${res.status}).`);
+  }
+  if (!res.ok) throw new Error(`Jira returned ${res.status} for ${key}`);
+  const body = await res.json();
+  return { item: toWorkItem(key, body.fields), issueId: String(body.id) };
+}
+
+async function panelState(ctx: Ctx): Promise<PanelState> {
+  const { item, issueId } = await readItem(ctx.extension.issue.key);
+  const [decisions, record] = await Promise.all([getDecisions(), getRecord(issueId)]);
+  const viewerId = ctx.accountId ?? null;
+  return {
+    record,
+    result: record ? checkHandoff(handoffFrom(item, record), decisions) : null,
+    viewerId,
+    isReceiver: record !== null && viewerId !== null && viewerId === record.toId,
+    decisionCount: decisions.length,
+  };
+}
+
+resolver.define("getPanel", ({ context }) => panelState(context as Ctx));
+
+resolver.define("prepareHandoff", async ({ context, payload }) => {
+  const ctx = context as Ctx;
+  const toId = String((payload as { toId?: string }).toId ?? "");
+  if (!ctx.accountId || !toId) throw new Error("Pick a receiver first.");
+  const { issueId } = await readItem(ctx.extension.issue.key);
+  // Preparing again replaces the record, so earlier acknowledgements never carry over to a new receiver.
+  const record: HandoffRecord = {
+    fromId: ctx.accountId,
+    toId,
+    acknowledged: [],
+    preparedAt: new Date().toISOString(),
+    acknowledgedAt: {},
+  };
+  await putRecord(issueId, record);
+  return panelState(ctx);
+});
+
+resolver.define("acknowledgeDecision", async ({ context, payload }) => {
+  const ctx = context as Ctx;
+  const decisionId = String((payload as { decisionId?: string }).decisionId ?? "");
+  const { item, issueId } = await readItem(ctx.extension.issue.key);
+  const [decisions, record] = await Promise.all([getDecisions(), getRecord(issueId)]);
+  if (!record) throw new Error("No handoff has been prepared for this work item.");
+  const binding = bindingDecisions(decisions, item).map((d) => d.id);
+  // The receiver is checked here, on the server; the button in the panel is only a convenience.
+  const out = acknowledge(record, ctx.accountId ?? null, decisionId, binding, new Date().toISOString());
+  if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
+  await putRecord(issueId, out.record);
+  return panelState(ctx);
+});
+
+resolver.define("loadSampleDecisions", async ({ context }) => {
+  const ctx = context as Ctx;
+  const { item } = await readItem(ctx.extension.issue.key);
+  // Demo data for this project only; nothing is written to Jira.
+  await putDecisions(mergeDecisions(await getDecisions(), sampleDecisions(item.projectKey)));
+  return panelState(ctx);
 });
 
 export const handler = resolver.getDefinitions();
