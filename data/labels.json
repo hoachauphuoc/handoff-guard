@@ -1,0 +1,290 @@
+[
+  {
+    "id": "muse-20261112T013558Z.json#0",
+    "note": "careful project manager voice, clean handoff with full description, receiver, due date and acknowledgement",
+    "case": "BRM-42 (BRM) from u-kiri to u-bren; due 2026-11-20; labels [\"audit-ready\"]; components [\"field-ops\"]; description \"Hello team, I have completed the inventory checklist for the north depot and att\"; acknowledged [\"d-north-1\"]; decisions: d-north-1 [decided; scope project:BRM; labelRequired:audit-ready, dueNotAfter:2026-11-30]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013558Z.json#1",
+    "note": "rushed support agent voice, missing receiver description due date and acknowledgement plus label and component break",
+    "case": "SPT-77 (SPT) from u-tess to null; due null; labels []; components [\"legacy-bridge\"]; description \"\"; acknowledged []; decisions: d-queue-7 [decided; scope project:SPT; labelRequired:hotfix-queue, componentForbidden:legacy-bridge]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#0",
+    "note": "terse engineer entry with full fields and two acknowledged decisions",
+    "case": "OPS-12 (OPS) from u-kiri to u-tove; due 2026-11-15; labels [\"backend\"]; components [\"relay-core\"]; description \"p95 up. raised timeout to 800ms. logs in thread.\"; acknowledged [\"d-ops-1\",\"d-ops-2\"]; decisions: d-ops-1 [decided; scope project:OPS; dueNotAfter:2026-11-20] | d-ops-2 [decided; scope label:backend; labelRequired:backend]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#1",
+    "note": "careful project manager entry with detailed handover text and no receiver set",
+    "case": "NRP-34 (NRP) from u-sana to null; due 2026-11-25; labels [\"pilot\",\"checklist\"]; components [\"coordination\"]; description \"Hello team, This handoff documents current status, open risks, owners and next s\"; acknowledged [\"d-nrp-7\"]; decisions: d-nrp-7 [decided; scope project:NRP; dueNotAfter:2026-12-01]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#2",
+    "note": "rushed support agent entry with empty description and fast typing",
+    "case": "KDF-9 (KDF) from u-pax to u-rik; due 2026-11-13; labels [\"support\"]; components [\"intake-ui\"]; description \"\"; acknowledged [\"d-kdf-3\"]; decisions: d-kdf-3 [decided; scope label:support; labelRequired:callback-urgent]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#3",
+    "note": "new joiner entry with polite wording and no due date entered",
+    "case": "MNR-21 (MNR) from u-joss to u-mira; due null; labels [\"feedback\"]; components [\"review-queue\"]; description \"Hi! Sorry if format is off, I tried to follow the guide. This is about sorting t\"; acknowledged [\"d-mnr-4\"]; decisions: d-mnr-4 [decided; scope project:MNR; labelRequired:feedback]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#4",
+    "note": "rushed support agent follow-up with empty acknowledgement list",
+    "case": "ZQT-5 (ZQT) from u-rik to u-sana; due 2026-11-18; labels [\"outage\"]; components [\"legacy-bridge\"]; description \"cust impact high, taking calls, need someone to own queue, details in thread, go\"; acknowledged []; decisions: d-zqt-2 [decided; scope workItem:ZQT-5; componentForbidden:legacy-bridge]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#5",
+    "note": "terse engineer voice with full fields and matching project scope",
+    "case": "KITE-101 (KITE) from u-ana to u-bex; due 2026-11-18; labels [\"safety-check\"]; components [\"pump-unit\"]; description \"replaced seal. torque 40nm. tested ok.\"; acknowledged [\"d-k1\"]; decisions: d-k1 [decided; scope project:KITE; labelRequired:safety-check, dueNotAfter:2026-11-20]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#6",
+    "note": "careful project manager voice with no receiver listed",
+    "case": "FERN-44 (FERN) from u-cleo to null; due 2026-11-19; labels [\"release-42\",\"calibrated\"]; components [\"sensor-array\"]; description \"Dear team, Please note the calibration steps are listed in sections 1 to 3. Risk\"; acknowledged [\"d-f1\"]; decisions: d-f1 [decided; scope label:release-42; labelRequired:release-42, componentForbidden:legacy-hub]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#7",
+    "note": "rushed support agent voice with empty description",
+    "case": "QUAR-77 (QUAR) from u-dex to u-emi; due 2026-11-13; labels [\"urgent-callback\"]; components [\"inbox\"]; description \"\"; acknowledged [\"d-q1\"]; decisions: d-q1 [decided; scope label:urgent-callback; labelRequired:urgent-callback]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#8",
+    "note": "new joiner voice with no due date set",
+    "case": "WOB-23 (WOB) from u-finn to u-gala; due null; labels [\"onboarding\"]; components [\"checklist-forms\"]; description \"Hi everyone!! I am new here so sorry if this is wrong! I tried to follow the gui\"; acknowledged [\"d-w1\"]; decisions: d-w1 [decided; scope workItem:WOB-23; labelRequired:onboarding]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#9",
+    "note": "terse engineer voice with empty acknowledgement list and late date",
+    "case": "LUMO-90 (LUMO) from u-hugo to u-iris; due 2026-12-05; labels [\"winter-freeze\"]; components [\"legacy-hub\"]; description \"old filter out. new in.\"; acknowledged []; decisions: d-l1 [decided; scope project:LUMO; dueNotAfter:2026-11-25, componentForbidden:legacy-hub, labelRequired:winter-freeze]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#10",
+    "note": "terse engineer voice, empty description",
+    "case": "NWL-101 (NWL) from u-ana to u-bex; due 2026-11-20; labels [\"backend\"]; components [\"ingest\"]; description \"\"; acknowledged [\"d-nwl-1\"]; decisions: d-nwl-1 [decided; scope project:NWL; labelRequired:backend]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#11",
+    "note": "careful project manager voice, all fields filled",
+    "case": "QZT-22 (QZT) from u-mara to u-cleo; due 2026-11-18; labels [\"audit-ready\"]; components [\"docs\"]; description \"Purpose: transfer audit pack ownership. Scope: open risks listed in order. Reque\"; acknowledged [\"d-qzt-1\",\"d-qzt-2\"]; decisions: d-qzt-1 [decided; scope project:QZT; dueNotAfter:2026-11-30] | d-qzt-2 [decided; scope project:QZT; labelRequired:audit-ready]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#12",
+    "note": "rushed support agent voice, receiver not set",
+    "case": "HLP-77 (HLP) from u-dex to null; due 2026-11-13; labels []; components [\"inbox\"]; description \"sry in rush cust pinging again fwd now will add logs later pls ack\"; acknowledged []; decisions: d-hlp-1 [decided; scope project:HLP; labelRequired:triage-tag]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#13",
+    "note": "new joiner voice, due date not set",
+    "case": "FRM-15 (FRM) from u-nimo to u-ana; due null; labels [\"sensor-check\"]; components [\"field-kit\"]; description \"Hi everyone, I am new here so sorry if this is wrong. This is about the field se\"; acknowledged [\"d-frm-1\"]; decisions: d-frm-1 [decided; scope workItem:FRM-15; dueNotAfter:2026-11-15]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#14",
+    "note": "terse engineer voice, December date with legacy component",
+    "case": "VLT-90 (VLT) from u-ana to u-kito; due 2026-12-05; labels [\"cleanup\"]; components [\"legacy-sweeper\"]; description \"run purge. use legacy-sweeper.\"; acknowledged [\"d-vlt-1\"]; decisions: d-vlt-1 [decided; scope project:VLT; componentForbidden:legacy-sweeper, dueNotAfter:2026-11-20]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#15",
+    "note": "terse wording with all fields filled and one acknowledgement listed",
+    "case": "OPS-12 (OPS) from u-ana to u-bren; due 2026-11-18; labels [\"backend\",\"relay\"]; components [\"ingest\"]; description \"Timeout at 30s under load. Patch ready. Logs in thread.\"; acknowledged [\"d-101\"]; decisions: d-101 [decided; scope project:OPS; labelRequired:backend, dueNotAfter:2026-11-20]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#16",
+    "note": "detailed manager wording with empty receiver field",
+    "case": "CAL-34 (CAL) from u-mara to null; due 2026-11-25; labels [\"inventory\",\"plan\"]; components [\"scheduling\"]; description \"Hello team, Purpose is to complete the depot count on time. Steps are 1 confirm \"; acknowledged [\"d-202\"]; decisions: d-202 [decided; scope label:inventory; labelRequired:plan, dueNotAfter:2026-11-30]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#17",
+    "note": "rushed wording with empty description and listed component present",
+    "case": "SUP-58 (SUP) from u-jo to u-kim; due 2026-11-13; labels [\"urgent\"]; components [\"legacy-auth\"]; description \"\"; acknowledged [\"d-303\"]; decisions: d-303 [decided; scope project:SUP; componentForbidden:legacy-auth]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#18",
+    "note": "hesitant newcomer wording with null due date",
+    "case": "DOC-07 (DOC) from u-nina to u-sam; due null; labels [\"guide\"]; components [\"shelving\"]; description \"Hi I am new so sorry if this is wrong. I added the new pictures to the shelf gui\"; acknowledged [\"d-404\"]; decisions: d-404 [decided; scope workItem:DOC-07; labelRequired:guide]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#19",
+    "note": "brief wording with empty acknowledgement and late due date",
+    "case": "OPS-19 (OPS) from u-ana to u-dario; due 2026-12-05; labels [\"maintenance\"]; components [\"filter\"]; description \"Old unit clogged. Swap done. Old part binned.\"; acknowledged []; decisions: d-105 [decided; scope project:OPS; dueNotAfter:2026-11-20]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#20",
+    "note": "Terse engineer handoff with all fields present and single project decision",
+    "case": "FLX-101 (FLX) from u-ana to u-bren; due 2026-11-20; labels [\"reliability\"]; components [\"ingest\"]; description \"Capped at 5. Jitter on. Logs linked.\"; acknowledged [\"d-101\"]; decisions: d-101 [decided; scope project:FLX; labelRequired:reliability]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#21",
+    "note": "Careful manager handoff with null receiver and dated limit",
+    "case": "BRM-207 (BRM) from u-cara to null; due 2026-11-28; labels [\"phase-two\"]; components [\"relay\"]; description \"Hello team, Following our alignment session, here is the structured handover: 1)\"; acknowledged [\"d-202\"]; decisions: d-202 [decided; scope project:BRM; dueNotAfter:2026-11-25]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#22",
+    "note": "Rushed support handoff with empty description and label requirement",
+    "case": "KITE-315 (KITE) from u-dev to u-eli; due 2026-11-15; labels [\"routing\"]; components [\"routing\"]; description \"\"; acknowledged [\"d-303\"]; decisions: d-303 [decided; scope project:KITE; labelRequired:triage]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#23",
+    "note": "New joiner handoff with null due date and hesitant wording",
+    "case": "VOLT-42 (VOLT) from u-gil to u-fay; due null; labels [\"checklist\"]; components [\"panel\"]; description \"Hi everyone, I am still learning the flow so sorry if this is off! I think this \"; acknowledged [\"d-404\"]; decisions: d-404 [decided; scope workItem:VOLT-42; labelRequired:checklist, componentForbidden:legacy-core]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#24",
+    "note": "Sparse handoff with empty acknowledgement list and restricted component",
+    "case": "NORD-58 (NORD) from u-hank to u-ana; due 2026-12-01; labels [\"cache\"]; components [\"sunset-shard\"]; description \"Swapped. Old path still wired.\"; acknowledged []; decisions: d-505 [decided; scope project:NORD; componentForbidden:sunset-shard] | d-506 [superseded; scope project:NORD; labelRequired:audit]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#25",
+    "note": "Terse engineer voice with full fields and acknowledgement",
+    "case": "OPS-12 (OPS) from u-ana to u-bren; due 2026-11-20; labels [\"backend\"]; components [\"ingest\"]; description \"Drain stuck. Restart worker. Cap 500.\"; acknowledged [\"d-ops-1\"]; decisions: d-ops-1 [decided; scope project:OPS; dueNotAfter:2026-11-30, labelRequired:backend]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#26",
+    "note": "Careful project manager voice with no receiver listed",
+    "case": "PLT-44 (PLT) from u-cara to null; due 2026-11-25; labels [\"planning\"]; components [\"reports\"]; description \"Hello team, Please note the following steps have been completed: 1. Draft schedu\"; acknowledged [\"d-plt-7\"]; decisions: d-plt-7 [decided; scope label:planning; labelRequired:planning]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#27",
+    "note": "Rushed support agent voice with empty description",
+    "case": "SUP-89 (SUP) from u-dev to u-eli; due 2026-11-13; labels [\"inbox\"]; components [\"helpdesk\"]; description \"\"; acknowledged [\"d-sup-3\"]; decisions: d-sup-3 [decided; scope project:SUP; labelRequired:triage]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#28",
+    "note": "New joiner voice with no due date and hesitant wording",
+    "case": "ONB-7 (ONB) from u-gil to u-finn; due null; labels [\"welcome\"]; components [\"docs\"]; description \"Hi everyone! Sorry if this is wrong, I tried to follow the guide. I think this t\"; acknowledged [\"d-onb-2\"]; decisions: d-onb-2 [decided; scope workItem:ONB-7; labelRequired:welcome]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T013950Z.json#29",
+    "note": "Terse engineer follow-up with empty acknowledgement list",
+    "case": "OPS-13 (OPS) from u-ana to u-bren; due 2026-12-05; labels [\"backend\"]; components [\"legacy-import\"]; description \"Remove flag. Ship.\"; acknowledged []; decisions: d-ops-2 [decided; scope project:OPS; componentForbidden:legacy-import, dueNotAfter:2026-11-30]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T015137Z.json#0",
+    "note": "terse engineer handoff: empty description, null toId, empty ack, due 2026-11-20",
+    "case": "NBL-47 (NBL) from u-ren to null; due 2026-11-20; labels []; components [\"legacy-shim\"]; description \"\"; acknowledged []; decisions: d-nbl-7 [decided; scope project:NBL; dueNotAfter:2026-11-15, labelRequired:reviewed, componentForbidden:legacy-shim]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T015137Z.json#1",
+    "note": "Terse engineer handoff with all fields filled",
+    "case": "BRM-101 (BRM) from u-ana to u-bex; due 2026-11-18; labels [\"pump-check\"]; components [\"intake-valve\"]; description \"Lag 300ms. Retuned valve. Logs clean.\"; acknowledged [\"d-brm1\"]; decisions: d-brm1 [decided; scope project:BRM; labelRequired:pump-check, dueNotAfter:2026-11-30] | d-brm0 [superseded; scope project:BRM; componentForbidden:intake-valve]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T015137Z.json#2",
+    "note": "Careful project manager handoff with no receiver listed",
+    "case": "QZT-44 (QZT) from u-cato to null; due 2026-11-20; labels [\"calibration\"]; components [\"tank-array\"]; description \"Dear team, This task covers quarterly calibration of tank array three. All steps\"; acknowledged [\"d-qzt1\"]; decisions: d-qzt1 [decided; scope project:QZT; labelRequired:calibration]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T015137Z.json#3",
+    "note": "Rushed support agent handoff with empty description",
+    "case": "FLX-207 (FLX) from u-dara to u-eli; due 2026-11-14; labels [\"filter-swap\"]; components [\"filter-unit\"]; description \"\"; acknowledged [\"d-flx1\"]; decisions: d-flx1 [decided; scope label:filter-swap; labelRequired:filter-swap]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T015137Z.json#4",
+    "note": "New joiner handoff with no due date",
+    "case": "KVO-33 (KVO) from u-finn to u-gala; due null; labels [\"meter-read\"]; components [\"hut-sensor\"]; description \"Hello! Sorry I am new here so not sure if I did this right, I read the guide twi\"; acknowledged [\"d-kvo1\"]; decisions: d-kvo1 [decided; scope project:KVO; labelRequired:meter-read]",
+    "verdict": null
+  },
+  {
+    "id": "muse-20261112T015137Z.json#5",
+    "note": "Rushed support agent handoff with empty acknowledgement list",
+    "case": "NPD-89 (NPD) from u-hilo to u-ana; due 2026-12-05; labels [\"core-swap\"]; components [\"legacy-core\"]; description \"prep done gotta run used legacy core thx\"; acknowledged []; decisions: d-npd1 [decided; scope project:NPD; componentForbidden:legacy-core, dueNotAfter:2026-11-25, labelRequired:core-swap]",
+    "verdict": null
+  },
+  {
+    "id": "sonnet-adversarial.json#0",
+    "note": "description is only whitespace and a newline, everything else filled in",
+    "case": "QRY-11 (QRY) from u-ana to u-milo; due 2026-11-24; labels [\"calibration\"]; components [\"sensors\"]; description \"  \\n\\t  \"; acknowledged []; decisions: none",
+    "verdict": null
+  },
+  {
+    "id": "sonnet-adversarial.json#1",
+    "note": "description is non-empty filler only, 'tbd see above', with no decisions in play",
+    "case": "QRY-12 (QRY) from u-ana to u-milo; due 2026-12-04; labels []; components [\"labelling\"]; description \"tbd - see above\"; acknowledged []; decisions: none",
+    "verdict": null
+  },
+  {
+    "id": "sonnet-adversarial.json#2",
+    "note": "due date exactly equal to the dueNotAfter date, decision acknowledged",
+    "case": "HRB-30 (HRB) from u-ravi to u-sela; due 2026-12-01; labels [\"inspection\"]; components [\"cranes\"]; description \"Inspection notes are in the shared folder; the write-up needs the final torque r\"; acknowledged [\"d-hrb-cutoff\"]; decisions: d-hrb-cutoff [decided; scope project:HRB; dueNotAfter:2026-12-01]",
+    "verdict": null
+  },
+  {
+    "id": "sonnet-adversarial.json#3",
+    "note": "due date one day after the dueNotAfter date, decision acknowledged",
+    "case": "HRB-31 (HRB) from u-ravi to u-sela; due 2026-12-02; labels [\"inspection\"]; components [\"lighting\"]; description \"Lighting readings for berths 4 to 9 are done; berths 1 to 3 still need a night w\"; acknowledged [\"d-hrb-cutoff\"]; decisions: d-hrb-cutoff [decided; scope project:HRB; dueNotAfter:2026-12-01]",
+    "verdict": null
+  },
+  {
+    "id": "sonnet-adversarial.json#4",
+    "note": "label differs from the required label only by capital letters and a trailing space; a second label-scoped decision uses the lowercase form",
+    "case": "MTR-8 (MTR) from u-dara to u-kofi; due 2026-11-27; labels [\"Safety-Review \",\"wave-two\"]; components [\"firmware\"]; description \"Rollout order and rollback steps are written up on the linked page. Waves two an\"; acknowledged [\"d-mtr-safety\",\"d-mtr-wave\"]; decisions: d-mtr-safety [decided; scope project:MTR; labelRequired:safety-review] | d-mtr-wave [decided; scope label:Wave-Two; dueNotAfter:2026-12-15]",
+    "verdict": null
+  },
+  {
+    "id": "sonnet-adversarial.json#5",
+    "note": "the only decision that is broken by this item has been superseded; a newer decision with a looser rule is acknowledged",
+    "case": "LNT-61 (LNT) from u-ines to u-teo; due 2026-12-18; labels [\"permits\"]; components [\"old-portal\"]; description \"Renewal form is filled except for the insurance certificate number. The city off\"; acknowledged [\"d-lnt-new\"]; decisions: d-lnt-old [superseded; scope project:LNT; dueNotAfter:2026-12-10, componentForbidden:old-portal] | d-lnt-new [decided; scope project:LNT; dueNotAfter:2026-12-20]",
+    "verdict": null
+  },
+  {
+    "id": "sonnet-adversarial.json#6",
+    "note": "decisions with near-miss scopes: workItem key off by one, similar project key, label scope with a similar name; one decision with no constraints that does match",
+    "case": "BKR-120 (BKR) from u-nuri to u-piet; due 2026-12-10; labels [\"contract\"]; components [\"equipment\"]; description \"Three quotes are in the spreadsheet. The second one omits the service call-out f\"; acknowledged [\"d-bkr-notes\"]; decisions: d-bkr-121 [decided; scope workItem:BKR-121; dueNotAfter:2026-12-01] | d-bkrs-fleet [decided; scope project:BKRS; dueNotAfter:2026-11-15] | d-bkr-contracts [decided; scope label:contracts; labelRequired:finance-reviewed] | d-bkr-notes [decided; scope project:BKR; no constraints]",
+    "verdict": null
+  },
+  {
+    "id": "sonnet-adversarial.json#7",
+    "note": "sender and receiver ids differ only by letter case",
+    "case": "TRL-5 (TRL) from u-ana to u-Ana; due 2026-12-12; labels [\"signage\"]; components [\"trails\"]; description \"Forty signs are on the list, of which twelve are already ordered. Photos of the \"; acknowledged []; decisions: none",
+    "verdict": null
+  },
+  {
+    "id": "sonnet-adversarial.json#8",
+    "note": "both sender and receiver are null; description and due date are present",
+    "case": "TRL-6 (TRL) from null to null; due 2026-12-09; labels [\"print\"]; components [\"maps\"]; description \"Printer proof is approved. Quantity is 500 copies in two folds, delivery to the \"; acknowledged []; decisions: none",
+    "verdict": null
+  },
+  {
+    "id": "sonnet-adversarial.json#9",
+    "note": "unpadded date string 2026-2-9 against a dueNotAfter in mid-November; the acknowledged list holds an unrelated decision id while a binding one is missing",
+    "case": "KLN-77 (KLN) from u-vik to u-oma; due 2026-2-9; labels [\"kiln\",\"cleanup\"]; components [\"scheduler\",\"scheduler-legacy\"]; description \"Schedule is merged into one sheet. The glaze-batch rows still use the old naming\"; acknowledged [\"d-other-77\"]; decisions: d-kln-mid [decided; scope project:KLN; dueNotAfter:2026-11-30] | d-kln-sched [decided; scope label:cleanup; componentForbidden:scheduler-legacy, labelRequired:cleanup] | d-other-77 [decided; scope project:STU; labelRequired:studio-lead]",
+    "verdict": null
+  }
+]

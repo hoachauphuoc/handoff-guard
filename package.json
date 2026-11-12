@@ -6,7 +6,8 @@
   "description": "Forge app: every handoff carries the decisions that bind it.",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "measure": "node scripts/measure.ts"
   },
   "devDependencies": {
     "@types/react": "^18.3.31",

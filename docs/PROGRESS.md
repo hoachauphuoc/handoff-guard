@@ -4,7 +4,8 @@
 1. Owner: register on Devpost.
 2. After any scope change: `forge install --upgrade -e development --site hoachauphuoc.atlassian.net --product jira`.
 3. Risk spikes: Rovo agent on the dev site, Teamwork Graph query, `rovo:mcp`, workflow validator.
-4. Owner labels `data/samples/` (38 Muse + 10 Sonnet adversarial). Then build `scripts/measure`.
+4. Owner fills `"verdict"` (`clear`, `needs_info` or `blocked`) for the 48 entries in `data/labels.json`, then `npm run measure`. Each disagreement is either a rule bug or a label to reconsider.
+5. Panel semantics: the preview hands the item "from the viewer to the current assignee", so a self-assigned item reads "same person". Next product slice: pick the receiver in the panel, and store decisions so the panel has something to bind.
 
 ## Rule decisions (owner, 2026-11-12, after the Sonnet critique)
 - Fixed: a malformed due date is reported (`invalid_due_date`) instead of compared; labels, components and person ids match ignoring case and outer spaces; a missing sender is reported (`no_sender`, info_needed).
@@ -25,3 +26,5 @@
 - Owner registered the app (Developer Space "PhuocHoa Dev"). `forge lint` clean and now part of `scripts/check.ps1`. Deployed to development (eligible for Runs on Atlassian). `noEmit` moved out of `tsconfig.json` because the Forge bundler needs emitted output; the typecheck script still passes `--noEmit`. Not installed on any site yet.
 - Installed the development build in Jira on `hoachauphuoc.atlassian.net` (scope `read:jira-work`). The panel has not been observed on a work item: the in-app browser is not signed in to the site.
 - Dev site set up with the owner's approval: team-managed Kanban space "Ops Demo" (key `OPS`) and work item `OPS-1` "Launch the spring campaign". Panel verified on `OPS-1` (unassigned, no description, no due date): verdict Blocked with "no receiver", "description is empty", "no due date", and the source line. End to end works: Jira -> resolver -> `checkHandoff()` -> UI.
+- `OPS-1` then got an assignee (the owner) and a description: panel changed to Blocked with "same person" and "no due date". The due date could not be set through the in-app browser (Jira's date field ignored the input), so the clear state has not been seen on the site.
+- `scripts/measure.ts` (`npm run measure`, runs on Node 24 directly, no new dependency) and `data/labels.json` with 48 unlabeled entries. Labels are never prefilled from rule output.
