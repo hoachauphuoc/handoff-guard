@@ -1,0 +1,509 @@
+{
+  "synthetic": true,
+  "labeled": false,
+  "provider": "claude-cli",
+  "model": "claude-sonnet-5-5",
+  "generatedAt": "20261112",
+  "samples": [
+    {
+      "note": "description is only whitespace and a newline, everything else filled in",
+      "handoff": {
+        "item": {
+          "key": "QRY-11",
+          "projectKey": "QRY",
+          "summary": "Rotate the sensor calibration schedule for the east greenhouse",
+          "description": "  \n\t  ",
+          "labels": [
+            "calibration"
+          ],
+          "components": [
+            "sensors"
+          ],
+          "dueDate": "2026-11-24",
+          "assigneeId": "u-ana"
+        },
+        "fromId": "u-ana",
+        "toId": "u-milo",
+        "acknowledged": []
+      },
+      "decisions": []
+    },
+    {
+      "note": "description is non-empty filler only, 'tbd see above', with no decisions in play",
+      "handoff": {
+        "item": {
+          "key": "QRY-12",
+          "projectKey": "QRY",
+          "summary": "Migrate the seed-tray labelling templates",
+          "description": "tbd - see above",
+          "labels": [],
+          "components": [
+            "labelling"
+          ],
+          "dueDate": "2026-12-04",
+          "assigneeId": "u-ana"
+        },
+        "fromId": "u-ana",
+        "toId": "u-milo",
+        "acknowledged": []
+      },
+      "decisions": []
+    },
+    {
+      "note": "due date exactly equal to the dueNotAfter date, decision acknowledged",
+      "handoff": {
+        "item": {
+          "key": "HRB-30",
+          "projectKey": "HRB",
+          "summary": "Hand over the harbour crane inspection write-up",
+          "description": "Inspection notes are in the shared folder; the write-up needs the final torque readings added and a review pass before it goes to the port office.",
+          "labels": [
+            "inspection"
+          ],
+          "components": [
+            "cranes"
+          ],
+          "dueDate": "2026-12-01",
+          "assigneeId": "u-ravi"
+        },
+        "fromId": "u-ravi",
+        "toId": "u-sela",
+        "acknowledged": [
+          "d-hrb-cutoff"
+        ]
+      },
+      "decisions": [
+        {
+          "id": "d-hrb-cutoff",
+          "title": "Harbour inspection work closes by 1 December",
+          "status": "decided",
+          "source": {
+            "kind": "confluence",
+            "ref": "HRB/Inspection-cutoff"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "HRB"
+          },
+          "constraints": [
+            {
+              "kind": "dueNotAfter",
+              "date": "2026-12-01"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "note": "due date one day after the dueNotAfter date, decision acknowledged",
+      "handoff": {
+        "item": {
+          "key": "HRB-31",
+          "projectKey": "HRB",
+          "summary": "Hand over the berth lighting audit",
+          "description": "Lighting readings for berths 4 to 9 are done; berths 1 to 3 still need a night walk-through. Notes are on the audit page.",
+          "labels": [
+            "inspection"
+          ],
+          "components": [
+            "lighting"
+          ],
+          "dueDate": "2026-12-02",
+          "assigneeId": "u-ravi"
+        },
+        "fromId": "u-ravi",
+        "toId": "u-sela",
+        "acknowledged": [
+          "d-hrb-cutoff"
+        ]
+      },
+      "decisions": [
+        {
+          "id": "d-hrb-cutoff",
+          "title": "Harbour inspection work closes by 1 December",
+          "status": "decided",
+          "source": {
+            "kind": "confluence",
+            "ref": "HRB/Inspection-cutoff"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "HRB"
+          },
+          "constraints": [
+            {
+              "kind": "dueNotAfter",
+              "date": "2026-12-01"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "note": "label differs from the required label only by capital letters and a trailing space; a second label-scoped decision uses the lowercase form",
+      "handoff": {
+        "item": {
+          "key": "MTR-8",
+          "projectKey": "MTR",
+          "summary": "Pass on the meter firmware rollout checklist",
+          "description": "Rollout order and rollback steps are written up on the linked page. Waves two and three are not scheduled yet.",
+          "labels": [
+            "Safety-Review ",
+            "wave-two"
+          ],
+          "components": [
+            "firmware"
+          ],
+          "dueDate": "2026-11-27",
+          "assigneeId": "u-dara"
+        },
+        "fromId": "u-dara",
+        "toId": "u-kofi",
+        "acknowledged": [
+          "d-mtr-safety",
+          "d-mtr-wave"
+        ]
+      },
+      "decisions": [
+        {
+          "id": "d-mtr-safety",
+          "title": "Firmware changes need the safety-review label",
+          "status": "decided",
+          "source": {
+            "kind": "jira",
+            "ref": "MTR-2"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "MTR"
+          },
+          "constraints": [
+            {
+              "kind": "labelRequired",
+              "label": "safety-review"
+            }
+          ]
+        },
+        {
+          "id": "d-mtr-wave",
+          "title": "Wave-two items follow the staged rollout notes",
+          "status": "decided",
+          "source": {
+            "kind": "ledger",
+            "ref": "ledger-0412"
+          },
+          "scope": {
+            "kind": "label",
+            "label": "Wave-Two"
+          },
+          "constraints": [
+            {
+              "kind": "dueNotAfter",
+              "date": "2026-12-15"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "note": "the only decision that is broken by this item has been superseded; a newer decision with a looser rule is acknowledged",
+      "handoff": {
+        "item": {
+          "key": "LNT-61",
+          "projectKey": "LNT",
+          "summary": "Move the lantern festival permit renewal to the events desk",
+          "description": "Renewal form is filled except for the insurance certificate number. The city office answers on weekdays only.",
+          "labels": [
+            "permits"
+          ],
+          "components": [
+            "old-portal"
+          ],
+          "dueDate": "2026-12-18",
+          "assigneeId": "u-ines"
+        },
+        "fromId": "u-ines",
+        "toId": "u-teo",
+        "acknowledged": [
+          "d-lnt-new"
+        ]
+      },
+      "decisions": [
+        {
+          "id": "d-lnt-old",
+          "title": "Permit work must finish by 10 December and avoid the old portal",
+          "status": "superseded",
+          "source": {
+            "kind": "confluence",
+            "ref": "LNT/Permit-rules-v1"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "LNT"
+          },
+          "constraints": [
+            {
+              "kind": "dueNotAfter",
+              "date": "2026-12-10"
+            },
+            {
+              "kind": "componentForbidden",
+              "component": "old-portal"
+            }
+          ]
+        },
+        {
+          "id": "d-lnt-new",
+          "title": "Permit work must finish by 20 December",
+          "status": "decided",
+          "source": {
+            "kind": "confluence",
+            "ref": "LNT/Permit-rules-v2"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "LNT"
+          },
+          "constraints": [
+            {
+              "kind": "dueNotAfter",
+              "date": "2026-12-20"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "note": "decisions with near-miss scopes: workItem key off by one, similar project key, label scope with a similar name; one decision with no constraints that does match",
+      "handoff": {
+        "item": {
+          "key": "BKR-120",
+          "projectKey": "BKR",
+          "summary": "Hand off the oven maintenance contract comparison",
+          "description": "Three quotes are in the spreadsheet. The second one omits the service call-out fee, so it needs a follow-up before any ranking.",
+          "labels": [
+            "contract"
+          ],
+          "components": [
+            "equipment"
+          ],
+          "dueDate": "2026-12-10",
+          "assigneeId": "u-nuri"
+        },
+        "fromId": "u-nuri",
+        "toId": "u-piet",
+        "acknowledged": [
+          "d-bkr-notes"
+        ]
+      },
+      "decisions": [
+        {
+          "id": "d-bkr-121",
+          "title": "Item 121 must be finished by 1 December",
+          "status": "decided",
+          "source": {
+            "kind": "jira",
+            "ref": "BKR-121"
+          },
+          "scope": {
+            "kind": "workItem",
+            "key": "BKR-121"
+          },
+          "constraints": [
+            {
+              "kind": "dueNotAfter",
+              "date": "2026-12-01"
+            }
+          ]
+        },
+        {
+          "id": "d-bkrs-fleet",
+          "title": "Bakery-supplies project forbids the legacy ordering component",
+          "status": "decided",
+          "source": {
+            "kind": "ledger",
+            "ref": "ledger-2210"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "BKRS"
+          },
+          "constraints": [
+            {
+              "kind": "dueNotAfter",
+              "date": "2026-11-15"
+            }
+          ]
+        },
+        {
+          "id": "d-bkr-contracts",
+          "title": "Contracts label items are reviewed by finance",
+          "status": "decided",
+          "source": {
+            "kind": "confluence",
+            "ref": "BKR/Contracts"
+          },
+          "scope": {
+            "kind": "label",
+            "label": "contracts"
+          },
+          "constraints": [
+            {
+              "kind": "labelRequired",
+              "label": "finance-reviewed"
+            }
+          ]
+        },
+        {
+          "id": "d-bkr-notes",
+          "title": "Keep a running notes page for every bakery handoff",
+          "status": "decided",
+          "source": {
+            "kind": "confluence",
+            "ref": "BKR/Handoff-notes"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "BKR"
+          },
+          "constraints": []
+        }
+      ]
+    },
+    {
+      "note": "sender and receiver ids differ only by letter case",
+      "handoff": {
+        "item": {
+          "key": "TRL-5",
+          "projectKey": "TRL",
+          "summary": "Take over the trail signage replacement list",
+          "description": "Forty signs are on the list, of which twelve are already ordered. Photos of the damaged ones are attached to the item.",
+          "labels": [
+            "signage"
+          ],
+          "components": [
+            "trails"
+          ],
+          "dueDate": "2026-12-12",
+          "assigneeId": "u-Ana"
+        },
+        "fromId": "u-ana",
+        "toId": "u-Ana",
+        "acknowledged": []
+      },
+      "decisions": []
+    },
+    {
+      "note": "both sender and receiver are null; description and due date are present",
+      "handoff": {
+        "item": {
+          "key": "TRL-6",
+          "projectKey": "TRL",
+          "summary": "Pick up the trail map reprint",
+          "description": "Printer proof is approved. Quantity is 500 copies in two folds, delivery to the visitor hut before the winter opening.",
+          "labels": [
+            "print"
+          ],
+          "components": [
+            "maps"
+          ],
+          "dueDate": "2026-12-09",
+          "assigneeId": null
+        },
+        "fromId": null,
+        "toId": null,
+        "acknowledged": []
+      },
+      "decisions": []
+    },
+    {
+      "note": "unpadded date string 2026-2-9 against a dueNotAfter in mid-November; the acknowledged list holds an unrelated decision id while a binding one is missing",
+      "handoff": {
+        "item": {
+          "key": "KLN-77",
+          "projectKey": "KLN",
+          "summary": "Hand over the kiln scheduling cleanup",
+          "description": "Schedule is merged into one sheet. The glaze-batch rows still use the old naming and need a rename pass before anyone relies on them.",
+          "labels": [
+            "kiln",
+            "cleanup"
+          ],
+          "components": [
+            "scheduler",
+            "scheduler-legacy"
+          ],
+          "dueDate": "2026-2-9",
+          "assigneeId": "u-vik"
+        },
+        "fromId": "u-vik",
+        "toId": "u-oma",
+        "acknowledged": [
+          "d-other-77"
+        ]
+      },
+      "decisions": [
+        {
+          "id": "d-kln-mid",
+          "title": "Kiln work must be done by the end of November",
+          "status": "decided",
+          "source": {
+            "kind": "jira",
+            "ref": "KLN-3"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "KLN"
+          },
+          "constraints": [
+            {
+              "kind": "dueNotAfter",
+              "date": "2026-11-30"
+            }
+          ]
+        },
+        {
+          "id": "d-kln-sched",
+          "title": "Cleanup items must not touch the legacy scheduler",
+          "status": "decided",
+          "source": {
+            "kind": "ledger",
+            "ref": "ledger-6620"
+          },
+          "scope": {
+            "kind": "label",
+            "label": "cleanup"
+          },
+          "constraints": [
+            {
+              "kind": "componentForbidden",
+              "component": "scheduler-legacy"
+            },
+            {
+              "kind": "labelRequired",
+              "label": "cleanup"
+            }
+          ]
+        },
+        {
+          "id": "d-other-77",
+          "title": "Pottery studio items need a studio-lead label",
+          "status": "decided",
+          "source": {
+            "kind": "confluence",
+            "ref": "STU/Labels"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "STU"
+          },
+          "constraints": [
+            {
+              "kind": "labelRequired",
+              "label": "studio-lead"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

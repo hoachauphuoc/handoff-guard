@@ -5,12 +5,5 @@
     "keyFile": "Muse.txt",
     "usdPerMTokIn": 0.10,
     "usdPerMTokOut": 0.20
-  },
-  "modal": {
-    "baseUrl": "",
-    "model": "",
-    "keyFile": "GlimmerPrivate.txt",
-    "usdPerMTokIn": null,
-    "usdPerMTokOut": null
   }
 }
