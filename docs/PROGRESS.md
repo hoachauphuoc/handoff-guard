@@ -154,3 +154,10 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Panel: before Confirm, "n open work items in this project would contradict this decision", or that it could not be counted (`proposalImpact` null), via `hypothetical()` which is never stored.
 - No new scope. 196 tests, `check.ps1` PASS.
 - Not observed on the site: the page itself and the hand check of one count on MOBL.
+
+### 2026-11-12, slice C: superseding decisions (development 7.4.0)
+- `src/decisions/supersede.ts`: `reachCovers` (a project covers its own work items; a label scope and a work item scope are never compared), `relate(decisions, scope, constraints)` giving `already_decided` (every constraint met by a decision of equal or wider reach, a looser date limit included) or `supersedes` (older decisions made redundant by a wider or equal reach that is at least as strict, or the opposite required/forbidden rule for the same work), and `supersede()`. `Decision` gains `supersededAt` and `supersededBy`; a superseded decision binds nothing because the rules already read only `decided`.
+- `propose-decisions` now rejects a candidate covered by a decision of equal or wider reach (`already_decided`); a project-scoped candidate that widens a work-item decision (the MOBL-53 near-twin) is kept and the panel offers "Confirm and supersede <old>". The retire set is recomputed in `confirmProposal` from stored decisions; the caller only sends a yes/no. A person can also press Supersede on the Decisions page (resolver `supersedeDecision`, signed-in only).
+- Removed the now unused `sameDecision`. A date limit that differs is not an "opposite" case: a stricter candidate makes the old limit redundant and a looser one is already met.
+- 206 tests, `check.ps1` PASS, `npm run measure` unchanged (47/48).
+- Not observed on the site: the Supersede button, "Confirm and supersede" on a real proposal.

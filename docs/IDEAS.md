@@ -178,4 +178,64 @@ Keep the build order in section (d). Round two changes two things:
 1. **Pair Idea 8 with the replay (D).** Replay alone is a nice report; replay plus Bounce Autopsy is a loop (outcome, cause, new rule, proof it would have caught the cases). That loop is the thing a judge can repeat to someone else in one sentence, and none of the competitors in section (a) does it. Do D, then 8 if time allows.
 2. **Idea 9 is the best candidate for the Design score** if its spike shows the assignee field is reachable; otherwise drop it. Idea 10 is the strongest for the bonus prizes but needs the owner to accept a write scope, so it is last.
 
-## Tavily calls used: 46 (29 in round one under the 30-call limit; 17 more in round two, after the owner asked to continue)
+## (f) Third research round (36 more Tavily calls; stopped at 82 because new queries had started to repeat)
+
+### New neighbours to know about (add to the table in (a))
+
+| Product | Does | Misses | Source |
+|---|---|---|---|
+| Handoff Pulse, Shift Handover for Jira (Marketplace) | Shift handovers with carry-forward of unresolved items, recurring-risk view, searchable handovers, "Handover Health" indicators, aimed at ops/support/shift teams | Note-style handover for shifts; the listing mentions no recorded decisions or verdicts (unverified: listing text only). **Name is close to ours; keep the "Guard"/decisions wording prominent.** | [listing](https://marketplace.atlassian.com/apps/3926526090/handoff-pulse-shift-handover-for-jira) |
+| Successor, Offboarding and Ownership Transfer | Finds the 15 places a leaver owns things in Jira and hands them to a successor; exports CSV evidence; 1 install | Moves ownership; says nothing about what the new owner must know | [listing](https://marketplace.atlassian.com/apps/1237194117/successor-offboarding-ownership-transfer-for-jira) |
+| Decision Register for Jira | Highlights delivery-critical field changes (estimate, priority, ownership, due date, release) from issue history; 2 installs | A history of changes, not recorded decisions that bind new work | [listing](https://marketplace.atlassian.com/apps/2445040497/decision-register-for-jira) |
+| Approval Gate for Jira | An approval goes stale when summary, description, priority, labels, due date etc. change, and must be given again; audit trail | Approvals, not handoffs; but it proves the "stale on change" pattern sells | [listing](https://marketplace.atlassian.com/apps/21996072/approval-gate-for-jira) |
+| Rovo Dev Code Review | Reviews PRs against Jira acceptance criteria | No recorded decisions in the description | [Atlassian](https://www.atlassian.com/software/rovo-dev/code-review) |
+
+### New evidence
+
+- Reassignment is costly: about half of bugs are reassigned at least once, "greatly extending the time for bug fixing" ([Wei 2025](https://www.sciencedirect.com/science/article/abs/pii/S0950584924002477)); tossing increases time-to-correction ([Jeong et al., FSE 2009](https://dl.acm.org/doi/10.1145/1595696.1595715)). These are bug-tracker studies, not Jira studies.
+- Structured handoff works in medicine: the I-PASS bundle across nine hospitals was linked to 23% fewer medical errors and 30% fewer preventable adverse events ([NEJM 2014](https://www.nejm.org/doi/full/10.1056/NEJMsa1405556)); a 32-hospital follow-up found 47% fewer handoff-related adverse events ([I-PASS Institute](https://news.ipassinstitute.com/news/journal-of-hospital-medicine-study-shows-i-pass-implementation-helps-reduce-patient-harm-and-improve-communication-quality)); in malpractice claims with communication failures, about 40% involved a handoff and 77% of those were likely preventable with a handoff tool ([Candello](https://www.candello.com/About/Press-Release-and-News/Jan-2022-IPASS-Can-Significantly-Decrease-Likelihood-and-Cost-of-Malpractice-Claims)). The five parts are illness severity, patient summary, action list, situation awareness/contingency, and synthesis (read-back) by the receiver ([AHRQ](https://www.ahrq.gov/teamstepps-program/curriculum/communication/tools/ipass.html)). All the search results I got were clinical; I found no software-engineering port (unverified that none exists).
+- Agent-to-agent failures happen at the handoff edge: in an annotated corpus (N=824) the errors split into data gap 29.1%, referential drift 27.3%, signal corruption 36.8%, capability gap 6.8% ([ACL 2026](https://aclanthology.org/2026.acl-long.1294.pdf)). This supports passing a typed packet, not prose.
+- Accountability gap: a r/jira thread asks whose identity lands in the audit log when an agent writes, noting attribution to the bot loses human-to-action traceability ([Reddit](https://www.reddit.com/r/jira/comments/1sxz6w6/the_agent_identity_blind_spot_is_atlassian_rovo)). EU AI Act Article 14 asks that high-risk systems allow effective human oversight ([text](https://artificialintelligenceact.eu/article/14)); whether the 2026 dates still stand I did not verify.
+- **Agents are in the assignee dropdown.** "Open the assignee dropdown and select from available Rovo agents or third-party agents" ([Atlassian community](https://community.atlassian.com/forums/discussion/3194583/introducing-agents-in-jira)); a Rovo agent becomes assignable once its Work item surface is on ([community](https://community.atlassian.com/forums/discussion/3280944/automating-a-rovo-agent-as-the-assignee)). The earlier spike found that the Agents button changes no assignee; this route does, so the existing assignee-change detection may see it (unverified; needs a test with a Studio agent on the site). Also: assigning gives the agent no extra prompt ([video](https://www.youtube.com/watch?v=iku6g0qkeC8)), so the work item is the only briefing channel.
+- Platform pieces few apps use: custom JQL functions, with precomputation caveats ([docs](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jql-function)); Forge Automation Actions, GA ([Atlassian](https://www.atlassian.com/blog/development/automate-more-in-jira-a-guide-to-forge-automation-actions)); `rovo:skill` uses the Anthropic SKILL.md format ([RFC-137-A](https://community.developer.atlassian.com/t/rfc-137-a-forge-module-for-ai-skills/100984)), so the same skill file could also be used from Claude. The action validator module only supports Jira expressions today ([docs](https://developer.atlassian.com/platform/forge/manifest-reference/modules/jira-action-validator)), so it does not help us.
+- MCP risk is real (tool poisoning, "rug pull" servers; [CSA note](https://labs.cloudsecurityalliance.org/research/csa-research-note-mcp-tool-poisoning-ai-agent-exfiltration-2)); our tool descriptions are fixed and its output is deterministic data, which is worth one README sentence.
+- Demo advice: state the pitch in the first seconds; be concise and visual ([Devpost](https://help.devpost.com/article/84-video-making-best-practices), [Devpost blog](https://info.devpost.com/blog/6-tips-for-making-a-hackathon-demo-video)).
+
+### 11. I-PASS Handoff: a proven protocol, enforced by the rules
+
+- **Pitch:** Handoff Guard ports the I-PASS handoff protocol to Jira: the rules compute a severity (Stable, Watcher, Unstable), the app builds an owned action list from the findings, an Unstable handoff needs an if-then contingency, and the receiver cannot acknowledge until a read-back covers every binding decision.
+- **Pain:** Structured handoffs cut preventable harm by 30% in hospitals (sources above) and about half of bugs are reassigned (above); software handoffs have no such protocol in Jira.
+- **Why nobody does it:** Handoff Pulse and checklist apps give free-form notes or lists (table); I found no I-PASS port (unverified).
+- **Modules:** existing panel, resolvers and validator; no new module.
+- **Principles:** Severity, action list and "read-back covers D-1, D-3" are plain code over the handoff record; Rovo only helps word the read-back and points at what is missing; a person acknowledges. Honest limit: the rule checks that the read-back addresses each decision, not that the receiver understood it; say so in the README.
+- **Size / risk:** 3-4 days. Risk: changes the handoff record shape (migration for stored handoffs) and rule semantics (needs Opus-level review). Spike first: sketch the severity rule on the stored MOBL-53 data and check it gives sensible answers.
+- **Video scene:** The receiver clicks Acknowledge with a one-line read-back; the panel answers "Your read-back does not mention D-12 (no card data stored)". The receiver adds it, severity chip turns from Unstable to Watcher, acknowledgement goes through. The README line "I-PASS: 30% fewer preventable adverse events (NEJM)" appears on screen.
+
+### 12. Decisions everywhere Jira already looks (JQL and Automation)
+
+- **Pitch:** `issue in blockedHandoffs()` and `issue in boundBy("D-12")` work in JQL, boards, filters and dashboards, and a "Handoff Guard check" step can be dropped into any Automation rule.
+- **Pain:** Teams cannot see, in the views they already use, which items rest on a decision or have an unacknowledged handoff.
+- **Why nobody does it:** The modules exist (links above); I found no decision-aware JQL function (unverified).
+- **Modules:** `jira:jqlFunction`, Forge Automation Actions, existing storage.
+- **Principles:** Functions read stored records and run the same rules; the app writes nothing (the Automation rule's own actions are the admin's).
+- **Size / risk:** 3-4 days. Risk: JQL functions are precomputed and cached, so results can lag unless updated by triggers; the UI must say how fresh the list is. Spike first: does a function returning dynamic key lists refresh after a stored decision changes?
+- **Video scene:** On the board, a quick filter "Blocked handoffs" hides everything but three red cards; an Automation rule using the check step is shown running.
+
+### 13. Handoff Drift: acknowledgement goes stale when the item changes
+
+- **Pitch:** If a work item changes materially after the receiver acknowledged (description, due date, labels, components), the acknowledgement is marked stale and the receiver sees exactly what changed.
+- **Pain:** Silent edits after assignment are a known scope-creep source; scope-change tools cover sprints, not handoffs ([Atlassian community](https://community.atlassian.com/forums/discussion/3137906/jira-scope-change-report-see-exactly-whats-added-removed-and-re-estimated)).
+- **Why nobody does it:** Approval Gate proves the pattern for approvals (table); I found nothing for handoffs.
+- **Modules:** `trigger` or a check on panel load, existing storage; this merges with the planned changed-source check (E).
+- **Principles:** A stored fingerprint of the checked fields is compared; the verdict is code; no writes.
+- **Size / risk:** 2 days; low risk. Spike first: which fields the handoff record already snapshots.
+- **Video scene:** The reporter moves the due date; the receiver's panel flips to "Changed since you acknowledged: due 12-31 to 12-15" with a one-click re-acknowledge.
+
+### Ranking after round three
+
+1. **Idea 11 (I-PASS) becomes the backbone of the story.** It is cheap, it gives the README and video a number from a top journal, and it makes the product feel like a proven protocol, not another AI wrapper. Build it right after (A).
+2. **Agent Gate (Idea 1) is worth one more spike** because of the assignee-dropdown finding: create a Studio agent with the Work item surface on, assign it to a test item, and see whether the existing assignee-change detection and validator fire. If yes, the "Jira refuses" scene works after all; if no, keep the section (d) scope.
+3. **Replay plus Bounce Autopsy (3 + 8)** stay as the "loop" story if time remains.
+4. **Idea 13 (Drift) is a two-day filler** that merges with (E). **Idea 12 (JQL/Automation)** is the best reach story for Potential Impact but has a freshness risk; take it only if (A) to (D) are done by about 2026-12-05.
+
+## Tavily calls used: 82 (29 in round one under the 30-call limit; 17 in round two and 36 in round three, after the owner asked to continue)

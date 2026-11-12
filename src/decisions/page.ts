@@ -13,6 +13,9 @@ export type DecisionRow = {
   status: Decision["status"];
   confirmedBy: string | null;
   confirmedAt: string | null;
+  /** When it stopped binding and what replaced it (a title), if anything. */
+  supersededAt: string | null;
+  supersededBy: string | null;
   /** Open work items in this project that contradict it now; null for a decision that no longer binds. */
   impact: { count: number; keys: string[] } | null;
 };
@@ -63,6 +66,8 @@ export function buildDecisionsPage(
         status: d.status,
         confirmedBy: d.confirmedBy ?? null,
         confirmedAt: d.confirmedAt ?? null,
+        supersededAt: d.supersededAt ?? null,
+        supersededBy: decisions.find((x) => x.id === d.supersededBy)?.title ?? null,
         impact: hit === null ? null : { count: hit.length, keys: hit.slice(0, MAX_KEYS).map((h) => h.key) },
       };
     });

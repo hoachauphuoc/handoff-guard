@@ -36,6 +36,9 @@ export type Decision = {
   confirmedAt?: string;
   /** The words a proposal was confirmed from, so a marked decision can be told apart from one already recorded. */
   evidence?: { quote: string; from: string };
+  /** Set when the decision stopped binding: when, and the decision that replaced it (absent if a person retired it). */
+  supersededAt?: string;
+  supersededBy?: string;
 };
 
 export type Handoff = {

@@ -1,25 +1,8 @@
-import { norm } from "../rules/checkHandoff";
-import type { Constraint, Decision, DecisionScope } from "../rules/types";
+import type { Decision } from "../rules/types";
 import { mergeDecisions } from "../samples/decisions";
 import { fnv1a } from "./hash";
+import { relate, supersede } from "./supersede";
 import type { Proposal } from "./types";
-
-const scopeKey = (s: DecisionScope): string =>
-  s.kind === "project" ? `project:${norm(s.projectKey)}` : s.kind === "label" ? `label:${norm(s.label)}` : `workItem:${norm(s.key)}`;
-// The kind is part of the key: requiring a label and forbidding it are different rules.
-const constraintKey = (c: Constraint): string =>
-  c.kind === "dueNotAfter" ? `due:${c.date.trim()}` : "label" in c ? `${c.kind}:${norm(c.label)}` : `${c.kind}:${norm(c.component)}`;
-const ruleKey = (scope: DecisionScope, constraints: Constraint[]): string =>
-  [scopeKey(scope), ...[...new Set(constraints.map(constraintKey))].sort()].join("|");
-
-/**
- * The live decision that already binds the same work in the same way, if any. Titles are ignored: a model
- * words the same sentence differently each time, and the rules only read scope and constraints.
- */
-export function sameDecision(decisions: Decision[], scope: DecisionScope, constraints: Constraint[]): Decision | undefined {
-  const want = ruleKey(scope, constraints);
-  return decisions.find((d) => d.status === "decided" && ruleKey(d.scope, d.constraints) === want);
-}
 
 const PAGE = "Confluence page ";
 const sourceOf = (from: string): Decision["source"] =>
@@ -40,12 +23,14 @@ export function confirmProposal(
   id: string,
   who: string,
   nowIso: string,
+  retire = false,
 ): ConfirmResult {
   const p = proposals.find((x) => x.id === id);
   if (!p) return { ok: false, reason: "not_found" };
   const rest = proposals.filter((x) => x.id !== id);
   // A proposal saved before its twin was confirmed would otherwise store the same rule twice.
-  if (sameDecision(decisions, p.scope, p.constraints)) return { ok: true, proposals: rest, decisions };
+  const relation = relate(decisions, p.scope, p.constraints);
+  if (relation?.kind === "already_decided") return { ok: true, proposals: rest, decisions };
   const decision: Decision = {
     id: "d-" + fnv1a(p.id),
     title: p.title,
@@ -57,7 +42,9 @@ export function confirmProposal(
     confirmedAt: nowIso,
     evidence: p.evidence,
   };
-  return { ok: true, proposals: rest, decisions: mergeDecisions(decisions, [decision]) };
+  // Retiring is the person's choice, made with the button; it is worked out here from stored decisions, never from what the caller sends.
+  const kept = retire && relation?.kind === "supersedes" ? supersede(decisions, relation.old.map((d) => d.id), nowIso, decision.id) : decisions;
+  return { ok: true, proposals: rest, decisions: mergeDecisions(kept, [decision]) };
 }
 
 export function dismissProposal(proposals: Proposal[], id: string): Proposal[] {

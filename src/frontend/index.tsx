@@ -221,6 +221,17 @@ const App = () => {
                 <Button isDisabled={busy} onClick={() => call("confirmProposal", { proposalId: p.id }).then(() => void readMarked())}>
                   Confirm
                 </Button>
+                {(state.supersedes[p.id] ?? []).length > 0 && (
+                  <>
+                    <Text>{`It overlaps ${(state.supersedes[p.id] ?? []).map((d) => `"${d.title}"`).join(", ")}; confirming it alone leaves both in force.`}</Text>
+                    <Button
+                      isDisabled={busy}
+                      onClick={() => call("confirmProposal", { proposalId: p.id, supersede: true }).then(() => void readMarked())}
+                    >
+                      {`Confirm and supersede ${(state.supersedes[p.id] ?? []).map((d) => `"${d.title}"`).join(", ")}`}
+                    </Button>
+                  </>
+                )}
                 <Button isDisabled={busy} onClick={() => call("dismissProposal", { proposalId: p.id })}>
                   Dismiss
                 </Button>

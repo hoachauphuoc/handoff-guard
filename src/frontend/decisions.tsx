@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Lozenge, SectionMessage, Stack, Text, User } from "@forge/react";
+import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, User } from "@forge/react";
 import { invoke } from "@forge/bridge";
 import type { DecisionsPageState } from "../decisions/page";
 import { count } from "../plural";
@@ -10,12 +10,21 @@ const App = () => {
   const [state, setState] = useState<DecisionsPageState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = () =>
     invoke<DecisionsPageState>("getDecisionsPage").then(
       (s) => setState(s as DecisionsPageState),
       (e) => setError(String(e)),
     );
+  useEffect(() => {
+    void load();
   }, []);
+
+  // A person retires a decision here; it then binds nothing, and the page is read again.
+  const retire = (decisionId: string) =>
+    invoke("supersedeDecision", { decisionId }).then(
+      () => load(),
+      (e) => setError(String(e)),
+    );
 
   if (error) {
     return (
@@ -55,6 +64,10 @@ const App = () => {
               {d.confirmedAt ? ` on ${d.confirmedAt.slice(0, 10)}` : ""}
             </Text>
           )}
+          {d.supersededAt !== null && (
+            <Text>{`Superseded on ${d.supersededAt.slice(0, 10)}${d.supersededBy ? ` by "${d.supersededBy}"` : " by a person"}. It binds nothing.`}</Text>
+          )}
+          {d.status === "decided" && <Button onClick={() => void retire(d.id)}>Supersede</Button>}
           {d.impact !== null && (
             <Text>
               {d.impact.count === 0

@@ -1,6 +1,6 @@
 import { isIsoDate } from "../rules/checkHandoff";
 import type { Constraint, Decision, DecisionScope } from "../rules/types";
-import { sameDecision } from "./confirm";
+import { relate } from "./supersede";
 import { fnv1a } from "./hash";
 import type { Proposal, SourcePart } from "./types";
 
@@ -34,7 +34,7 @@ export const REASON_TEXT: Record<RejectReason, string> = {
   no_evidence: "evidence.quote is missing or not between 12 and 300 characters.",
   evidence_not_in_source: "evidence.quote was not found word for word in the work item text; copy it exactly from read-decision-source.",
   already_decided:
-    "A confirmed decision already has this scope and these constraints, so there is nothing to propose. Do not retry this candidate.",
+    "A confirmed decision of equal or wider reach already sets these constraints, so there is nothing to propose. Do not retry this candidate.",
   over_cap: "Only 5 proposals can be saved at once.",
 };
 /** `stored`: confirmed decisions; a candidate that repeats one of them is rejected. */
@@ -110,7 +110,7 @@ function check(raw: unknown, parts: SourcePart[], ctx: Context, nowIso: string):
   if (wanted.length < MIN_QUOTE || wanted.length > MAX_QUOTE) return "no_evidence";
   const part = parts.find((p) => normalise(p.text).includes(wanted));
   if (!part) return "evidence_not_in_source";
-  if (sameDecision(ctx.stored ?? [], scope, constraints)) return "already_decided";
+  if (relate(ctx.stored ?? [], scope, constraints)?.kind === "already_decided") return "already_decided";
   const id = "p-" + fnv1a([part.from, title, JSON.stringify(scope), JSON.stringify(constraints)].join("|"));
   return { id, title, scope, constraints, evidence: { quote, from: part.from }, proposedAt: nowIso };
 }

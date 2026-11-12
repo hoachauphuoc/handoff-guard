@@ -32,5 +32,7 @@ export type PanelState = {
   /** Facts beside the verdict, never inside it. */
   advisories: Advisory[];
   /** Open work items of the project each proposal would contradict; null when they could not be counted. */
+  /** Per proposal: the confirmed decisions it would make redundant or answer differently. A person may retire them while confirming. */
+  supersedes: Record<string, { id: string; title: string }[]>;
   proposalImpact: Record<string, { count: number; capped: boolean }> | null;
 };

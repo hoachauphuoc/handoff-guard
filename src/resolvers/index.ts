@@ -2,6 +2,7 @@ import Resolver from "@forge/resolver";
 import { runGatherHandoffContext } from "../actions/core";
 import { depsFor } from "../actions/deps";
 import { confirmProposal, dismissProposal } from "../decisions/confirm";
+import { relate, supersede } from "../decisions/supersede";
 import { unrecordedMarked, type MarkedState } from "../decisions/marked";
 import { hypothetical } from "../decisions/hypothetical";
 import { pageStatusText } from "../decisions/pages";
@@ -71,6 +72,12 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     ],
     fixes: suggestFixes(item, decisions).changes.map(changeText),
     proposalImpact: await impactFor(item.projectKey, proposals),
+    supersedes: Object.fromEntries(
+      proposals.map((p) => {
+        const rel = relate(decisions, p.scope, p.constraints);
+        return [p.id, rel?.kind === "supersedes" ? rel.old.map((d) => ({ id: d.id, title: d.title })) : []];
+      }),
+    ),
   };
 }
 
@@ -124,7 +131,8 @@ resolver.define("confirmProposal", async ({ context, payload }) => {
   const id = String((payload as { proposalId?: string }).proposalId ?? "");
   const { issueId } = await readItem(ctx.extension.issue.key);
   const [proposals, decisions] = await Promise.all([getProposals(issueId), getDecisions()]);
-  const out = confirmProposal(proposals, decisions, id, ctx.accountId, new Date().toISOString());
+  const retire = (payload as { supersede?: boolean }).supersede === true;
+  const out = confirmProposal(proposals, decisions, id, ctx.accountId, new Date().toISOString(), retire);
   if (!out.ok) throw new Error("That proposal is no longer there. Reload the page to see the current list.");
   // The decision is saved first: if the second write fails the proposal is still listed and confirming
   // again changes nothing, whereas the other order could lose the decision.
@@ -174,6 +182,15 @@ resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageSt
     open.capped,
     new Date().toISOString(),
   );
+});
+
+// A person retires a decision from the Decisions page. The rules already ignore anything not "decided".
+resolver.define("supersedeDecision", async ({ context, payload }) => {
+  if (!(context as { accountId?: string }).accountId) throw new Error("Superseding a decision needs a signed-in person.");
+  const id = String((payload as { decisionId?: string }).decisionId ?? "");
+  const decisions = await getDecisions();
+  if (!decisions.some((d) => d.id === id && d.status === "decided")) throw new Error("That decision is not in force. Reload the page.");
+  await putDecisions(supersede(decisions, [id], new Date().toISOString()));
 });
 
 export const handler = resolver.getDefinitions();
