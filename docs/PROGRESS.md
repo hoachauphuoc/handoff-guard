@@ -3,7 +3,7 @@
 ## Next
 1. Owner: register on Devpost. Ask the Developer Community (tag `codegeist-2026`) about billing: "Forge App Hosting - Handoff Guard" asks for a payment method before 2026-12-01, which is before the submission date.
 2. Dev site is now the Codegeist demo site `one-atlas-hxpc.atlassian.net` (expires 2027-02-10). After any scope change: `forge install --upgrade -e development --demo-site --product jira`.
-3. The demo site showed no work items right after provisioning. Check again for seeded data; if still empty, create a space and a work item, then verify the panel there.
+3. The demo site showed no work items right after provisioning. The owner has since tested on work item MOBL-53 in the Mobile Dev space (OPS-1 does not exist on this site).
 3. Risk spikes still open: Teamwork Graph query, `rovo:mcp`. The Rovo agent and actions are built (see C1-C4 below); the owner tests them.
 4. Owner (optional): spot-check a few Muse labels in `data/labels.json`; to override one, change `verdict` and delete its `by` field.
 5. Panel semantics: the preview hands the item "from the viewer to the current assignee", so a self-assigned item reads "same person". Next product slice: pick the receiver in the panel, and store decisions so the panel has something to bind.
@@ -48,7 +48,7 @@
 - C4 panel button "Explain with Rovo": `rovo.isEnabled()` then `rovo.open`; both failure paths say the verdict comes from the rule check.
 - Deployed to development (3.2.0 then 3.3.0). No scope change, so no `--approve`; `one-atlas-hxpc` shows Up-to-date. The old `hoachauphuoc` install is Outdated (not upgraded).
 - Not observed yet (owner): Rovo active on `one-atlas-hxpc`; the agent appears in Rovo chat (known bug ROVO-1239: missing if Rovo was activated after install); `asUser()` works inside an action (consent prompt); where `accountId` sits on a real call; the "Explain with Rovo" button.
-- TO REMOVE after the owner confirms: `logShape()` in `src/actions/index.ts` logs only key names of payload, `payload.context`, `payload.context.jira` and context once per action call (`forge logs -e development`). Delete it and its two calls.
+- TO REMOVE after the owner confirms: `logShape()` in `src/actions/index.ts` logs only key names of payload, `payload.context`, `payload.context.jira` and context once per action call (done 2026-11-12, see the first real test entry).
 
 ### 2026-11-12, slices G1-G4 (guide and proposed decisions)
 - G1 "Guide: getting started checklist derived from panel state": `src/guide/steps.ts` (7 steps, done flags read from `PanelState`, manual steps never ticked), `src/guide/hints.ts` (panel-only hints per rule), `walkthroughHandoff` (panel resolver only, tested not to be imported by validator, actions or measure), `practiceFindings` (findings about the work item itself, no verdict). Deployed to development (3.4.0).
@@ -103,3 +103,11 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - UNCONFIRMED (docs I read do not say): whether a Jira-only app may declare `read:graph:user:atlassian` and `read:graph:issue:jira`; whether Teamwork Graph returns title/url for a ConfluencePage without Confluence installed (the "Call the Teamwork Graph API" page only says unreadable data is omitted, not an error). Test in the Query Builder before relying on either.
 - `logShape()` is still in `src/actions/index.ts`.
 - Done on development: installs found were Jira on `one-atlas-hxpc` and Jira on `hoachauphuoc` (Confluence nowhere). Both uninstalled; deploy 6.0.0 needed `--approve MAJOR_VERSION_RULE` (scope change, development only) and the compatibility removal went through; reinstalled in Jira on `one-atlas-hxpc` only (`forge install -e development -s one-atlas-hxpc.atlassian.net -p Jira --confirm-scopes --non-interactive`; `--demo-site` needs a TTY). `hoachauphuoc` was not reinstalled. Owner: grant consent on first use, re-run the Rovo Chat test, reload sample decisions (storage is empty).
+
+### 2026-11-12, first real test on `one-atlas-hxpc` (work item MOBL-53, Mobile Dev space)
+- Result: Rovo Chat works on the demo site; the Handoff Guard agent is listed, so ROVO-1239 did not hit. Both `read-decision-source` and `propose-decisions` were invoked. The `asUser()` read worked: the agent found the sentence "Decision: all launch work needs the legal-reviewed label." in the description.
+- Bug 1: `propose-decisions` was rejected ("scope error"), the panel showed 0 proposals. Cause: the `candidates` description named only the scope kinds, not their extra fields, and the model chose a label scope on an item with no labels. Fixed: a missing `projectKey` (project scope) or `key` (workItem scope) is filled from the item, a key naming another project or item is still rejected, label scope stays strict; the shape per scope kind is spelled out with an example in the manifest and `schema.ts`; every rejection carries a plain sentence and the quote says how many were rejected and why; the agent prompt (rule 11) says to fix and retry once and to prefer project scope. The verbatim-evidence check is unchanged.
+- Bug 2: double-encoded text ("Checking the handoff" with garbage instead of the ellipsis, and the bullet) in `src/frontend/index.tsx`. Repaired; `tests/encoding.test.ts` fails if any file under `src/` or `tests/` has such sequences.
+- Gate 0 closed: `accountId` is `payload.context.accountId`; the action payload also has `issueKey`, `candidates`, `orgId`, `contextToken`, and `context.jira` has `issueKey`, `issueId`, `projectKey`, `projectId`, `url`. `logShape()` removed.
+- Hint: the Mobile Dev space has no Due date field, so the `no_due_date` and `invalid_due_date` hints no longer name a Jira menu path.
+- Open decision (owner): the two graph scopes `read:graph:issue:jira` and `read:graph:user:atlassian` still have no live caller (`twgPeople` is unused). Keep them for a people step, or drop them before submission.
