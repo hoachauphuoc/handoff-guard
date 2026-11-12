@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from "vitest";
 import { confirmProposal } from "../src/decisions/confirm";
-import { reachCovers, relate, supersede } from "../src/decisions/supersede";
+import { canSupersede, reachCovers, relate, supersede } from "../src/decisions/supersede";
 import type { Proposal } from "../src/decisions/types";
 import { validateCandidates } from "../src/decisions/validate";
 import { bindingDecisions, checkHandoff } from "../src/rules/checkHandoff";
@@ -128,5 +128,17 @@ describe("supersede and confirm", () => {
     const out = confirmProposal([other], [decision()], "p-1", "u", NOW, true);
     if (!out.ok) throw new Error("expected ok");
     expect(out.decisions.map((d) => d.status)).toEqual(["decided", "decided"]);
+  });
+});
+
+describe("canSupersede", () => {
+  it("lets only the person who confirmed a decision retire it", () => {
+    const d = decision({ confirmedBy: "alice" });
+    expect(canSupersede(d, "alice")).toBe(true);
+    expect(canSupersede(d, "bob")).toBe(false);
+  });
+
+  it("lets anyone signed in retire a decision with no recorded confirmer", () => {
+    expect(canSupersede(decision(), "bob")).toBe(true);
   });
 });

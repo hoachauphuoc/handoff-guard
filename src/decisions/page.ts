@@ -2,6 +2,7 @@ import { inFlight, type InFlight } from "../handoff/inflight";
 import type { HandoffRecord } from "../handoff/types";
 import { impactOf } from "../rules/impact";
 import type { Decision, WorkItem } from "../rules/types";
+import { canSupersede } from "./supersede";
 import { constraintText, reachText } from "./reach";
 
 export type DecisionRow = {
@@ -18,6 +19,8 @@ export type DecisionRow = {
   supersededBy: string | null;
   /** Open work items in this project that contradict it now; null for a decision that no longer binds. */
   impact: { count: number; keys: string[] } | null;
+  /** Whether the viewer may retire it; the resolver checks again, so this only decides whether the button is shown. */
+  canSupersede: boolean;
 };
 
 export type DecisionsPageState = {
@@ -51,6 +54,7 @@ export function buildDecisionsPage(
   open: { item: WorkItem; record: HandoffRecord | null }[],
   capped: boolean,
   nowIso: string,
+  viewerId: string | null,
 ): DecisionsPageState {
   const items = open.map((o) => o.item);
   const rows = decisions
@@ -68,6 +72,7 @@ export function buildDecisionsPage(
         confirmedAt: d.confirmedAt ?? null,
         supersededAt: d.supersededAt ?? null,
         supersededBy: decisions.find((x) => x.id === d.supersededBy)?.title ?? null,
+        canSupersede: d.status === "decided" && viewerId !== null && canSupersede(d, viewerId),
         impact: hit === null ? null : { count: hit.length, keys: hit.slice(0, MAX_KEYS).map((h) => h.key) },
       };
     });

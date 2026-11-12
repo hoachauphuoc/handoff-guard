@@ -77,7 +77,7 @@ describe("buildDecisionsPage", () => {
   it("shows this project's decisions with their counts and says when the cap was hit", () => {
     const decisions = [decision(), decision({ id: "d2", scope: { kind: "project", projectKey: "ELSE" } }), decision({ id: "d3", status: "superseded" })];
     const open = [{ item: item("OPS-1", { dueDate: "2026-12-30" }), record: null }, { item: item("OPS-2"), record: null }];
-    const page = buildDecisionsPage("OPS", decisions, open, true, NOW);
+    const page = buildDecisionsPage("OPS", decisions, open, true, NOW, "viewer");
     expect(page.rows.map((r) => r.id)).toEqual(["d1", "d3"]);
     expect(page.rows[0]?.impact).toEqual({ count: 1, keys: ["OPS-1"] });
     expect(page.rows[1]?.impact).toBeNull();

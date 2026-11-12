@@ -2,7 +2,7 @@ import Resolver from "@forge/resolver";
 import { runGatherHandoffContext } from "../actions/core";
 import { depsFor } from "../actions/deps";
 import { confirmProposal, dismissProposal } from "../decisions/confirm";
-import { relate, supersede } from "../decisions/supersede";
+import { canSupersede, relate, supersede } from "../decisions/supersede";
 import { unrecordedMarked, type MarkedState } from "../decisions/marked";
 import { hypothetical } from "../decisions/hypothetical";
 import { pageStatusText } from "../decisions/pages";
@@ -221,6 +221,7 @@ resolver.define("getMarked", async ({ context }): Promise<MarkedState> => {
 // may see, and the page says when the cap cut the list. Nothing is written.
 resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageState> => {
   const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
+  const viewerId = (context as { accountId?: string }).accountId ?? null;
   const [open, decisions] = await Promise.all([openItemsAsUser(projectKey), getDecisions()]);
   const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
   return buildDecisionsPage(
@@ -229,6 +230,7 @@ resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageSt
     open.items.map((i, n) => ({ item: i.item, record: records[n] ?? null })),
     open.capped,
     new Date().toISOString(),
+    viewerId,
   );
 });
 
@@ -275,10 +277,13 @@ resolver.define("replayOn", async ({ context, payload }): Promise<ReplayState> =
 
 // A person retires a decision from the Decisions page. The rules already ignore anything not "decided".
 resolver.define("supersedeDecision", async ({ context, payload }) => {
-  if (!(context as { accountId?: string }).accountId) throw new Error("Superseding a decision needs a signed-in person.");
+  const accountId = (context as { accountId?: string }).accountId;
+  if (!accountId) throw new Error("Superseding a decision needs a signed-in person.");
   const id = String((payload as { decisionId?: string }).decisionId ?? "");
   const decisions = await getDecisions();
-  if (!decisions.some((d) => d.id === id && d.status === "decided")) throw new Error("That decision is not in force. Reload the page.");
+  const target = decisions.find((d) => d.id === id && d.status === "decided");
+  if (!target) throw new Error("That decision is not in force. Reload the page.");
+  if (!canSupersede(target, accountId)) throw new Error("Only the person who confirmed this decision can supersede it.");
   await putDecisions(supersede(decisions, [id], new Date().toISOString()));
 });
 

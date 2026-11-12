@@ -66,6 +66,14 @@ export function relate(decisions: Decision[], scope: DecisionScope, constraints:
   return old.length > 0 ? { kind: "supersedes", old } : null;
 }
 
+/**
+ * Whether this person may retire the decision by hand. The one who confirmed it may; a decision with no
+ * recorded confirmer (sample data) can be retired by anyone signed in.
+ */
+export function canSupersede(decision: Decision, accountId: string): boolean {
+  return decision.confirmedBy === undefined || decision.confirmedBy === accountId;
+}
+
 /** Marks decisions as superseded. `by` is the replacing decision's id, absent when a person retires one by hand. */
 export function supersede(decisions: Decision[], ids: string[], nowIso: string, by?: string): Decision[] {
   return decisions.map((d) =>

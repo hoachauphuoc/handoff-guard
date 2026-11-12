@@ -88,7 +88,7 @@ const App = () => {
           {d.supersededAt !== null && (
             <Text>{`Superseded on ${d.supersededAt.slice(0, 10)}${d.supersededBy ? ` by "${d.supersededBy}"` : " by a person"}. It binds nothing.`}</Text>
           )}
-          {d.status === "decided" && <Button onClick={() => void retire(d.id)}>Supersede</Button>}
+          {d.canSupersede && <Button onClick={() => void retire(d.id)}>Supersede</Button>}
           {d.impact !== null && (
             <Text>
               {d.impact.count === 0
