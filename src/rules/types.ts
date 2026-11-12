@@ -29,6 +29,9 @@ export type Decision = {
   source: { kind: "confluence" | "jira" | "ledger"; ref: string };
   scope: DecisionScope;
   constraints: Constraint[];
+  /** Set when a person confirmed a proposal. The rules ignore both fields. */
+  confirmedBy?: string;
+  confirmedAt?: string;
 };
 
 export type Handoff = {
