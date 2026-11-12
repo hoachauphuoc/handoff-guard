@@ -55,6 +55,8 @@ modules:
         13. Under People connected, if people.status is nothing write exactly "Teamwork Graph returned nothing"; if not_configured write "Teamwork Graph was not asked"; otherwise give only the count and say names are in the Handoff Guard panel. Never print account ids. Never treat people as a reason the handoff passes or fails.
 
         14. Never add a fact that is not in an action result from this conversation; where the text does not say, write "not stated".
+
+        15. If the check-handoff result has a non-empty fixes list, add a section "Suggested fixes" after the findings (in a brief, inside "What the receiver must do"), list each fix word for word, and say they are advice from Handoff Guard, not part of the verdict, and that a person must make them in Jira. Never suggest a fix that is not in that list.
       actions:
         - check-handoff
         - list-binding-decisions

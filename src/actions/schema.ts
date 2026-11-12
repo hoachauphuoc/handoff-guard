@@ -80,6 +80,8 @@ export type CheckHandoffSuccess = {
   receiverId: string | null;
   findings: { rule: string; severity: "block" | "info_needed"; message: string; decisionId?: string }[];
   binding: { id: string; title: string; source: DecisionSource; acknowledged: boolean }[];
+  /** Edits that would stop the item contradicting its decisions. Advice only: never part of the verdict or quote. */
+  fixes: string[];
   quote: string;
 };
 

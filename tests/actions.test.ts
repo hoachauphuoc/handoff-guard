@@ -115,6 +115,18 @@ describe("check-handoff", () => {
       for (const f of out.findings) expect(out.quote).toContain(f.message);
     }
   });
+
+  it("lists suggested fixes beside the verdict, never inside the quote", async () => {
+    const late = { ...item, dueDate: "2027-01-05" };
+    const out = await runCheckHandoff({ issueKey: "OPS-1" }, null, deps({ it: late }));
+    expect(out.ok && out.fixes).toEqual(['Set the due date on or before 2026-12-31 ("Ship by 2026")']);
+    if (out.ok) expect(out.quote).not.toContain("Set the due date");
+    // Without a handoff there is no verdict, but the item can still be fixed.
+    const none = await runCheckHandoff({ issueKey: "OPS-1" }, null, deps({ it: late, rec: null }));
+    expect(none).toMatchObject({ verdict: null, fixes: ['Set the due date on or before 2026-12-31 ("Ship by 2026")'] });
+    const fine = await runCheckHandoff({ issueKey: "OPS-1" }, null, deps());
+    expect(fine.ok && fine.fixes).toEqual([]);
+  });
 });
 
 describe("list-binding-decisions", () => {

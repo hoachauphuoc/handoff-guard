@@ -5,6 +5,7 @@ import type { HandoffRecord } from "../handoff/types";
 import { JiraReadError } from "../jira-error";
 import { count } from "../plural";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
+import { changeText, suggestFixes } from "../rules/feasible";
 import type { Decision, HandoffResult, Verdict, WorkItem } from "../rules/types";
 import {
   SCHEMA_VERSION,
@@ -127,6 +128,8 @@ export async function runCheckHandoff(payload: unknown, accountId: string | null
     const [decisions, record] = await Promise.all([deps.getDecisions(), deps.getRecord(issueId)]);
     const stored = record !== null && (receiver === null || receiver === record.toId);
     const basis: CheckHandoffSuccess["basis"] = stored ? "stored" : receiver !== null ? "preview" : "none";
+    // Depends on the item and decisions only, so it is the same with or without a handoff.
+    const fixes = suggestFixes(item, decisions).changes.map(changeText);
     if (basis === "none") {
       return {
         schema,
@@ -140,6 +143,7 @@ export async function runCheckHandoff(payload: unknown, accountId: string | null
         receiverId: null,
         findings: [],
         binding: bindingDecisions(decisions, item).map((d) => ({ id: d.id, title: d.title, source: d.source, acknowledged: false })),
+        fixes,
         quote: quoteFor(key, null),
       };
     }
@@ -162,6 +166,7 @@ export async function runCheckHandoff(payload: unknown, accountId: string | null
         source: d.source,
         acknowledged: handoff.acknowledged.includes(d.id),
       })),
+      fixes,
       quote: quoteFor(key, result),
     };
   } catch (e) {
