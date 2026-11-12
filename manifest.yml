@@ -14,7 +14,7 @@ resources:
   - key: main
     path: src/frontend/index.tsx
 app:
-  id: ari:cloud:ecosystem::app/to-be-registered
+  id: ari:cloud:ecosystem::app/8d2f4029-5c7f-49b4-a2b7-701a0ca1c1d2
   runtime:
     name: nodejs22.x
 permissions:
