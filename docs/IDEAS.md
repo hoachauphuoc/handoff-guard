@@ -128,4 +128,54 @@ Checked against `docs/SPIKE-AGENT-GATE.md`, `src/rules/types.ts` and the state a
 
 Build order: (A) agent prompt rule and `rovo:skill`; (B) Decisions project page with impact and in-flight handoffs; (C) superseding decisions with `supersededAt`; (D) replay on a date; (E) changed-source check.
 
-## Tavily calls used: 29 of 30
+## (e) Second research round (17 more Tavily calls)
+
+New facts that matter:
+
+- The 2026 theme is "build with context": a Forge app that puts the right knowledge in front of a team at the right moment ([CompeteRadar](https://www.competeradar.com.tr/en/yarisma/codegeist-2026-build-with-context-ship-with-confidence), third-party summary of the official text). Handoff Guard already fits; ideas below lean into it.
+- Atlassian's own Rovo Dev Code Review validates pull requests "against acceptance criteria in Jira" ([Atlassian](https://www.atlassian.com/software/rovo-dev/code-review)). So acceptance criteria in PRs are covered; recorded decisions are not mentioned there (my reading of the page). This weakens Idea 2 further (confirms the cut) and shows where the gap is.
+- Atlassian Code Context puts multi-repo code understanding into the Teamwork Graph for agents ([Atlassian](https://www.atlassian.com/blog/development/code-context)): code context is being filled by Atlassian; decision context is not named there (unverified: I read the summary only).
+- Failure data for AI agents: a study of agentic PRs lists "context limitation" as a rejection reason ([arXiv](https://arxiv.org/html/2602.04226v1)); the same share for decisions specifically is unknown.
+- Rework is measured but not explained: Jira reports count how often an item re-enters a status ([community](https://community.atlassian.com/forums/discussion/3209085/how-to-run-a-jira-workflow-health-check-using-3-reports), [OBSS](https://community.atlassian.com/forums/discussion/3159673/how-to-measure-hidden-rework-loops-in-jira)), and reopened tickets trace back to "ambiguous requirements" and incomplete fixes ([community](https://community.atlassian.com/forums/discussion/3152740/the-hidden-cost-of-reopened-tickets-and-how-to-prevent-them)). None of these tell you which missing input caused the bounce.
+- A "Definition of Ready" app exists with 4 installs ([listing](https://marketplace.atlassian.com/apps/1224751/definition-of-ready)): readiness checks are a known, thin niche, so a plain "is it ready" check is not a differentiator.
+- Teamwork Graph connectors need `write:object:jira`, `read:object:jira`, `delete:object:jira` ([Atlassian](https://developer.atlassian.com/platform/forge/manifest-reference/modules/teamwork-graph-connector)). That conflicts with "no write scopes"; see Idea 10.
+- UI Modifications can change Jira's issue create, issue view and issue transition screens ([Atlassian](https://developer.atlassian.com/platform/forge/understanding-ui-modifications)).
+
+### 8. Bounce Autopsy: close the loop from outcomes back to rules
+
+- **Pitch:** When an item bounces back (reopened, or re-enters a status), the app finds the handoff before it, names the rule that would have caught it or the decision nobody had, and proposes a new rule or decision; a person confirms; the project page tracks bounce rate before and after each rule.
+- **Pain:** Rework loops are visible in status counts but the cause is not (sources above). Teams see "3 loops" and still cannot say what to change.
+- **Why nobody does it:** Reports and metric blogs stop at counting (LinearB, Jellyfish, OBSS in the sources above); a rule-based "which check would have prevented this" is not in anything I found (unverified for the Marketplace as a whole).
+- **Modules:** `trigger` on `avi:jira:updated:issue` (changelog status moves), existing storage, `jira:projectPage` section, Rovo action to word the proposal; replay from Idea 3 gives "this rule would have caught 6 of 9".
+- **Principles:** Detection and counts are code; Rovo only words the proposed rule; confirming stores a decision (existing flow); nothing is written to Jira.
+- **Size / risk:** 4 days (3 more if Idea 3 is not built first). Risk: needs enough history to look convincing, so a seeded synthetic set is required (README must say so); a trigger that stops firing has been reported ([community](https://community.developer.atlassian.com/t/forge-trigger-aviupdated-issue-stopped-firing-since-april-20th-despite-matching-filter-conditions/100460)), so the page must name its source when events are missing. Spike first: log changelog items from a status move in dev and check the event carries them.
+- **Video scene:** The project page says "9 items bounced last month; 7 had no rollback plan". One click on "Add this rule" and the replay line reads "would have caught 6 of 7". The bar chart of bounce rate drops after the rule.
+
+### 9. Live pre-flight inside Jira's own screens (UI Modifications)
+
+- **Pitch:** While choosing the assignee on the transition or create screen, the check runs live: the screen shows what is missing and which decision applies before anyone presses Submit.
+- **Pain:** A validator error after Submit is late and generic; people learn the rule by failing it. This is the same "context at the right moment" the 2026 theme asks for.
+- **Why nobody does it:** UI Modifications exist as a platform capability (link above); I found no decision-aware use (unverified).
+- **Modules:** `jira:uiModifications` (issue transition and issue view; field-level reach on assignee is unverified), existing resolvers; validator stays as the hard gate.
+- **Principles:** The UI only displays the result of `checkHandoff()`; the validator still decides; read-only.
+- **Size / risk:** 3 days. Risk: UIM may not expose the assignee field in all views, and it is a low-level API, so the demo could be fragile. Spike first: read the assignee value in an issue-transition UIM and show a banner.
+- **Video scene:** Pick Mitch Davis in the dropdown; a red line appears under it, "D-12 applies, legal contact missing"; pick the fixed item and the line turns green.
+
+### 10. Decisions as first-class Teamwork Graph objects
+
+- **Pitch:** Publish confirmed decisions into the Teamwork Graph so Rovo Search, Rovo Chat and any MCP client (Claude, Cursor) can find "what did we decide about X" with permissions intact, and the answers carry a link back to the work items they bind.
+- **Pain:** Decisions live in Confluence macros and Jira comments that search treats as ordinary text ([community](https://community.atlassian.com/forums/discussion/3195026/best-practice-for-tracking-key-decisions-and-major-changes-in-jira-cloud)).
+- **Why nobody does it:** Graph connectors exist for external tools (Google Drive, Microsoft Teams, GitHub per the sources above); a connector for decision records is not in anything I found (unverified).
+- **Modules:** Teamwork Graph connector module, `rovo:agentConnector` (bonus eligible), scheduled trigger.
+- **Principles:** The graph is only an index; verdicts remain code. But the connector needs `write:object:jira`, which contradicts the rule "no write scopes" and forces a re-consent on upgrade. This is the owner's call, not mine.
+- **Size / risk:** 4-5 days. Risk: scope change, permission re-consent for installed sites, and the graph's object types may not fit a decision (unverified). Spike first: ingest one decision object on dev and see whether Rovo Search returns it.
+- **Video scene:** In Rovo Chat, ask "what did we decide about card data?"; the answer comes with the decision, its owner, and the three open items it binds.
+
+### Updated ranking after round two
+
+Keep the build order in section (d). Round two changes two things:
+
+1. **Pair Idea 8 with the replay (D).** Replay alone is a nice report; replay plus Bounce Autopsy is a loop (outcome, cause, new rule, proof it would have caught the cases). That loop is the thing a judge can repeat to someone else in one sentence, and none of the competitors in section (a) does it. Do D, then 8 if time allows.
+2. **Idea 9 is the best candidate for the Design score** if its spike shows the assignee field is reachable; otherwise drop it. Idea 10 is the strongest for the bonus prizes but needs the owner to accept a write scope, so it is last.
+
+## Tavily calls used: 46 (29 in round one under the 30-call limit; 17 more in round two, after the owner asked to continue)

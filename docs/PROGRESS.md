@@ -144,3 +144,13 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Spike result: Forge accepted the manifest (`--approve MAJOR_VERSION_RULE`, development only), `forge install --upgrade` for Jira and `forge install -p Confluence` on `one-atlas-hxpc` both completed. The live `requestConfluence` call is not yet observed: it needs a linked page and a panel click.
 - Code: `src/decisions/pages.ts` (remote links to page ids, `collectPages` capped at 3 pages and 6 attempts, `pageStatusText`), `src/confluence.ts` (asUser reads, atlas_doc_format), parts carry `from: "Confluence page <title>"` and `marked`; `DecisionSource.pages` status shown in the panel and in the `read-decision-source` quote; agent rule 17; PRIVACY and README scope table updated.
 - Not observed: a linked page read, the unreadable-page sentence, Confluence-sourced Confirm.
+
+### 2026-11-12, slice A: agent gate (commit 3f3c71c, development 7.2.0)
+- Agent rule 18 and the key default (rule 1); `rovo:skill` "handoff-check" with `skills/handoff-check/SKILL.md` (`source.dir`; the manifest has no way to bind actions to a skill, `actions` is rejected by the schema). Lint and deploy accept it.
+- Not observed: the agent started on MOBL-53 and TD-1, and another agent calling the skill. See `docs/SPIKE-AGENT-GATE.md`.
+
+### 2026-11-12, slice B: Decisions project page (development 7.3.0)
+- `jira:projectPage` "Decisions" (`src/frontend/decisions.tsx`, resolver `getDecisionsPage`): decisions that can bind the project with reach, constraints, source, status, confirmer and date, and for each the open work items that contradict it (`src/rules/impact.ts`, `impactOf`, built on `checkItem`, so it cannot disagree with a verdict). Open items come from `/rest/api/2/search/jql` as the viewer, capped at 100 and the page says when the cap cut the list. Second section: handoffs in flight (`src/handoff/inflight.ts`): not Clear, blocked first then oldest, with the blocking decision titles.
+- Panel: before Confirm, "n open work items in this project would contradict this decision", or that it could not be counted (`proposalImpact` null), via `hypothetical()` which is never stored.
+- No new scope. 196 tests, `check.ps1` PASS.
+- Not observed on the site: the page itself and the hand check of one count on MOBL.

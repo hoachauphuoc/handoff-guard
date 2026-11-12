@@ -44,6 +44,18 @@ export function applyModifiedFields(item: WorkItem, modified: Record<string, unk
   return next;
 }
 
+/**
+ * Open work items from a Jira search response. `capped` is true when Jira says more results exist, so a
+ * count taken from these items is a lower bound and the page can say so.
+ */
+export function itemsFromSearch(json: unknown): { items: { item: WorkItem; issueId: string }[]; capped: boolean } {
+  const body = (json ?? {}) as { issues?: { id?: unknown; key?: unknown; fields?: JiraFields }[]; isLast?: unknown; nextPageToken?: unknown };
+  const items = (Array.isArray(body.issues) ? body.issues : []).flatMap((i) =>
+    typeof i?.key === "string" && i.id !== undefined ? [{ item: toWorkItem(i.key, i.fields ?? {}), issueId: String(i.id) }] : [],
+  );
+  return { items, capped: body.isLast === false || typeof body.nextPageToken === "string" };
+}
+
 export function handoffFrom(item: WorkItem, record: HandoffRecord | null): Handoff {
   return record
     ? { item, fromId: record.fromId, toId: record.toId, acknowledged: record.acknowledged }

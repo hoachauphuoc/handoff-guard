@@ -3,14 +3,18 @@ import { runGatherHandoffContext } from "../actions/core";
 import { depsFor } from "../actions/deps";
 import { confirmProposal, dismissProposal } from "../decisions/confirm";
 import { unrecordedMarked, type MarkedState } from "../decisions/marked";
+import { hypothetical } from "../decisions/hypothetical";
 import { pageStatusText } from "../decisions/pages";
+import { buildDecisionsPage, type DecisionsPageState } from "../decisions/page";
 import { acknowledge } from "../handoff/acknowledge";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import type { HandoffRecord, PanelState } from "../handoff/types";
-import { readItemAsUser as readItem } from "../jira";
+import { openItemsAsUser, readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
 import { changeText, suggestFixes } from "../rules/feasible";
+import { impactOf } from "../rules/impact";
+import type { Proposal } from "../decisions/types";
 import type { Finding } from "../rules/types";
 import { mergeDecisions, sampleDecisions } from "../samples/decisions";
 import { readSourceAsUser } from "../source";
@@ -29,6 +33,19 @@ const PRACTICE_RULES: Finding["rule"][] = [
 ];
 
 type Ctx = { accountId?: string; cloudId?: string; extension: { issue: { key: string; id: string } } };
+
+// How many open work items of the project would contradict each proposal. A read that fails is reported as
+// null so the panel can say the count is missing, never show zero.
+async function impactFor(projectKey: string, proposals: Proposal[]): Promise<PanelState["proposalImpact"]> {
+  if (proposals.length === 0) return {};
+  try {
+    const open = await openItemsAsUser(projectKey);
+    const items = open.items.map((i) => i.item);
+    return Object.fromEntries(proposals.map((p) => [p.id, { count: impactOf(hypothetical(p), items).length, capped: open.capped }]));
+  } catch {
+    return null;
+  }
+}
 
 async function panelState(ctx: Ctx): Promise<PanelState> {
   const { item, issueId } = await readItem(ctx.extension.issue.key);
@@ -53,6 +70,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
       ...watchAssignee(item, record, bindingDecisions(decisions, item)),
     ],
     fixes: suggestFixes(item, decisions).changes.map(changeText),
+    proposalImpact: await impactFor(item.projectKey, proposals),
   };
 }
 
@@ -141,6 +159,21 @@ resolver.define("getMarked", async ({ context }): Promise<MarkedState> => {
     truncated: src.truncated,
     pagesText: src.pages ? pageStatusText(src.pages) : "",
   };
+});
+
+// The Decisions project page. Open items are read as the viewer, so the counts only cover work the viewer
+// may see, and the page says when the cap cut the list. Nothing is written.
+resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageState> => {
+  const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
+  const [open, decisions] = await Promise.all([openItemsAsUser(projectKey), getDecisions()]);
+  const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
+  return buildDecisionsPage(
+    projectKey,
+    decisions,
+    open.items.map((i, n) => ({ item: i.item, record: records[n] ?? null })),
+    open.capped,
+    new Date().toISOString(),
+  );
 });
 
 export const handler = resolver.getDefinitions();

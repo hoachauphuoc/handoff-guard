@@ -1,10 +1,21 @@
 import api, { route } from "@forge/api";
-import { toWorkItem } from "./handoff/build";
+import { itemsFromSearch, toWorkItem } from "./handoff/build";
 import { JiraReadError } from "./jira-error";
 import type { WorkItem } from "./rules/types";
 
 // API v2 returns the description as plain text; v3 returns a document tree the rules cannot read.
 export const FIELDS = "summary,description,labels,components,duedate,assignee,project";
+
+export const OPEN_ITEM_CAP = 100;
+
+// Open work items of one project, as the caller. The key is checked before it goes into a query.
+export async function openItemsAsUser(projectKey: string): Promise<{ items: { item: WorkItem; issueId: string }[]; capped: boolean }> {
+  if (!/^[A-Za-z][A-Za-z0-9_]*$/.test(projectKey)) throw new JiraReadError("jira_error", "That project key is not valid.");
+  const jql = `project = "${projectKey}" AND statusCategory != Done ORDER BY key`;
+  const res = await api.asUser().requestJira(route`/rest/api/2/search/jql?jql=${jql}&fields=${FIELDS}&maxResults=${OPEN_ITEM_CAP}`);
+  checkStatus(res, projectKey);
+  return itemsFromSearch(await res.json());
+}
 
 // When Jira asks for consent the error says so; it is never retried as the app, which would hide the
 // missing access.

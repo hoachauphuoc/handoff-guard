@@ -208,6 +208,15 @@ const App = () => {
               <Stack key={p.id} space="space.050">
                 <Text>{p.title}</Text>
                 <Text>{reachText(p.scope)}</Text>
+                <Text>
+                  {state.proposalImpact === null
+                    ? "The number of open work items this would contradict could not be counted."
+                    : state.proposalImpact[p.id] === undefined
+                      ? ""
+                      : `${count(state.proposalImpact[p.id]!.count, "open work item")} in this project would contradict this decision${
+                          state.proposalImpact[p.id]!.capped ? " (at least: only the first 100 open items were checked)" : ""
+                        }.`}
+                </Text>
                 <Text>{`Evidence: "${p.evidence.quote}" (${p.evidence.from})`}</Text>
                 <Button isDisabled={busy} onClick={() => call("confirmProposal", { proposalId: p.id }).then(() => void readMarked())}>
                   Confirm

@@ -31,4 +31,6 @@ export type PanelState = {
   fixes: string[];
   /** Facts beside the verdict, never inside it. */
   advisories: Advisory[];
+  /** Open work items of the project each proposal would contradict; null when they could not be counted. */
+  proposalImpact: Record<string, { count: number; capped: boolean }> | null;
 };

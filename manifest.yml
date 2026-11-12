@@ -7,6 +7,14 @@ modules:
       render: native
       title: Handoff Guard
       icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+  jira:projectPage:
+    - key: handoff-guard-decisions
+      resource: decisions
+      resolver:
+        function: resolver
+      render: native
+      title: Decisions
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
   jira:workflowValidator:
     - key: handoff-guard-validator
       name: Handoff Guard
@@ -184,6 +192,8 @@ modules:
 resources:
   - key: main
     path: src/frontend/index.tsx
+  - key: decisions
+    path: src/frontend/decisions.tsx
 app:
   id: ari:cloud:ecosystem::app/8d2f4029-5c7f-49b4-a2b7-701a0ca1c1d2
   runtime:

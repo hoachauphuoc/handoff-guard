@@ -1,0 +1,92 @@
+import React, { useEffect, useState } from "react";
+import ForgeReconciler, { Lozenge, SectionMessage, Stack, Text, User } from "@forge/react";
+import { invoke } from "@forge/bridge";
+import type { DecisionsPageState } from "../decisions/page";
+import { count } from "../plural";
+
+const VERDICT = { blocked: { text: "Blocked", appearance: "removed" }, needs_info: { text: "Needs info", appearance: "moved" } } as const;
+
+const App = () => {
+  const [state, setState] = useState<DecisionsPageState | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    invoke<DecisionsPageState>("getDecisionsPage").then(
+      (s) => setState(s as DecisionsPageState),
+      (e) => setError(String(e)),
+    );
+  }, []);
+
+  if (error) {
+    return (
+      <SectionMessage appearance="error" title="Handoff Guard could not read this project">
+        <Text>
+          {error.includes("Allow access")
+            ? "Allow access: Handoff Guard needs your permission to read work items as you. Click Allow access when Jira asks, then reload the page."
+            : error}
+        </Text>
+      </SectionMessage>
+    );
+  }
+  if (!state) return <Text>Reading the decisions…</Text>;
+
+  return (
+    <Stack space="space.200">
+      <Text>
+        {`Counts cover ${count(state.scanned, "open work item")} of project ${state.projectKey} that you can see${
+          state.capped ? "; the list was cut at 100, so the counts are at least these numbers" : ""
+        }. Nothing here changes Jira.`}
+      </Text>
+      <Text>Decisions</Text>
+      {state.rows.length === 0 && <Text>No decision applies to this project yet. Confirm one from the Handoff Guard panel on a work item.</Text>}
+      {state.rows.map((d) => (
+        <Stack key={d.id} space="space.050">
+          <Text>
+            <Lozenge appearance={d.status === "decided" ? "success" : "default"}>{d.status === "decided" ? "Decided" : "Superseded"}</Lozenge> {d.title}
+          </Text>
+          <Text>{d.reach}</Text>
+          {d.constraints.map((c, i) => (
+            <Text key={i}>{c}</Text>
+          ))}
+          <Text>{`Source: ${d.source}`}</Text>
+          {d.confirmedBy !== null && (
+            <Text>
+              Confirmed by <User accountId={d.confirmedBy} />
+              {d.confirmedAt ? ` on ${d.confirmedAt.slice(0, 10)}` : ""}
+            </Text>
+          )}
+          {d.impact !== null && (
+            <Text>
+              {d.impact.count === 0
+                ? "No open work item contradicts it."
+                : `${count(d.impact.count, "open work item")} contradict${d.impact.count === 1 ? "s" : ""} it: ${d.impact.keys.join(", ")}${
+                    d.impact.count > d.impact.keys.length ? ", …" : ""
+                  }`}
+            </Text>
+          )}
+        </Stack>
+      ))}
+      <Text>Handoffs in flight</Text>
+      {state.inFlight.length === 0 && <Text>No prepared handoff in this project is waiting on anything.</Text>}
+      {state.inFlight.map((h) => (
+        <Stack key={h.key} space="space.050">
+          <Text>
+            <Lozenge appearance={VERDICT[h.verdict].appearance}>{VERDICT[h.verdict].text}</Lozenge> {h.key} {h.summary}
+          </Text>
+          <Text>
+            <User accountId={h.fromId} /> to <User accountId={h.toId} />, prepared {count(h.ageDays, "day")} ago.
+          </Text>
+          {h.blockedBy.length > 0 && <Text>{`Contradicts: ${h.blockedBy.join("; ")}.`}</Text>}
+          {h.unacknowledged > 0 && <Text>{`${count(h.unacknowledged, "decision")} not acknowledged by the receiver.`}</Text>}
+        </Stack>
+      ))}
+      <Text>Source: rule check on stored decisions and open work items read as you. Ranked by code: blocked first, then oldest.</Text>
+    </Stack>
+  );
+};
+
+ForgeReconciler.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
