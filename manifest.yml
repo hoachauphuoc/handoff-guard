@@ -15,6 +15,13 @@ modules:
       projectTypes:
         - company-managed
         - team-managed
+    - key: decision-guard-validator
+      name: "Handoff Guard: no decision contradicted"
+      description: Allows the transition only when the work item breaks no decision recorded in Handoff Guard. No handoff is needed.
+      function: validate-decisions
+      projectTypes:
+        - company-managed
+        - team-managed
   rovo:agent:
     - key: handoff-guard-agent
       name: Handoff Guard
@@ -145,6 +152,8 @@ modules:
       handler: index.handler
     - key: validate
       handler: index.validate
+    - key: validate-decisions
+      handler: index.validateDecisions
     - key: check-handoff-fn
       handler: index.checkHandoffAction
     - key: list-binding-fn

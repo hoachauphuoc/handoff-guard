@@ -60,6 +60,29 @@ export function bindingDecisions(decisions: Decision[], item: WorkItem): Decisio
   return decisions.filter((d) => applies(d, item));
 }
 
+function decisionFindings(decision: Decision, item: WorkItem): Finding[] {
+  const findings: Finding[] = [];
+  for (const c of decision.constraints) {
+    const problem = violation(c, item, decision);
+    if (!problem) continue;
+    findings.push({
+      rule: problem.rule,
+      severity: problem.rule === "invalid_constraint" ? "info_needed" : "block",
+      message: problem.message,
+      decisionId: decision.id,
+    });
+  }
+  return findings;
+}
+
+/**
+ * What the work item itself gets wrong against its binding decisions, with no handoff involved. Used to
+ * gate a transition that is not a handoff; it never produces a verdict.
+ */
+export function checkItem(item: WorkItem, decisions: Decision[]): Finding[] {
+  return bindingDecisions(decisions, item).flatMap((d) => decisionFindings(d, item));
+}
+
 export function checkHandoff(handoff: Handoff, decisions: Decision[]): HandoffResult {
   const { item } = handoff;
   const findings: Finding[] = [];
@@ -87,16 +110,7 @@ export function checkHandoff(handoff: Handoff, decisions: Decision[]): HandoffRe
 
   const binding = bindingDecisions(decisions, item);
   for (const decision of binding) {
-    for (const c of decision.constraints) {
-      const problem = violation(c, item, decision);
-      if (!problem) continue;
-      findings.push({
-        rule: problem.rule,
-        severity: problem.rule === "invalid_constraint" ? "info_needed" : "block",
-        message: problem.message,
-        decisionId: decision.id,
-      });
-    }
+    findings.push(...decisionFindings(decision, item));
     if (!handoff.acknowledged.includes(decision.id)) {
       findings.push({
         rule: "decision_not_acknowledged",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bindingDecisions, checkHandoff } from "../src/rules/checkHandoff";
+import { bindingDecisions, checkHandoff, checkItem } from "../src/rules/checkHandoff";
 import type { Decision, Handoff, WorkItem } from "../src/rules/types";
 
 const item = (over: Partial<WorkItem> = {}): WorkItem => ({
@@ -167,5 +167,28 @@ describe("checkHandoff", () => {
       const r = checkHandoff(h, [decision()]);
       expect(r.verdict === "clear").toBe(r.findings.length === 0);
     }
+  });
+});
+
+describe("checkItem", () => {
+  it("reports only what the work item breaks, with no handoff rules", () => {
+    // No sender, receiver, acknowledgement, description or due-date finding can come from here.
+    expect(checkItem(item({ description: "", dueDate: null }), [decision()])).toEqual([]);
+    const late = checkItem(item({ dueDate: "2026-12-20" }), [decision()]);
+    expect(late.map((f) => [f.rule, f.severity, f.decisionId])).toEqual([["contradicts_decision", "block", "D-1"]]);
+  });
+
+  it("ignores decisions that do not bind and reports a bad constraint as missing information", () => {
+    expect(checkItem(item({ dueDate: "2026-12-20" }), [decision({ status: "superseded" })])).toEqual([]);
+    expect(checkItem(item({ labels: [], dueDate: "2026-12-20" }), [decision()])).toEqual([]);
+    const bad = checkItem(item(), [decision({ constraints: [{ kind: "dueNotAfter", date: "soon" }] })]);
+    expect(bad.map((f) => [f.rule, f.severity])).toEqual([["invalid_constraint", "info_needed"]]);
+  });
+
+  it("agrees with checkHandoff on every decision finding", () => {
+    const it2 = item({ dueDate: "2026-12-20", labels: ["campaign"] });
+    const ds = [decision(), decision({ id: "D-2", title: "Needs review", constraints: [{ kind: "labelRequired", label: "reviewed" }] })];
+    const fromHandoff = checkHandoff(handoff({ item: it2, acknowledged: ["D-1", "D-2"] }), ds).findings;
+    expect(checkItem(it2, ds)).toEqual(fromHandoff);
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyModifiedFields, handoffFrom, toWorkItem, validatorResponse } from "../src/handoff/build";
+import { applyModifiedFields, decisionGuardResponse, handoffFrom, toWorkItem, validatorResponse } from "../src/handoff/build";
 import type { HandoffRecord } from "../src/handoff/types";
 
 const item = toWorkItem("OPS-1", {
@@ -52,5 +52,13 @@ describe("validatorResponse", () => {
       result: false,
       errorMessage: "A. B.",
     });
+  });
+});
+
+describe("decisionGuardResponse", () => {
+  it("allows a work item with no finding and joins the messages otherwise", () => {
+    expect(decisionGuardResponse([])).toEqual({ result: true });
+    const f = (message: string) => ({ rule: "contradicts_decision" as const, severity: "block" as const, message });
+    expect(decisionGuardResponse([f("A."), f("B.")])).toEqual({ result: false, errorMessage: "A. B." });
   });
 });

@@ -1,4 +1,4 @@
-import type { Handoff, HandoffResult, WorkItem } from "../rules/types";
+import type { Finding, Handoff, HandoffResult, WorkItem } from "../rules/types";
 import type { HandoffRecord, ValidatorResponse } from "./types";
 
 type JiraFields = {
@@ -54,6 +54,12 @@ export function handoffFrom(item: WorkItem, record: HandoffRecord | null): Hando
 export function validatorResponse(result: HandoffResult): ValidatorResponse {
   if (result.verdict === "clear") return { result: true };
   return { result: false, errorMessage: result.findings.map((f) => f.message).join(" ") };
+}
+
+/** The decision gate: allows the transition only when the work item breaks no binding decision. */
+export function decisionGuardResponse(findings: Finding[]): ValidatorResponse {
+  if (findings.length === 0) return { result: true };
+  return { result: false, errorMessage: findings.map((f) => f.message).join(" ") };
 }
 
 /**
