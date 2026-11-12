@@ -20,6 +20,12 @@ describe("agent manifest", () => {
     expect(agent).toContain("- gather-handoff-context");
   });
 
+  it("pins the fix advice wording", () => {
+    for (const phrase of ["nothing was changed in Jira", "run the check again", "Never promise the verdict after the change"]) {
+      expect(manifest).toContain(phrase);
+    }
+  });
+
   it("pins the brief rules: honest people text, advisory, no invented facts", () => {
     for (const phrase of [
       "Teamwork Graph returned nothing",

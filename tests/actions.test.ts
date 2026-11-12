@@ -515,3 +515,17 @@ describe("gather-handoff-context", () => {
     expect(asked).toBe(1);
   });
 });
+
+describe("check-handoff fixes", () => {
+  it("are a sibling: quote, verdict and findings equal the plain rule check", async () => {
+    const late = { ...item, dueDate: "2027-03-01" };
+    const out = await runCheckHandoff({ issueKey: "OPS-1" }, null, deps({ it: late }));
+    const expected = checkHandoff(handoffFrom(late, record), [decision]);
+    if (!out.ok) throw new Error("expected ok");
+    expect(out.fixes).toEqual(['Set the due date on or before 2026-12-31 ("Ship by 2026")']);
+    expect(out.verdict).toBe(expected.verdict);
+    expect(out.findings).toEqual(expected.findings);
+    expect(out.quote).toBe(`Handoff Guard rule check for OPS-1: Blocked. Findings: ${expected.findings.map((f) => f.message).join(" ")}`);
+    expect(out.quote).not.toContain("Set the due date");
+  });
+});

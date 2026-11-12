@@ -1,4 +1,7 @@
+/// <reference types="vite/client" />
 import { describe, expect, it } from "vitest";
+import rulesSource from "../src/rules/checkHandoff?raw";
+import validatorSource from "../src/validator?raw";
 import { checkHandoff } from "../src/rules/checkHandoff";
 import { changeText, feasibleSpace, suggestFixes } from "../src/rules/feasible";
 import type { Decision, WorkItem } from "../src/rules/types";
@@ -115,5 +118,12 @@ describe("suggestFixes", () => {
     expect(out.after.components).toEqual(["api"]);
     expect(out.after.dueDate).toBe("2026-11-20");
     expect(out.space.invalidConstraints).toHaveLength(1);
+  });
+});
+
+describe("feasible stays out of the verdict path", () => {
+  it("is not imported by checkHandoff.ts or validator.ts", () => {
+    expect(rulesSource).not.toMatch(/feasible/);
+    expect(validatorSource).not.toMatch(/feasible/);
   });
 });

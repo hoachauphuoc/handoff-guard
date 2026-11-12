@@ -168,7 +168,7 @@ const App = () => {
             {state.fixes.map((t, i) => (
               <Text key={i}>• {t}</Text>
             ))}
-            <Text>Handoff Guard does not edit the work item. Make the changes in Jira, then reload this panel.</Text>
+            <Text>Nothing was changed in Jira; a person makes these edits, then runs the check again (reload this panel). Other findings, such as acknowledgements, still apply.</Text>
           </Stack>
         </SectionMessage>
       )}
