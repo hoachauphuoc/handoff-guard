@@ -1,31 +1,15 @@
-import api, { route } from "@forge/api";
 import Resolver from "@forge/resolver";
 import { acknowledge } from "../handoff/acknowledge";
-import { handoffFrom, toWorkItem } from "../handoff/build";
+import { handoffFrom } from "../handoff/build";
 import type { HandoffRecord, PanelState } from "../handoff/types";
+import { readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
-import type { WorkItem } from "../rules/types";
 import { mergeDecisions, sampleDecisions } from "../samples/decisions";
 import { getDecisions, getRecord, putDecisions, putRecord } from "../store";
 
 const resolver = new Resolver();
 
-// API v2 returns the description as plain text; v3 returns a document tree the rules cannot read.
-const FIELDS = "summary,description,labels,components,duedate,assignee,project";
-
 type Ctx = { accountId?: string; extension: { issue: { key: string; id: string } } };
-
-// The panel reads as the viewer, so a person only sees what their own permissions allow. When Jira asks
-// for consent the error says so; it is never retried as the app, which would hide the missing access.
-async function readItem(key: string): Promise<{ item: WorkItem; issueId: string }> {
-  const res = await api.asUser().requestJira(route`/rest/api/2/issue/${key}?fields=${FIELDS}`);
-  if (res.status === 401 || res.status === 403) {
-    throw new Error(`Allow access: Jira did not let Handoff Guard read ${key} as you (status ${res.status}).`);
-  }
-  if (!res.ok) throw new Error(`Jira returned ${res.status} for ${key}`);
-  const body = await res.json();
-  return { item: toWorkItem(key, body.fields), issueId: String(body.id) };
-}
 
 async function panelState(ctx: Ctx): Promise<PanelState> {
   const { item, issueId } = await readItem(ctx.extension.issue.key);

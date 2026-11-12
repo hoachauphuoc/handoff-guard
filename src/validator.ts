@@ -1,10 +1,9 @@
 import api, { route } from "@forge/api";
+import { FIELDS } from "./jira";
 import { applyModifiedFields, handoffFrom, toWorkItem, validatorResponse } from "./handoff/build";
 import type { ValidatorResponse } from "./handoff/types";
 import { checkHandoff } from "./rules/checkHandoff";
 import { getDecisions, getRecord } from "./store";
-
-const FIELDS = "summary,description,labels,components,duedate,assignee,project";
 
 type ValidatorPayload = {
   issue: { key: string };
