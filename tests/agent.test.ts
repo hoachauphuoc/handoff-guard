@@ -93,9 +93,12 @@ describe("conflict advisories rule", () => {
 describe("agent gate", () => {
   it("runs the check before any work and declines unless the verdict is Clear", () => {
     for (const phrase of [
-      "When asked to work on, take, start or pick up a work item, do nothing else first",
+      "When asked to work on, take, start or pick up a work item",
+      "or when you are started on a work item with no message",
       "call check-handoff, then gather-handoff-context",
-      "Proceed only when the verdict is Clear",
+      "the startLine field of check-handoff copied exactly",
+      "Proceed with the work only when startLine says you may start",
+      "Never write a start or decline sentence of your own",
       "never call a verdict Clear that the action did not return",
     ]) {
       expect(manifest).toContain(phrase);

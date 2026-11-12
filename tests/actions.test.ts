@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { callerAccountId, callerCloudId, runCheckHandoff, runGatherHandoffContext, runListBindingDecisions, runProposeDecisions, runReadDecisionSource, type Deps } from "../src/actions/core";
+import { callerAccountId, callerCloudId, runCheckHandoff, runGatherHandoffContext, runListBindingDecisions, runProposeDecisions, runReadDecisionSource, startLine, type Deps } from "../src/actions/core";
 import { dismissProposal } from "../src/decisions/confirm";
 import type { DecisionSource, Proposal } from "../src/decisions/types";
 import { handoffFrom } from "../src/handoff/build";
@@ -527,5 +527,14 @@ describe("check-handoff fixes", () => {
     expect(out.findings).toEqual(expected.findings);
     expect(out.quote).toBe(`Handoff Guard rule check for OPS-1: Blocked. Findings: ${expected.findings.map((f) => f.message).join(" ")}`);
     expect(out.quote).not.toContain("Set the due date");
+  });
+});
+
+describe("startLine", () => {
+  it("is fixed text chosen by the verdict, and is not part of the quote", () => {
+    expect(startLine("clear")).toBe("The rule check says Clear, so I may start.");
+    expect(startLine("needs_info")).toBe("I will not start this work item: the rule check says Needs info.");
+    expect(startLine("blocked")).toBe("I will not start this work item: the rule check says Blocked.");
+    expect(startLine(null)).toBe("No handoff is prepared, so there is no verdict and I will not start this work item.");
   });
 });

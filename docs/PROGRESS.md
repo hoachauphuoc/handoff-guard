@@ -177,3 +177,8 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Replay: a decision superseded with no `supersededAt` is now left out of the replayed set instead of shown as in force; `undatedDecisions` names those left out and the ones with no `confirmedAt` that are assumed in force throughout, and the Decisions page states both in a sentence next to the result. `replayDiff` returns `{ changes, leftOut, assumed }`.
 - `relate`: a date limit moved for exactly the same reach, earlier or later, is now `supersedes` (so "the deadline moved to 31 March" can be proposed); a looser date under a wider decision stays `already_decided`; a decision with an empty constraints list is never matched as redundant.
 - 223 tests, `check.ps1` PASS, `npm run measure` unchanged (47/48, 34/48, 12/48).
+
+### 2026-11-12, live-test fixes (development 7.8.0)
+- Replay accepts today: `replayInstant(date, nowIso)` (pure) gives the end of an earlier day, now for today, nothing for a later date; days are UTC, so a person whose local date is ahead of UTC may be refused for "today" early in their morning. The page shows only the sentence meant for the person (`plainError`).
+- Agent rule 18: `startLine` in the `check-handoff` result, chosen by the verdict in code; rule rewritten as above. 226 tests, `check.ps1` PASS, measure unchanged.
+- Not observed: the agent's answer on MOBL-53 and TD-1 after the change (see `docs/SPIKE-AGENT-GATE.md`).

@@ -84,6 +84,8 @@ export type CheckHandoffSuccess = {
   binding: { id: string; title: string; source: DecisionSource; acknowledged: boolean }[];
   /** Edits that would stop the item contradicting its decisions. Advice only: never part of the verdict or quote. */
   fixes: string[];
+  /** What an agent says right after the quote when asked to start the work; chosen by the verdict, copied as is. */
+  startLine: string;
   quote: string;
 };
 

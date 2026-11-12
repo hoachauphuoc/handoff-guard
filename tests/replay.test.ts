@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from "vitest";
-import { decisionsAsOf, replayAt, replayDiff, undatedDecisions, type ReplayInput } from "../src/rules/replay";
+import { plainError } from "../src/errors";
+import { decisionsAsOf, replayAt, replayDiff, replayInstant, undatedDecisions, type ReplayInput } from "../src/rules/replay";
 import type { Decision, WorkItem } from "../src/rules/types";
 import replaySource from "../src/rules/replay?raw";
 import rulesSource from "../src/rules/checkHandoff?raw";
@@ -96,5 +97,25 @@ describe("replay keeps the clock out of the rules", () => {
   it("reads no clock, and the rule check and validator never import it", () => {
     expect(replaySource).not.toMatch(/Date\.now|new Date\(/);
     for (const src of [rulesSource, validatorSource]) expect(src).not.toMatch(/replay/i);
+  });
+});
+
+describe("replayInstant", () => {
+  const NOW = "2026-11-12T08:30:00.000Z";
+
+  it("takes the end of an earlier day, now for today, and nothing for tomorrow or a non-date", () => {
+    expect(replayInstant("2026-11-11", NOW)).toBe("2026-11-11T23:59:59.999Z");
+    expect(replayInstant("2026-11-12", NOW)).toBe(NOW);
+    expect(replayInstant("2026-11-13", NOW)).toBeNull();
+    expect(replayInstant("", NOW)).toBeNull();
+    expect(replayInstant("2026-02-30", NOW)).toBeNull();
+  });
+});
+
+describe("plainError", () => {
+  it("shows only the sentence meant for the person", () => {
+    expect(plainError(new Error("ForgeAppError: There was an error invoking the function - Pick a date that is today or earlier."))).toBe("Pick a date that is today or earlier.");
+    expect(plainError("Error: plain")).toBe("plain");
+    expect(plainError("Allow access: please")).toBe("Allow access: please");
   });
 });

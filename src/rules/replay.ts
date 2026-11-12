@@ -1,4 +1,4 @@
-import { checkHandoff } from "./checkHandoff";
+import { checkHandoff, isIsoDate } from "./checkHandoff";
 import type { Decision, Handoff, Verdict, WorkItem } from "./types";
 
 const at = (iso: string): number => Date.parse(iso);
@@ -75,4 +75,15 @@ export function replayDiff(inputs: ReplayInput[], decisions: Decision[], thenIso
     });
   }
   return { changes: out.sort((x, y) => x.key.localeCompare(y.key)), ...undatedDecisions(decisions) };
+}
+
+/**
+ * The instant a replay date stands for: the end of that day, or now when the date is today, so choosing today
+ * replays the present. A date after today (or not a date) has no instant. Days are UTC, as the stored times are.
+ */
+export function replayInstant(date: string, nowIso: string): string | null {
+  if (!isIsoDate(date)) return null;
+  const today = nowIso.slice(0, 10);
+  if (date > today) return null;
+  return date === today ? nowIso : `${date}T23:59:59.999Z`;
 }

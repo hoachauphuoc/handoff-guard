@@ -109,6 +109,14 @@ function failure<S extends (typeof SCHEMA_VERSION)[keyof typeof SCHEMA_VERSION]>
   };
 }
 
+// The sentence an agent says right after the quote when it is asked to start the work. It is chosen here by
+// the verdict, so the model copies a line from the action result and never writes a decision of its own.
+export function startLine(verdict: Verdict | null): string {
+  if (verdict === "clear") return "The rule check says Clear, so I may start.";
+  if (verdict === null) return "No handoff is prepared, so there is no verdict and I will not start this work item.";
+  return `I will not start this work item: the rule check says ${VERDICT_TEXT[verdict]}.`;
+}
+
 function quoteFor(key: string, result: HandoffResult | null): string {
   const head = `Handoff Guard rule check for ${key}:`;
   if (!result) {
@@ -146,6 +154,7 @@ export async function runCheckHandoff(payload: unknown, accountId: string | null
         findings: [],
         binding: bindingDecisions(decisions, item).map((d) => ({ id: d.id, title: d.title, source: d.source, acknowledged: false })),
         fixes,
+        startLine: startLine(null),
         quote: quoteFor(key, null),
       };
     }
@@ -169,6 +178,7 @@ export async function runCheckHandoff(payload: unknown, accountId: string | null
         acknowledged: handoff.acknowledged.includes(d.id),
       })),
       fixes,
+      startLine: startLine(result.verdict),
       quote: quoteFor(key, result),
     };
   } catch (e) {

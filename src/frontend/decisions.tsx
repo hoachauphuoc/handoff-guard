@@ -3,6 +3,7 @@ import ForgeReconciler, { Button, DatePicker, Lozenge, SectionMessage, Stack, Te
 import { invoke } from "@forge/bridge";
 import type { DecisionsPageState } from "../decisions/page";
 import type { SourceChecks } from "../decisions/sourcecheck";
+import { plainError } from "../errors";
 import { count } from "../plural";
 import type { ReplayState } from "../resolvers";
 
@@ -22,7 +23,7 @@ const App = () => {
         setReplay(r as ReplayState);
         setReplayError(null);
       },
-      (e) => setReplayError(String(e)),
+      (e) => setReplayError(plainError(e)),
     );
 
   const load = () =>

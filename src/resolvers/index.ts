@@ -13,11 +13,11 @@ import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import type { HandoffRecord, PanelState } from "../handoff/types";
 import { readPageVersionAsUser } from "../confluence";
 import { openItemsAsUser, readItemAsUser as readItem } from "../jira";
-import { bindingDecisions, checkHandoff, isIsoDate } from "../rules/checkHandoff";
+import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
 import { changeText, suggestFixes } from "../rules/feasible";
 import { impactOf } from "../rules/impact";
-import { replayDiff, type ReplayChange } from "../rules/replay";
+import { replayDiff, replayInstant, type ReplayChange } from "../rules/replay";
 import type { Proposal } from "../decisions/types";
 import type { Decision, Finding } from "../rules/types";
 import { mergeDecisions, sampleDecisions } from "../samples/decisions";
@@ -217,8 +217,8 @@ resolver.define("replayOn", async ({ context, payload }): Promise<ReplayState> =
   const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
   const date = String((payload as { date?: string }).date ?? "");
   const now = new Date();
-  const thenIso = `${date}T23:59:59.999Z`;
-  if (!isIsoDate(date) || Date.parse(thenIso) > now.getTime()) throw new Error("Pick a date that is today or earlier.");
+  const thenIso = replayInstant(date, now.toISOString());
+  if (thenIso === null) throw new Error("Pick a date that is today or earlier.");
   const [open, decisions] = await Promise.all([openItemsAsUser(projectKey), getDecisions()]);
   const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
   const inputs = open.items.flatMap((i, n) => {
