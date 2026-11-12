@@ -137,6 +137,25 @@ describe("checkHandoff", () => {
     }
   });
 
+  it("matches project and work-item keys ignoring case and spaces", () => {
+    const byProject = decision({ scope: { kind: "project", projectKey: " ops " } });
+    expect(checkHandoff(handoff(), [byProject]).binding).toHaveLength(1);
+    const byItem = decision({ scope: { kind: "workItem", key: "ops-12" } });
+    expect(checkHandoff(handoff(), [byItem]).binding).toHaveLength(1);
+  });
+
+  it("reports a malformed date limit in a decision once, never as a contradiction", () => {
+    const d = decision({ constraints: [{ kind: "dueNotAfter", date: "2026-13-01" }] });
+    const r = checkHandoff(handoff({ acknowledged: ["D-1"] }), [d]);
+    expect(r.verdict).toBe("needs_info");
+    expect(r.findings).toEqual([
+      expect.objectContaining({ rule: "invalid_constraint", decisionId: "D-1", severity: "info_needed" }),
+    ]);
+    expect(r.findings[0]?.message).toBe(
+      '"Campaigns ship before 15 December" has a date limit "2026-13-01" that is not a valid YYYY-MM-DD date.',
+    );
+  });
+
   it("never returns clear together with a finding", () => {
     const cases = [
       handoff(),

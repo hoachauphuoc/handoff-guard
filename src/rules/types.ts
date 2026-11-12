@@ -47,6 +47,7 @@ export type Finding = {
     | "empty_description"
     | "no_due_date"
     | "invalid_due_date"
+    | "invalid_constraint"
     | "contradicts_decision"
     | "decision_not_acknowledged";
   severity: "block" | "info_needed";

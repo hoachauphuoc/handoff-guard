@@ -16,29 +16,45 @@ function applies(decision: Decision, item: WorkItem): boolean {
   if (decision.status !== "decided") return false;
   switch (decision.scope.kind) {
     case "project":
-      return decision.scope.projectKey === item.projectKey;
+      return norm(decision.scope.projectKey) === norm(item.projectKey);
     case "label":
       return has(item.labels, decision.scope.label);
     case "workItem":
-      return decision.scope.key === item.key;
+      return norm(decision.scope.key) === norm(item.key);
   }
 }
 
-function violation(constraint: Constraint, item: WorkItem): string | null {
+type Problem = { rule: "contradicts_decision" | "invalid_constraint"; message: string };
+
+function violation(constraint: Constraint, item: WorkItem, decision: Decision): Problem | null {
   switch (constraint.kind) {
     case "dueNotAfter":
+      // A bad limit cannot be compared; report it as missing information instead of guessing a contradiction.
+      if (!isIsoDate(constraint.date)) {
+        return {
+          rule: "invalid_constraint",
+          message: `"${decision.title}" has a date limit "${constraint.date}" that is not a valid YYYY-MM-DD date.`,
+        };
+      }
       // An unset or malformed due date is reported once by its own rule, not again per decision.
       return item.dueDate !== null && isIsoDate(item.dueDate) && item.dueDate > constraint.date
-        ? `due date ${item.dueDate} is after ${constraint.date}`
+        ? contradiction(decision, `due date ${item.dueDate} is after ${constraint.date}`)
         : null;
     case "labelRequired":
-      return has(item.labels, constraint.label) ? null : `label "${constraint.label}" is missing`;
+      return has(item.labels, constraint.label)
+        ? null
+        : contradiction(decision, `label "${constraint.label}" is missing`);
     case "componentForbidden":
       return has(item.components, constraint.component)
-        ? `component "${constraint.component}" is not allowed`
+        ? contradiction(decision, `component "${constraint.component}" is not allowed`)
         : null;
   }
 }
+
+const contradiction = (decision: Decision, reason: string): Problem => ({
+  rule: "contradicts_decision",
+  message: `Contradicts "${decision.title}": ${reason}.`,
+});
 
 export function bindingDecisions(decisions: Decision[], item: WorkItem): Decision[] {
   return decisions.filter((d) => applies(d, item));
@@ -71,12 +87,13 @@ export function checkHandoff(handoff: Handoff, decisions: Decision[]): HandoffRe
 
   const binding = bindingDecisions(decisions, item);
   for (const decision of binding) {
-    const broken = decision.constraints.map((c) => violation(c, item)).filter((v): v is string => v !== null);
-    for (const reason of broken) {
+    for (const c of decision.constraints) {
+      const problem = violation(c, item, decision);
+      if (!problem) continue;
       findings.push({
-        rule: "contradicts_decision",
-        severity: "block",
-        message: `Contradicts "${decision.title}": ${reason}.`,
+        rule: problem.rule,
+        severity: problem.rule === "invalid_constraint" ? "info_needed" : "block",
+        message: problem.message,
         decisionId: decision.id,
       });
     }
