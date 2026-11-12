@@ -21,7 +21,7 @@ Handoff Guard: a Forge app for Atlassian Codegeist 2026. When a Jira work item i
 | Claude Sonnet | Day-to-day implementation: Forge UI, resolvers, tests, `scripts/` | Changing rule semantics without an Opus-level review |
 | Claude Haiku | Mechanical work: search, lint fixes, running `check.ps1`, progress notes | Design, labels |
 | Muse (`muse-spark-1.3-contributor` only) | Bulk sample generation, first critic of README and video script | Labels |
-| Baseten (one open model) | Adversarial samples, second critic from a different model family | Labels |
+| Baseten (`meta-models/muse-spark-open-1026` only) | Adversarial samples, second critic. Same family as Muse (owner's choice), so it is not an independent check | Labels |
 | Tavily | Fresh Forge/Rovo docs on demand | Anything else |
 
 - Ground-truth labels come only from the rules or the owner. No model grades the product. Model-generated data is marked synthetic in the README.
