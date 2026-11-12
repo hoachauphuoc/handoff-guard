@@ -2,11 +2,9 @@ import Resolver from "@forge/resolver";
 import { runGatherHandoffContext } from "../actions/core";
 import { depsFor } from "../actions/deps";
 import { confirmProposal, dismissProposal } from "../decisions/confirm";
-import { canSupersede, relate, supersede } from "../decisions/supersede";
+import { canSupersede, splitOverlap, supersede } from "../decisions/supersede";
 import { unrecordedMarked, type MarkedState } from "../decisions/marked";
 import { hypothetical } from "../decisions/hypothetical";
-import { pageStatusText } from "../decisions/pages";
-import { pagesToCheck, sourceNotes, type PageVersion, type SourceChecks } from "../decisions/sourcecheck";
 import { buildDecisionsPage, type DecisionsPageState } from "../decisions/page";
 import { acknowledge, acknowledgeAll } from "../handoff/acknowledge";
 import { withContingency } from "../handoff/contingency";
@@ -14,7 +12,6 @@ import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass"
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import { driftByDecision, fingerprintOf, staleAcks } from "../handoff/drift";
 import type { AcknowledgeAllReply, HandoffRecord, PanelState } from "../handoff/types";
-import { readPageVersionAsUser } from "../confluence";
 import { explainRefusal } from "../llm";
 import { openItemsAsUser, readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
@@ -55,6 +52,15 @@ async function impactFor(projectKey: string, proposals: Proposal[]): Promise<Pan
   }
 }
 
+function overlapFor(proposals: Proposal[], decisions: Decision[], viewerId: string | null): Pick<PanelState, "supersedes" | "supersedeBlocked"> {
+  const named = (ds: Decision[]) => ds.map((d) => ({ id: d.id, title: d.title }));
+  const split = proposals.map((p) => [p.id, splitOverlap(decisions, p.scope, p.constraints, viewerId ?? "")] as const);
+  return {
+    supersedes: Object.fromEntries(split.map(([id, s]) => [id, named(s.retirable)])),
+    supersedeBlocked: Object.fromEntries(split.map(([id, s]) => [id, named(s.kept)])),
+  };
+}
+
 async function panelState(ctx: Ctx): Promise<PanelState> {
   const { item, issueId } = await readItem(ctx.extension.issue.key);
   const [decisions, record, proposals] = await Promise.all([getDecisions(), getRecord(issueId), getProposals(issueId)]);
@@ -86,12 +92,8 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     actions: record && result ? actionList(result, record, suggestFixes(item, decisions).changes) : [],
     contingency: record?.contingency ? { text: record.contingency, advisory: contingencyAdvisory(record.contingency) } : null,
     proposalImpact: await impactFor(item.projectKey, proposals),
-    supersedes: Object.fromEntries(
-      proposals.map((p) => {
-        const rel = relate(decisions, p.scope, p.constraints);
-        return [p.id, rel?.kind === "supersedes" ? rel.old.map((d) => ({ id: d.id, title: d.title })) : []];
-      }),
-    ),
+    // The viewer's own view: what the button retires, and what it would leave in force.
+    ...overlapFor(proposals, decisions, viewerId),
   };
 }
 
@@ -213,7 +215,6 @@ resolver.define("getMarked", async ({ context }): Promise<MarkedState> => {
   return {
     notInLedger: unrecordedMarked(src.parts, decisions),
     truncated: src.truncated,
-    pagesText: src.pages ? pageStatusText(src.pages) : "",
   };
 });
 
@@ -232,28 +233,6 @@ resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageSt
     new Date().toISOString(),
     viewerId,
   );
-});
-
-// Reads the version of each page behind the given decisions, as the viewer, and compares it with the version
-// stored when the decision was confirmed. Advisory: it changes nothing and no rule reads it.
-async function checkSources(decisions: Decision[]): Promise<SourceChecks> {
-  const ids = pagesToCheck(decisions);
-  const reads: Record<string, PageVersion> = {};
-  await Promise.all(ids.map(async (id) => void (reads[id] = await readPageVersionAsUser(id))));
-  return sourceNotes(decisions, reads);
-}
-
-// For the panel: the decisions that bind this work item.
-resolver.define("getSourceChecks", async ({ context }): Promise<SourceChecks> => {
-  const { item } = await readItem((context as Ctx).extension.issue.key);
-  return checkSources(bindingDecisions(await getDecisions(), item));
-});
-
-// For the project page: every decision in force that can bind work here.
-resolver.define("getProjectSourceChecks", async ({ context }): Promise<SourceChecks> => {
-  const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key).toLowerCase();
-  const inProject = (d: Decision) => d.scope.kind === "project" ? d.scope.projectKey.toLowerCase() === projectKey : d.scope.kind === "workItem" ? d.scope.key.toLowerCase().startsWith(`${projectKey}-`) : true;
-  return checkSources((await getDecisions()).filter(inProject));
 });
 
 export type ReplayState = { date: string; changes: ReplayChange[]; leftOut: string[]; assumed: string[]; scanned: number; capped: boolean };

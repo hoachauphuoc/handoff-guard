@@ -1,12 +1,10 @@
 import type { Decision } from "../rules/types";
 import { mergeDecisions } from "../samples/decisions";
 import { fnv1a } from "./hash";
-import { relate, supersede } from "./supersede";
+import { relate, splitOverlap, supersede } from "./supersede";
 import type { Proposal } from "./types";
 
-const PAGE = "Confluence page ";
-const sourceOf = (from: string): Decision["source"] =>
-  from.startsWith(PAGE) ? { kind: "confluence", ref: from.slice(PAGE.length) } : { kind: "jira", ref: from.replace(/ description$/, "") };
+const sourceOf = (from: string): Decision["source"] => ({ kind: "jira", ref: from.replace(/ description$/, "") });
 
 export type ConfirmResult =
   | { ok: true; proposals: Proposal[]; decisions: Decision[] }
@@ -43,7 +41,9 @@ export function confirmProposal(
     evidence: p.evidence,
   };
   // Retiring is the person's choice, made with the button; it is worked out here from stored decisions, never from what the caller sends.
-  const kept = retire && relation?.kind === "supersedes" ? supersede(decisions, relation.old.map((d) => d.id), nowIso, decision.id) : decisions;
+  // Only decisions this person may retire; the others stay in force, as they would on the Decisions page.
+  const retirable = retire ? splitOverlap(decisions, p.scope, p.constraints, who).retirable : [];
+  const kept = retirable.length > 0 ? supersede(decisions, retirable.map((d) => d.id), nowIso, decision.id) : decisions;
   return { ok: true, proposals: rest, decisions: mergeDecisions(kept, [decision]) };
 }
 

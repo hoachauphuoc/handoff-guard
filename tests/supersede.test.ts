@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from "vitest";
 import { confirmProposal } from "../src/decisions/confirm";
-import { canSupersede, reachCovers, relate, supersede } from "../src/decisions/supersede";
+import { canSupersede, reachCovers, relate, splitOverlap, supersede } from "../src/decisions/supersede";
 import type { Proposal } from "../src/decisions/types";
 import { validateCandidates } from "../src/decisions/validate";
 import { bindingDecisions, checkHandoff } from "../src/rules/checkHandoff";
@@ -121,6 +121,31 @@ describe("supersede and confirm", () => {
     expect(out[0]).toMatchObject({ status: "superseded", supersededAt: NOW });
     expect(out[0]).not.toHaveProperty("supersededBy");
     expect(out[1]).toBe(gone);
+  });
+
+  it("retires a decision the confirming person confirmed, and one with no recorded confirmer", () => {
+    const mine = decision({ confirmedBy: "u" });
+    const out = confirmProposal([proposal], [mine, decision({ id: "d2" })], "p-1", "u", NOW, true);
+    if (!out.ok) throw new Error("expected ok");
+    expect(out.decisions.map((d) => d.status)).toEqual(["superseded", "superseded", "decided"]);
+  });
+
+  it("leaves a decision someone else confirmed in force while still confirming the new one", () => {
+    const theirs = decision({ confirmedBy: "v" });
+    const mine = decision({ id: "d2", confirmedBy: "u" });
+    const out = confirmProposal([proposal], [theirs, mine], "p-1", "u", NOW, true);
+    if (!out.ok) throw new Error("expected ok");
+    expect(out.decisions.map((d) => [d.id, d.status])).toEqual([["d1", "decided"], ["d2", "superseded"], [out.decisions[2]!.id, "decided"]]);
+    expect(out.proposals).toEqual([]);
+  });
+
+  it("splits what the viewer may retire from what only its confirmer may", () => {
+    const theirs = decision({ confirmedBy: "v" });
+    const mine = decision({ id: "d2", confirmedBy: "u" });
+    const out = splitOverlap([theirs, mine], proposal.scope, proposal.constraints, "u");
+    expect(out.retirable.map((d) => d.id)).toEqual(["d2"]);
+    expect(out.kept.map((d) => d.id)).toEqual(["d1"]);
+    expect(splitOverlap([theirs], { kind: "label", label: "zzz" }, [{ kind: "labelRequired", label: "q" }], "u")).toEqual({ retirable: [], kept: [] });
   });
 
   it("ignores a retire request the stored decisions do not support", () => {

@@ -4,7 +4,6 @@ import { invoke, rovo } from "@forge/bridge";
 import { plainError } from "../errors";
 import type { GatherOutput } from "../actions/schema";
 import type { MarkedState } from "../decisions/marked";
-import type { SourceChecks } from "../decisions/sourcecheck";
 import { constraintText, reachText } from "../decisions/reach";
 import { count } from "../plural";
 import type { AcknowledgeAllReply, PanelState } from "../handoff/types";
@@ -41,8 +40,6 @@ const App = () => {
   const [rovoNote, setRovoNote] = useState<string | null>(null);
   const [marked, setMarked] = useState<MarkedState | null>(null);
   const [markedError, setMarkedError] = useState<string | null>(null);
-  const [sources, setSources] = useState<SourceChecks | null>(null);
-  const [sourcesError, setSourcesError] = useState<string | null>(null);
   // null: follow the default (open until a handoff exists); a click on the toggle overrides it.
   const [readBack, setReadBack] = useState("");
   const [contingency, setContingency] = useState<string | null>(null);
@@ -135,10 +132,6 @@ const App = () => {
   useEffect(() => {
     void call("getPanel").then(() => {
       void readMarked();
-      void invoke<SourceChecks>("getSourceChecks").then(
-        (s) => setSources(s as SourceChecks),
-        (e) => setSourcesError(String(e)),
-      );
     });
   }, []);
 
@@ -346,6 +339,9 @@ const App = () => {
                     </Button>
                   </>
                 )}
+                {(state.supersedeBlocked[p.id] ?? []).length > 0 && (
+                  <Text>{`Also made redundant, but only the person who confirmed it can supersede it: ${(state.supersedeBlocked[p.id] ?? []).map((d) => `"${d.title}"`).join(", ")}.`}</Text>
+                )}
                 <Button isDisabled={busy} onClick={() => call("dismissProposal", { proposalId: p.id })}>
                   Dismiss
                 </Button>
@@ -355,21 +351,9 @@ const App = () => {
           </Stack>
         </SectionMessage>
       )}
-      {sourcesError !== null && <Text>{`The source pages of the decisions could not be checked: ${sourcesError}`}</Text>}
-      {sources !== null && (sources.notes.length > 0 || sources.notChecked > 0) && (
-        <SectionMessage appearance="information" title="Source pages (advisory, not part of the verdict)">
-          <Stack space="space.050">
-            {sources.notes.map((n, i) => (
-              <Text key={i}>{`• ${n.message}`}</Text>
-            ))}
-            {sources.notChecked > 0 && <Text>{`${count(sources.notChecked, "decision")} not checked: only the first 5 source pages are read.`}</Text>}
-          </Stack>
-        </SectionMessage>
-      )}
       {markedError !== null && (
         <Text>{`Marked decisions could not be read: ${markedError.includes("Allow access") ? CONSENT_TEXT : markedError}`}</Text>
       )}
-      {marked !== null && marked.pagesText !== "" && <Text>{marked.pagesText}</Text>}
       {marked !== null && marked.notInLedger.length > 0 && (
         <SectionMessage appearance="information" title="Marked decisions not in the ledger">
           <Stack space="space.050">
@@ -381,7 +365,7 @@ const App = () => {
             {marked.notInLedger.slice(0, 5).map((m, i) => (
               <Text key={i}>{`• "${m.text}" (${m.from})`}</Text>
             ))}
-            {marked.truncated && <Text>Only the first 20,000 characters of the description, comments and linked pages were read.</Text>}
+            {marked.truncated && <Text>Only the first 20,000 characters of the description and comments were read.</Text>}
             <Text>Ask Rovo to turn them into proposals, then confirm the ones you agree with.</Text>
             <Button onClick={() => void askRovo(`Propose decisions for ${state.issueKey} from its marked decisions.`)}>
               Find decisions with Rovo
@@ -442,7 +426,7 @@ const App = () => {
         )}
       </Stack>
       <Button onClick={() => void askRovo(`Explain the Handoff Guard check for ${state.issueKey}.`)}>Explain with Rovo</Button>
-      <Button onClick={() => void askRovo(`Propose decisions for ${state.issueKey} from its description, comments and linked pages.`)}>
+      <Button onClick={() => void askRovo(`Propose decisions for ${state.issueKey} from its description and comments.`)}>
         Find decisions with Rovo
       </Button>
       {rovoNote && <Text>{rovoNote}</Text>}

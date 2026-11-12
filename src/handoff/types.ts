@@ -43,8 +43,10 @@ export type PanelState = {
   /** Facts beside the verdict, never inside it. */
   advisories: Advisory[];
   /** Open work items of the project each proposal would contradict; null when they could not be counted. */
-  /** Per proposal: the confirmed decisions it would make redundant or answer differently. A person may retire them while confirming. */
+  /** Per proposal: the confirmed decisions it would make redundant or answer differently that the viewer may retire while confirming. */
   supersedes: Record<string, { id: string; title: string }[]>;
+  /** Per proposal: the same kind of decisions that only their confirmer may supersede, so confirming leaves them in force. */
+  supersedeBlocked: Record<string, { id: string; title: string }[]>;
   /** Decision ids whose acknowledgement went stale because a field the decision reads changed. */
   stale: string[];
   /** Per acknowledged decision: everything that changed on the work item since it was acknowledged. */

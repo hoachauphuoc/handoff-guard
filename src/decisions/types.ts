@@ -1,5 +1,4 @@
 import type { Constraint, DecisionScope, Evidence } from "../rules/types";
-import type { PageStatus } from "./pages";
 
 /**
  * A decision someone found in text but no person has confirmed. It has no `status` and no `source` on
@@ -16,7 +15,7 @@ export type Proposal = {
 };
 
 /** `marked`: decisions a person marked with Jira's decision node inside `text`, as written. */
-export type SourcePart = { from: string; text: string; marked?: string[]; page?: { pageId: string; version: number } };
+export type SourcePart = { from: string; text: string; marked?: string[] };
 
 export type DecisionSource = {
   issueId: string;
@@ -24,6 +23,4 @@ export type DecisionSource = {
   labels: string[];
   parts: SourcePart[];
   truncated: boolean;
-  /** What happened to linked Confluence pages. Absent when no page read was attempted. */
-  pages?: PageStatus;
 };

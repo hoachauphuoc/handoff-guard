@@ -4,7 +4,7 @@ A Forge app for Jira. When a work item is handed to someone else, rules check wh
 
 ## Install (for judges)
 
-1. Install the app on a Jira site from the installation link in the Devpost submission. The app needs Jira; Confluence is optional (it is only used to read linked pages). Developers working on the app install their own build with `forge install -e development --product jira`.
+1. Install the app on a Jira site from the installation link in the Devpost submission. The app is Jira-only: it declares no Confluence scope and no multi-app compatibility, so it installs on any single Jira site. Developers working on the app install their own build with `forge install -e development --product jira`.
 2. Open a work item. The Handoff Guard panel shows a getting-started checklist.
 3. Optional: the Teamwork Graph people lookup needs a saved query registered by the app owner (see `docs/PROGRESS.md`); without it the result says "Teamwork Graph returned nothing". No rule uses it yet.
 
@@ -17,7 +17,6 @@ Every scope in `manifest.yml` and why it is there. A test fails if this table an
 | `read:jira-work` | Read the work item and its comments as the current user. |
 | `read:graph:issue:jira` | Teamwork Graph: start from the work item to find people connected to it. |
 | `read:graph:user:atlassian` | Teamwork Graph: return people connected to the work item (advisory, never a rule input). |
-| `read:page:confluence` | Read Confluence pages linked to a work item, as the current user, so decisions written there can be proposed. Optional: a Jira-only site works without it. |
 | `storage:app` | Store decisions, handoff records and proposals in Forge storage. |
 
 ## Rovo MCP server
@@ -68,7 +67,7 @@ The one disagreement: a description that is only filler ("tbd see above"). Muse 
 - Teach-back catches only a fixed list of patterns: dates later than a limit, a negation word (skip, without, no, not, …) within three words before what a required value is about, "optional" or "not needed" after it, and an adding word before a forbidden value ("keep the hotfix label off" is not read as adding it, because a removal word follows). A date with no year is read as its next occurrence from the day of the read-back. Other contradictions are not caught, and a negation about something else nearby can be read as one (the receiver then rewrites the read-back).
 - The model sentence beside a teach-back refusal is sent the read-back and the code's reasons. Its wording varies between attempts.
 - All decisions are stored under one storage key, so two people confirming or superseding at the same moment can lose one of the two changes.
-- Only the person who confirmed a decision can supersede it from the Decisions page (decisions with no recorded confirmer, such as the samples, can be superseded by anyone signed in). "Confirm and supersede" in the panel retires the older decisions the new one makes redundant, whoever confirmed them.
+- Only the person who confirmed a decision can supersede it from the Decisions page (decisions with no recorded confirmer, such as the samples, can be superseded by anyone signed in). "Confirm and supersede" in the panel retires the older decisions the new one makes redundant that you may supersede (the ones you confirmed, or with no recorded confirmer); a decision someone else confirmed stays in force and the panel names it.
 - Reassigning a work item to a different person starts a new handoff record: the earlier acknowledgements, read-back and contingency are not carried over.
 - A handoff prepared before read-back existed keeps one acknowledgement per decision, and the panel says that no read-back was checked.
 

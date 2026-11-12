@@ -228,3 +228,10 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Docs brought in line with the code: README install section and the note that the labelling policy restates the rules; `docs/DEVPOST.md` (295 tests, features since 6.x; the "What's next" sentence is new wording for the owner to check); `docs/SECURITY.md` (the validator's one `asApp()` read); `docs/PRIVACY.md` (fingerprint, Confluence page id and version).
 - Written by the Sonnet runner, reviewed here. 295 tests, `check.ps1` PASS.
 - Open, owner's: production is still 2.0.0; whether production is Jira-only (`compatibility`, `read:page:confluence`); Teamwork Graph saved-query keys on a fresh install; `docs/VIDEO.md` against what production will contain.
+
+### 2026-11-12, Jira-only again, and Confirm and supersede limited (owner's order)
+- Jira-only: `app.compatibility` and `read:page:confluence` removed, with everything that read Confluence: `src/confluence.ts`, `src/decisions/pages.ts`, the changed-source check (`src/decisions/sourcecheck.ts`, its two resolvers and panel notes), `pageId`/`version` on `Evidence`, agent rule 17 (the later rules are renumbered). `read-decision-source` reads the description and visible comments only. `source.kind: "confluence"` stays in the type because a sample file uses it; no code produces it. Why: a multi-app app installs on one site only and lists on Marketplace only as paid.
+- `splitOverlap` in `src/decisions/supersede.ts`: "Confirm and supersede" retires only the older decisions the confirming person may retire (`canSupersede`); the others stay in force and the panel names them.
+- Written by the Sonnet runner, reviewed here. 286 tests (two test files went with the removed code), `check.ps1` PASS, `npm run measure` unchanged (47/48, 34/48, 12/48).
+- Teamwork Graph: `TWG_SHARED_QUERY_KEY` and `TWG_MENTIONED_QUERY_KEY` are set in development and production (names checked, no call made on production).
+- Development still carries the multi-app `compatibility` from 9.x with one installation; a Jira-only deploy there needs the uninstall first (demo data on that site is lost), so it was not done.

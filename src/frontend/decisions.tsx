@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, DatePicker, Lozenge, SectionMessage, Stack, Text, User } from "@forge/react";
 import { invoke } from "@forge/bridge";
 import type { DecisionsPageState } from "../decisions/page";
-import type { SourceChecks } from "../decisions/sourcecheck";
 import { plainError } from "../errors";
 import { count } from "../plural";
 import type { ReplayState } from "../resolvers";
@@ -12,7 +11,6 @@ const VERDICT = { blocked: { text: "Blocked", appearance: "removed" }, needs_inf
 const App = () => {
   const [state, setState] = useState<DecisionsPageState | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [sources, setSources] = useState<SourceChecks | null>(null);
   const [replay, setReplay] = useState<ReplayState | null>(null);
   const [replayError, setReplayError] = useState<string | null>(null);
 
@@ -33,11 +31,6 @@ const App = () => {
     );
   useEffect(() => {
     void load();
-    // A failed check leaves no note here, so the call below says so in the same place the notes would be.
-    void invoke<SourceChecks>("getProjectSourceChecks").then(
-      (s) => setSources(s as SourceChecks),
-      (e) => setSources({ notes: [{ kind: "unreadable", message: `The source pages could not be checked: ${String(e)}`, decisionIds: [] }], notChecked: 0 }),
-    );
   }, []);
 
   // A person retires a decision here; it then binds nothing, and the page is read again.
@@ -100,16 +93,6 @@ const App = () => {
           )}
         </Stack>
       ))}
-      {sources !== null && (sources.notes.length > 0 || sources.notChecked > 0) && (
-        <SectionMessage appearance="information" title="Source pages (advisory, not part of the verdict)">
-          <Stack space="space.050">
-            {sources.notes.map((n, i) => (
-              <Text key={i}>{`• ${n.message}`}</Text>
-            ))}
-            {sources.notChecked > 0 && <Text>{`${count(sources.notChecked, "decision")} not checked: only the first 5 source pages are read.`}</Text>}
-          </Stack>
-        </SectionMessage>
-      )}
       <Text>Replay on a date</Text>
       <Text>
         Pick a date to see which prepared handoffs would have had a different verdict then. Only decisions and acknowledgements are replayed;

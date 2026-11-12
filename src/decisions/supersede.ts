@@ -74,6 +74,16 @@ export function canSupersede(decision: Decision, accountId: string): boolean {
   return decision.confirmedBy === undefined || decision.confirmedBy === accountId;
 }
 
+/**
+ * Splits the older decisions a candidate would make redundant into those this person may retire and those only
+ * someone else may; both the confirm step and the panel use it, so the button names exactly what it retires.
+ */
+export function splitOverlap(decisions: Decision[], scope: DecisionScope, constraints: Constraint[], accountId: string): { retirable: Decision[]; kept: Decision[] } {
+  const rel = relate(decisions, scope, constraints);
+  const old = rel?.kind === "supersedes" ? rel.old : [];
+  return { retirable: old.filter((d) => canSupersede(d, accountId)), kept: old.filter((d) => !canSupersede(d, accountId)) };
+}
+
 /** Marks decisions as superseded. `by` is the replacing decision's id, absent when a person retires one by hand. */
 export function supersede(decisions: Decision[], ids: string[], nowIso: string, by?: string): Decision[] {
   return decisions.map((d) =>

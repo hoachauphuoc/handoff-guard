@@ -21,12 +21,12 @@ When a work item changes hands, the decisions that bind it (a deadline, a requir
 - **Teach-back.** A read-back that addresses a decision but contradicts it (a date past the limit, a required label said to be skipped, a forbidden one said to be added) is refused by plain code. One sentence beside the refusal, telling the receiver what to write instead, is written by a model through Forge LLMs and labelled as model-written; it never makes or lifts a refusal.
 - **Handoff drift.** If the due date, a label or a component that a decision reads changes after the receiver acknowledged it, the acknowledgement goes stale and the panel shows what changed.
 - **Replay on a date.** The Decisions page shows which prepared handoffs would have had a different verdict on an earlier date, using the decisions and acknowledgements as they stood then.
-- **Superseding decisions.** A decision that makes older ones redundant, or moves a deadline, can be confirmed with the older ones retired; the person who confirmed a decision can also retire it from the Decisions page. A superseded decision binds nothing.
+- **Superseding decisions.** A decision that makes older ones redundant, or moves a deadline, can be confirmed with the older ones retired (only those the confirming person may supersede); the person who confirmed a decision can also retire it from the Decisions page. A superseded decision binds nothing.
 - **Rovo MCP server.** The same five actions are exposed through the `rovo:mcp` module for external agents.
 
 ## How we built it
 
-Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Forge imports, `rovo:agent` with five actions, `rovo:mcp`, `jira:workflowValidator`, and two saved Teamwork Graph Cypher queries called with `asUser()`. 295 unit tests. Only decisions and handoff records are stored; no chat is stored.
+Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Forge imports, `rovo:agent` with five actions, `rovo:mcp`, `jira:workflowValidator`, and two saved Teamwork Graph Cypher queries called with `asUser()`. 286 unit tests. Only decisions and handoff records are stored; no chat is stored.
 
 ## Measurement
 

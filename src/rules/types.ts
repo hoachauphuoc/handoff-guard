@@ -23,14 +23,14 @@ export type DecisionScope =
   | { kind: "label"; label: string }
   | { kind: "workItem"; key: string };
 
-/** The words a decision came from. `pageId` and `version` are set when they came from a Confluence page. */
-export type Evidence = { quote: string; from: string; pageId?: string; version?: number };
+/** The words a decision came from. */
+export type Evidence = { quote: string; from: string };
 
 export type Decision = {
   id: string;
   title: string;
   status: "decided" | "superseded";
-  /** Where a person can read the decision: a Confluence page, a work item, or this app's ledger. */
+  /** Where a person can read the decision: a work item, or this app's ledger. `confluence` only appears in sample data. */
   source: { kind: "confluence" | "jira" | "ledger"; ref: string };
   scope: DecisionScope;
   constraints: Constraint[];

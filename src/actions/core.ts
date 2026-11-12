@@ -1,5 +1,4 @@
 import type { DecisionSource, Proposal } from "../decisions/types";
-import { pageStatusText } from "../decisions/pages";
 import { REASON_TEXT, validateCandidates } from "../decisions/validate";
 import { handoffFrom, previewHandoff } from "../handoff/build";
 import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass";
@@ -228,10 +227,9 @@ export async function runReadDecisionSource(payload: unknown, deps: Deps): Promi
       issueKey: key,
       parts: src.parts,
       truncated: src.truncated,
-      ...(src.pages ? { pages: src.pages } : {}),
-      quote: `Handoff Guard read ${count(src.parts.length, "text part")} of ${key} (description, comments and linked Confluence pages you can see)${
+      quote: `Handoff Guard read ${count(src.parts.length, "text part")} of ${key} (description and comments you can see)${
         src.truncated ? "; the text was cut (20,000 characters)" : ""
-      }. ${src.pages ? pageStatusText(src.pages) + " " : ""}Quote evidence from these parts only.`,
+      }. Quote evidence from these parts only.`,
     };
   } catch (e) {
     return failure(schema, key, e);

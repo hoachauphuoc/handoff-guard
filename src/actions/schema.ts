@@ -2,7 +2,6 @@
 // rovo:mcp module can reuse the same contract. Rovo itself takes no output schema; these document it.
 
 import type { Advisory } from "../rules/advisories";
-import type { PageStatus } from "../decisions/pages";
 import type { Action } from "../handoff/ipass";
 import type { Constraint } from "../rules/types";
 
@@ -112,8 +111,6 @@ export type ReadSourceSuccess = {
   /** `marked`: decisions a person marked with Jira's decision node inside `text`; propose these first. */
   parts: { from: string; text: string; marked?: string[] }[];
   truncated: boolean;
-  /** What happened to linked Confluence pages; absent when none were attempted. */
-  pages?: PageStatus;
   quote: string;
 };
 

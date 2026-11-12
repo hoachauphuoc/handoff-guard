@@ -86,11 +86,9 @@ modules:
 
         16. When a gather-handoff-context result has a non-empty advisories list, under the heading "Possible conflicts (advisory, not a verdict)" copy the advisories list from the action result. If you notice a possible decision in the text, offer to run read-decision-source and propose-decisions; never state a conflict that is not in advisories.
 
-        17. When read-decision-source returns a pages field or a Confluence sentence in its quote, repeat that sentence to the user exactly. If some linked pages could not be opened, say so plainly and never imply that those pages were read. Evidence from a Confluence page uses the page text only, quoted word for word.
+        17. When asked to work on, take, start or pick up a work item, or when you are started on a work item with no message, treat it as a request to start it and do nothing else first: call check-handoff, then gather-handoff-context, for that item. Do not use the brief format for this. Answer in this order: the quote field of check-handoff copied exactly; on the next line the startLine field of check-handoff copied exactly; then every binding decision with its constraints; then each finding word for word with one plain next step. Proceed with the work only when startLine says you may start; otherwise do not start, and say a person must resolve the findings in Jira. Never write a start or decline sentence of your own, and never call a verdict Clear that the action did not return.
 
-        18. When asked to work on, take, start or pick up a work item, or when you are started on a work item with no message, treat it as a request to start it and do nothing else first: call check-handoff, then gather-handoff-context, for that item. Do not use the brief format for this. Answer in this order: the quote field of check-handoff copied exactly; on the next line the startLine field of check-handoff copied exactly; then every binding decision with its constraints; then each finding word for word with one plain next step. Proceed with the work only when startLine says you may start; otherwise do not start, and say a person must resolve the findings in Jira. Never write a start or decline sentence of your own, and never call a verdict Clear that the action did not return.
-
-        19. When a gather-handoff-context result has ipass.actions, list each action word for word with its owner (sender, receiver or decision owner) under the heading "Action list", in a brief inside "What the receiver must do" for the receiver's actions. Say the I-PASS name from ipass.severity next to the verdict, as a label for it and never as a second verdict. If ipass.contingency is set, quote it word for word under "Contingency from the sender"; if ipass.contingencyAdvisory is set, repeat it and say it is advisory; if there is no contingency, say the sender has not written one. Never write an action, a contingency or a read-back yourself and never offer to save one: the sender and the receiver write them in the panel. A read-back checks that each decision is addressed, not that it was understood.
+        18. When a gather-handoff-context result has ipass.actions, list each action word for word with its owner (sender, receiver or decision owner) under the heading "Action list", in a brief inside "What the receiver must do" for the receiver's actions. Say the I-PASS name from ipass.severity next to the verdict, as a label for it and never as a second verdict. If ipass.contingency is set, quote it word for word under "Contingency from the sender"; if ipass.contingencyAdvisory is set, repeat it and say it is advisory; if there is no contingency, say the sender has not written one. Never write an action, a contingency or a read-back yourself and never offer to save one: the sender and the receiver write them in the panel. A read-back checks that each decision is addressed, not that it was understood.
       actions:
         - check-handoff
         - list-binding-decisions
@@ -138,7 +136,7 @@ modules:
       name: Read decision source
       function: read-source-fn
       actionVerb: GET
-      description: Reads the description, visible comments and linked Confluence pages (up to 3) of a work item as the person asking, so decisions can be quoted from them. Reads only.
+      description: Reads the description and visible comments of a work item as the person asking, so decisions can be quoted from them. Reads only.
       inputs:
         issueKey:
           title: Work item key
@@ -205,17 +203,9 @@ app:
   id: ari:cloud:ecosystem::app/8d2f4029-5c7f-49b4-a2b7-701a0ca1c1d2
   runtime:
     name: nodejs22.x
-  # Jira is the required app, Confluence optional: a Jira-only site installs unchanged. Locked once an
-  # installation exists (Forge docs: app compatibility).
-  compatibility:
-    jira:
-      required: true
-    confluence:
-      required: false
 permissions:
   scopes:
     - read:jira-work
     - read:graph:issue:jira
     - read:graph:user:atlassian
-    - read:page:confluence
     - storage:app
