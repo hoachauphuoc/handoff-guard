@@ -6,7 +6,8 @@
 export const QUERIES = {
   shared:
     "MATCH (i:JiraWorkItem {ari: $issueAri})-[:jira_work_item_shared_with_atlassian_user]->(u:AtlassianUser) RETURN u",
-  // Relation name and direction are unconfirmed in the docs; registration validates the name.
+  // Relation confirmed in the Teamwork Graph reference (user -> work item, description mentions only).
+  // `shared` is an Activity relation that expires after 90 days.
   mentioned:
     "MATCH (u:AtlassianUser)-[:atlassian_user_mentioned_in_jira_work_item]->(i:JiraWorkItem {ari: $issueAri}) RETURN u",
 } as const;

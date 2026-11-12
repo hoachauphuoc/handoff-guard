@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { callerAccountId, runCheckHandoff, runListBindingDecisions, runProposeDecisions, runReadDecisionSource, type Deps } from "../src/actions/core";
+import { callerAccountId, callerCloudId, runCheckHandoff, runListBindingDecisions, runProposeDecisions, runReadDecisionSource, type Deps } from "../src/actions/core";
+import { dismissProposal } from "../src/decisions/confirm";
 import type { DecisionSource, Proposal } from "../src/decisions/types";
 import { handoffFrom } from "../src/handoff/build";
 import type { HandoffRecord } from "../src/handoff/types";
 import { JiraReadError } from "../src/jira-error";
+import { count } from "../src/plural";
 import { bindingDecisions, checkHandoff } from "../src/rules/checkHandoff";
 import type { Decision, WorkItem } from "../src/rules/types";
 
@@ -120,8 +122,14 @@ describe("list-binding-decisions", () => {
     expect(out).toMatchObject({ ok: true, storedDecisionCount: 2 });
     if (out.ok) {
       expect(out.decisions.map((d) => d.id)).toEqual(bindingDecisions([decision, other], item).map((d) => d.id));
-      expect(out.quote).toBe("1 decisions bind OPS-1: Ship by 2026 (ledger demo)");
+      expect(out.quote).toBe("1 decision binds OPS-1: Ship by 2026 (ledger demo)");
     }
+  });
+
+  it("says 2 decisions bind with the plural verb", async () => {
+    const second: Decision = { ...decision, id: "d2", title: "Second" };
+    const out = await runListBindingDecisions({ issueKey: "OPS-1" }, deps({ decisions: [decision, second] }));
+    if (out.ok) expect(out.quote).toBe("2 decisions bind OPS-1: Ship by 2026 (ledger demo); Second (ledger demo)");
   });
 
   it("says plainly when nothing binds, and reports errors", async () => {
@@ -192,7 +200,7 @@ describe("propose-decisions", () => {
       expect(out.rejected).toMatchObject([{ index: 1, reason: "evidence_not_in_source" }]);
       expect(out.rejected[0]?.message).toContain("word for word");
       expect(out.quote).toBe(
-        "Handoff Guard saved 1 proposed decisions for OPS-1 and rejected 1 (#2: evidence.quote was not found word for word in the work item text; copy it exactly from read-decision-source.). Proposed decisions do not bind anything until a person confirms them in the Handoff Guard panel.",
+        "Handoff Guard saved 1 proposed decision for OPS-1 and rejected 1 (#2: evidence.quote was not found word for word in the work item text; copy it exactly from read-decision-source.). Proposed decisions do not bind anything until a person confirms them in the Handoff Guard panel.",
       );
     }
   });
@@ -287,6 +295,73 @@ describe("propose-decisions scope filling (MOBL-53 case)", () => {
       const out = await run(scope);
       expect(out.ok && out.rejected[0]?.reason).toBe("bad_scope");
     }
+  });
+});
+
+describe("count", () => {
+  it("uses the singular only for 1", () => {
+    expect(count(0, "stored decision")).toBe("0 stored decisions");
+    expect(count(1, "stored decision")).toBe("1 stored decision");
+    expect(count(2, "stored decision")).toBe("2 stored decisions");
+    expect(count(2, "match", "matches")).toBe("2 matches");
+  });
+
+  it("read-source and propose quotes follow it", async () => {
+    const one = await runReadDecisionSource({ issueKey: "OPS-1" }, deps({ readSource: async () => SOURCE }));
+    if (one.ok) expect(one.quote).toContain("read 1 text part of OPS-1");
+    const two = await runReadDecisionSource(
+      { issueKey: "OPS-1" },
+      deps({ readSource: async () => ({ ...SOURCE, parts: [...SOURCE.parts, ...SOURCE.parts] }) }),
+    );
+    if (two.ok) expect(two.quote).toContain("read 2 text parts of OPS-1");
+    const { d } = proposeDeps();
+    const second = { ...good, title: "Another", scope: { kind: "project" }, evidence: { quote: "Decision: all launch work needs the legal-reviewed label" } };
+    const out = await runProposeDecisions({ issueKey: "OPS-1", candidates: JSON.stringify([good, second]) }, d);
+    if (out.ok) expect(out.quote).toContain("saved 2 proposed decisions for OPS-1");
+  });
+});
+
+describe("dismissing a proposal", () => {
+  it("deletes it, and a later propose brings it back with a new proposedAt", async () => {
+    let stored: Proposal[] = [];
+    const d = deps({
+      readSource: async () => SOURCE,
+      getProposals: async () => stored,
+      putProposals: async (_id, p) => {
+        stored = p;
+      },
+    });
+    const input = { issueKey: "OPS-1", candidates: JSON.stringify([good]) };
+    await runProposeDecisions(input, d);
+    expect(stored).toHaveLength(1);
+    const first = stored[0] as Proposal;
+    stored = dismissProposal(stored, first.id);
+    expect(stored).toEqual([]);
+    await runProposeDecisions(input, { ...d, now: () => "2027-01-01T00:00:00.000Z" });
+    expect(stored).toHaveLength(1);
+    expect(stored[0]).toMatchObject({ id: first.id, proposedAt: "2027-01-01T00:00:00.000Z" });
+    expect(stored[0]?.proposedAt).not.toBe(first.proposedAt);
+  });
+
+  it("an unknown id changes nothing, and dismissProposal takes no decisions", () => {
+    const p = { id: "p-1" } as Proposal;
+    expect(dismissProposal([p], "p-other")).toEqual([p]);
+    expect(dismissProposal.length).toBe(2);
+  });
+});
+
+describe("callerCloudId", () => {
+  const SITE = "ari:cloud:jira::site/0a1b2c3d-1111-2222-3333-444455556666";
+  it("prefers payload.context.cloudId, then context.cloudId, then the install context", () => {
+    expect(callerCloudId({ context: { cloudId: "p" } }, { cloudId: "c", installContext: SITE })).toBe("p");
+    expect(callerCloudId({}, { cloudId: "c", installContext: SITE })).toBe("c");
+    expect(callerCloudId({}, { installContext: SITE })).toBe("0a1b2c3d-1111-2222-3333-444455556666");
+  });
+
+  it("never guesses", () => {
+    expect(callerCloudId({}, undefined)).toBeNull();
+    expect(callerCloudId({ context: { cloudId: " " } }, { installContext: "ari:cloud:jira::site/short" })).toBeNull();
+    expect(callerCloudId({}, { installContext: "ari:cloud:confluence::site/0a1b2c3d-1111-2222-3333-444455556666" })).toBeNull();
   });
 });
 

@@ -3,6 +3,7 @@ import { REASON_TEXT, validateCandidates } from "../decisions/validate";
 import { handoffFrom, previewHandoff } from "../handoff/build";
 import type { HandoffRecord } from "../handoff/types";
 import { JiraReadError } from "../jira-error";
+import { count } from "../plural";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import type { Decision, HandoffResult, Verdict, WorkItem } from "../rules/types";
 import {
@@ -58,6 +59,18 @@ function parse(payload: unknown, wantReceiver: boolean): Parsed {
     receiver = p.receiverAccountId.trim() || null;
   }
   return { ok: true, key, receiver };
+}
+
+// Order matters and nothing is guessed: a site id that cannot be read from one of these places stays null.
+const SITE_ARI = /^ari:cloud:jira::site\/([0-9a-f-]{36})$/;
+export function callerCloudId(
+  payload: unknown,
+  context: { cloudId?: string; installContext?: string } | undefined,
+): string | null {
+  const fromPayload = (payload as { context?: { cloudId?: unknown } } | null | undefined)?.context?.cloudId;
+  const direct = [fromPayload, context?.cloudId].find((v) => typeof v === "string" && v.trim() !== "");
+  if (typeof direct === "string") return direct.trim();
+  return SITE_ARI.exec(context?.installContext ?? "")?.[1] ?? null;
 }
 
 export function callerAccountId(payload: unknown, context: { accountId?: string } | undefined): string | null {
@@ -159,7 +172,7 @@ export async function runListBindingDecisions(payload: unknown, deps: Deps): Pro
     const quote =
       bound.length === 0
         ? `No recorded decision binds ${key}.`
-        : `${bound.length} decisions bind ${key}: ${bound.map((d) => `${d.title} (${d.source.kind} ${d.source.ref})`).join("; ")}`;
+        : `${count(bound.length, "decision")} ${bound.length === 1 ? "binds" : "bind"} ${key}: ${bound.map((d) => `${d.title} (${d.source.kind} ${d.source.ref})`).join("; ")}`;
     return {
       schema,
       ok: true,
@@ -188,7 +201,7 @@ export async function runReadDecisionSource(payload: unknown, deps: Deps): Promi
       issueKey: key,
       parts: src.parts.map(({ from, text }) => ({ from, text })),
       truncated: src.truncated,
-      quote: `Handoff Guard read ${src.parts.length} text parts of ${key} (description and comments you can see)${
+      quote: `Handoff Guard read ${count(src.parts.length, "text part")} of ${key} (description and comments you can see)${
         src.truncated ? "; the text was cut (20,000 characters)" : ""
       }. Quote evidence from these parts only.`,
     };
@@ -254,7 +267,7 @@ export async function runProposeDecisions(payload: unknown, deps: Deps): Promise
       issueKey: key,
       proposed: kept.map(({ id, title, scope, constraints, evidence }) => ({ id, title, scope, constraints, evidence })),
       rejected,
-      quote: `Handoff Guard saved ${kept.length} proposed decisions for ${key} and rejected ${rejected.length}${
+      quote: `Handoff Guard saved ${count(kept.length, "proposed decision")} for ${key} and rejected ${rejected.length}${
         rejected.length > 0 ? ` (${rejected.map((r) => `#${r.index + 1}: ${r.message}`).join(" ")})` : ""
       }. Proposed decisions do not bind anything until a person confirms them in the Handoff Guard panel.`,
     };

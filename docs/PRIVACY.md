@@ -12,7 +12,7 @@ Handoff Guard stores only work records, in Forge storage of the installation. It
 
 - No chat. Rovo conversations are not saved by the app; the agent prompt forbids it.
 - No copy of work item descriptions, comments beyond the short evidence quote in a proposal. A confirmed decision does not copy the quote.
-- No Teamwork Graph results: they are read at request time and not saved.
+- No Teamwork Graph results: they are read at request time and not saved. Teamwork Graph people are shown at request time and not stored by the app; Rovo's own chat history is governed by Atlassian.
 
 ## Who sees what
 
@@ -21,4 +21,4 @@ Handoff Guard stores only work records, in Forge storage of the installation. It
 
 ## Deletion
 
-Uninstalling the app removes its Forge storage. Dismissing a proposal deletes it.
+Uninstalling the app removes its Forge storage. Dismissing a proposal deletes it; it may be proposed again.

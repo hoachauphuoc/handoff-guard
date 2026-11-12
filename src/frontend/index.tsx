@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
+import { count } from "../plural";
 import { reachText } from "../decisions/reach";
 import type { PanelState } from "../handoff/types";
 import { GUIDE_SOURCE, PRACTICE_NONE, PRACTICE_TITLE, guideView, type StepNeed, type StepState } from "../guide/steps";
@@ -161,6 +162,7 @@ const App = () => {
                 <Button isDisabled={busy} onClick={() => call("dismissProposal", { proposalId: p.id })}>
                   Dismiss
                 </Button>
+                <Text>Rovo may propose it again later.</Text>
               </Stack>
             ))}
           </Stack>
@@ -177,7 +179,7 @@ const App = () => {
       </Button>
       {rovoNote && <Text>{rovoNote}</Text>}
       <Text>Rovo explains and proposes; the verdict comes from the rule check.</Text>
-      <Text>Source: rule check, {state.decisionCount} stored decisions.</Text>
+      <Text>Source: rule check, {count(state.decisionCount, "stored decision")}.</Text>
     </Stack>
   );
 };
