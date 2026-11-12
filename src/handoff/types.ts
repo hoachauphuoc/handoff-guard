@@ -1,4 +1,4 @@
-import type { ProposalView } from "../decisions/view";
+import type { Proposal } from "../decisions/types";
 import type { Finding, HandoffResult } from "../rules/types";
 
 /** A prepared handoff, stored per work item. Sender and receiver are Atlassian account ids. */
@@ -23,5 +23,5 @@ export type PanelState = {
   /** Findings about the work item itself from a made-up handoff. Deliberately not a verdict. */
   practiceFindings: Finding[];
   /** Unconfirmed decisions found by Rovo for this work item. They bind nothing. */
-  proposals: ProposalView[];
+  proposals: Proposal[];
 };

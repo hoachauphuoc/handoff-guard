@@ -8,18 +8,17 @@ import build from "../src/handoff/build?raw";
 import jira from "../src/jira?raw";
 import rules from "../src/rules/checkHandoff?raw";
 import validator from "../src/validator?raw";
-import { QUERIES, accountIdFromAri, issueAri, pageIdFromAri, parseAris, twgLinkedPages, twgPeople, type Deps } from "../src/twg/core";
+import { QUERIES, accountIdFromAri, issueAri, parseAris, twgPeople, type Deps } from "../src/twg/core";
 
 const node = (id: string) => ({ node: { columns: [{ key: "p", value: { __typename: "CypherQueryResultNode", id } }] } });
 const ok = (...ids: string[]) => ({ data: { customQuery: { edges: ids.map(node) } } });
-const PAGE = (n: number) => `ari:cloud:confluence:c1:page/${n}`;
 const USER = (a: string) => `ari:cloud:identity::user/${a}`;
 
 const deps = (over: Partial<Deps> = {}): Deps => ({ queryKey: () => "key-1", call: async () => ok(), ...over });
 
 describe("Teamwork Graph parse", () => {
   it("reads ARIs from result nodes", () => {
-    expect(parseAris(ok(PAGE(1), PAGE(2)))).toEqual({ ok: true, aris: [PAGE(1), PAGE(2)] });
+    expect(parseAris(ok(USER("a"), USER("b")))).toEqual({ ok: true, aris: [USER("a"), USER("b")] });
   });
 
   it("reports an execution error with its code and a missing body as no data", () => {
@@ -31,25 +30,17 @@ describe("Teamwork Graph parse", () => {
   });
 
   it("extracts ids from ARIs and builds the work item ARI", () => {
-    expect(pageIdFromAri(PAGE(42))).toBe("42");
-    expect(pageIdFromAri("ari:cloud:jira:c1:issue/9")).toBeNull();
     expect(accountIdFromAri(USER("712020:abc"))).toBe("712020:abc");
     expect(issueAri("c1", "10001")).toBe("ari:cloud:jira:c1:issue/10001");
   });
 });
 
-describe("Teamwork Graph pages", () => {
-  it("labels pages as found by Teamwork Graph", async () => {
-    const out = await twgLinkedPages(deps({ call: async () => ok(PAGE(7)) }), "ari");
-    expect(out).toEqual({ pages: [{ pageId: "7", url: null, foundBy: "Teamwork Graph" }], nothing: false });
-  });
-
-  it("returns nothing, not an error, when empty, unconfigured, failing, or without a site id", async () => {
-    expect((await twgLinkedPages(deps(), "ari")).nothing).toBe(true);
-    expect((await twgLinkedPages(deps({ queryKey: () => null }), "ari")).nothing).toBe(true);
-    expect((await twgLinkedPages(deps({ call: async () => { throw new Error("403"); } }), "ari")).nothing).toBe(true);
-    expect((await twgLinkedPages(deps({ call: async () => ({ data: { customQuery: null }, errors: [{ message: "x" }] }) }), "ari")).pages).toEqual([]);
-    expect((await twgLinkedPages(deps(), null)).nothing).toBe(true);
+describe("Teamwork Graph people failures", () => {
+  it("returns nothing, not an error, when unconfigured or failing", async () => {
+    const none = { sharedWith: [], mentioned: [] };
+    expect(await twgPeople(deps({ queryKey: () => null }), "ari")).toEqual(none);
+    expect(await twgPeople(deps({ call: async () => { throw new Error("403"); } }), "ari")).toEqual(none);
+    expect(await twgPeople(deps({ call: async () => ({ data: { customQuery: null }, errors: [{ message: "x" }] }) }), "ari")).toEqual(none);
   });
 });
 
@@ -67,8 +58,8 @@ describe("Teamwork Graph people", () => {
 
 describe("Teamwork Graph boundaries", () => {
   it("uses the relations and scopes the spike confirmed", () => {
-    expect(QUERIES.pages).toContain("content_entity_links_entity");
-    for (const scope of ["read:graph:issue:jira", "read:graph:page:confluence", "read:graph:user:atlassian"]) {
+    expect(QUERIES.shared).toContain("jira_work_item_shared_with_atlassian_user");
+    for (const scope of ["read:graph:issue:jira", "read:graph:user:atlassian"]) {
       expect(manifest).toContain(`- ${scope}`);
     }
     expect(manifest).not.toMatch(/read:graph:(jira|confluence)\s*$/m);

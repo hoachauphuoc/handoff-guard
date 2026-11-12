@@ -1,5 +1,5 @@
 import api from "@forge/api";
-import { GRAPHQL, issueAri, twgLinkedPages, type Deps, type QueryName, type TwgPages } from "./core";
+import { GRAPHQL, issueAri, twgPeople, type Deps, type QueryName } from "./core";
 
 // The Forge runtime provides process.env; the project has no @types/node, so only what is used is declared.
 declare const process: { env: Record<string, string | undefined> };
@@ -7,7 +7,6 @@ declare const process: { env: Record<string, string | undefined> };
 // Saved-query keys come from Forge variables (`forge variables set`) once the owner has registered the
 // queries. Until then every call reports nothing.
 const VARIABLES: Record<QueryName, string> = {
-  pages: "TWG_PAGES_QUERY_KEY",
   shared: "TWG_SHARED_QUERY_KEY",
   mentioned: "TWG_MENTIONED_QUERY_KEY",
 };
@@ -22,6 +21,7 @@ const deps: Deps = {
   },
 };
 
-export async function linkedPagesFromGraph(cloudId: string | null, issueId: string): Promise<TwgPages> {
-  return twgLinkedPages(deps, cloudId === null ? null : issueAri(cloudId, issueId));
+// Not called yet: reserved for the later "who is involved" step. It adds no rule input.
+export async function peopleFromGraph(cloudId: string | null, issueId: string) {
+  return twgPeople(deps, cloudId === null ? null : issueAri(cloudId, issueId));
 }

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
 import { reachText } from "../decisions/reach";
-import { EVIDENCE_HIDDEN } from "../decisions/view";
 import type { PanelState } from "../handoff/types";
 import { GUIDE_SOURCE, PRACTICE_NONE, PRACTICE_TITLE, guideView, type StepNeed, type StepState } from "../guide/steps";
 import { HINTS } from "../guide/hints";
@@ -155,12 +154,8 @@ const App = () => {
               <Stack key={p.id} space="space.050">
                 <Text>{p.title}</Text>
                 <Text>{reachText(p.scope)}</Text>
-                <Text>
-                  {p.evidence.quote === null
-                    ? `${EVIDENCE_HIDDEN} (${p.evidence.from}).`
-                    : `Evidence: "${p.evidence.quote}" (${p.evidence.from})`}
-                </Text>
-                <Button isDisabled={busy || !p.canConfirm} onClick={() => call("confirmProposal", { proposalId: p.id })}>
+                <Text>{`Evidence: "${p.evidence.quote}" (${p.evidence.from})`}</Text>
+                <Button isDisabled={busy} onClick={() => call("confirmProposal", { proposalId: p.id })}>
                   Confirm
                 </Button>
                 <Button isDisabled={busy} onClick={() => call("dismissProposal", { proposalId: p.id })}>

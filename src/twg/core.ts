@@ -1,13 +1,9 @@
-import type { LinkedPage } from "../decisions/confluence";
-
-// Pure: no Forge imports. Teamwork Graph data is advisory. It can add pages to read, and people for a later
-// context step, but it never reaches checkHandoff(); a missing scope returns empty rows, not an error, so
-// "nothing" is reported as such and never as a fact.
+// Pure: no Forge imports. Teamwork Graph data is advisory. It can add people for a later context step,
+// but it never reaches checkHandoff(); a missing scope returns empty rows, not an error, so "nothing" is
+// reported as such and never as a fact. Pages are not queried: a Jira-only app cannot read their text.
 
 /** The Cypher texts the owner registers as saved queries (new apps cannot send raw Cypher). */
 export const QUERIES = {
-  pages:
-    "MATCH (i:JiraWorkItem {ari: $issueAri})-[:content_entity_links_entity]->(p:ConfluencePage) RETURN p",
   shared:
     "MATCH (i:JiraWorkItem {ari: $issueAri})-[:jira_work_item_shared_with_atlassian_user]->(u:AtlassianUser) RETURN u",
   // Relation name and direction are unconfirmed in the docs; registration validates the name.
@@ -46,19 +42,12 @@ export function parseAris(json: unknown): GraphIds {
   return { ok: true, aris };
 }
 
-export const pageIdFromAri = (ari: string): string | null => /^ari:cloud:confluence:[^:]*:page\/(\d+)/.exec(ari)?.[1] ?? null;
 export const accountIdFromAri = (ari: string): string | null => /^ari:cloud:identity::user\/(.+)$/.exec(ari)?.[1] ?? null;
 
 export type Deps = {
   /** Saved query key from configuration, or null when the owner has not registered the query yet. */
   queryKey: (name: QueryName) => string | null;
   call: (queryKey: string, params: { issueAri: string }) => Promise<unknown>;
-};
-
-export type TwgPages = {
-  pages: LinkedPage[];
-  /** True when Teamwork Graph gave no page: nothing linked, a scope not granted, no saved query, or a failure. */
-  nothing: boolean;
 };
 
 async function ids(deps: Deps, name: QueryName, ari: string): Promise<string[]> {
@@ -70,16 +59,6 @@ async function ids(deps: Deps, name: QueryName, ari: string): Promise<string[]> 
   } catch {
     return [];
   }
-}
-
-export async function twgLinkedPages(deps: Deps, ari: string | null): Promise<TwgPages> {
-  const aris = ari === null ? [] : await ids(deps, "pages", ari);
-  const pages: LinkedPage[] = [];
-  for (const a of aris) {
-    const pageId = pageIdFromAri(a);
-    if (pageId !== null) pages.push({ pageId, url: null, foundBy: "Teamwork Graph" });
-  }
-  return { pages, nothing: pages.length === 0 };
 }
 
 /** People connected to the work item. For a later context step only; no rule reads them. */

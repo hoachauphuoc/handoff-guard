@@ -4,10 +4,9 @@ A Forge app for Jira. When a work item is handed to someone else, rules check wh
 
 ## Install (for judges)
 
-1. Install the app on a Jira site (development build: `forge install -e development --product jira`). Jira is the required app; Confluence is optional.
+1. Install the app on a Jira site (development build: `forge install -e development --product jira`). The app is Jira-only.
 2. Open a work item. The Handoff Guard panel shows a getting-started checklist.
-3. Optional: to let it read linked Confluence pages, also run `forge install -p Confluence -s <site> -e development` and grant consent when asked.
-4. Optional: Teamwork Graph pages need a saved query registered by the app owner (see `docs/PROGRESS.md`); without it, only Jira remote links are used and the result says "Teamwork Graph returned nothing".
+3. Optional: the Teamwork Graph people lookup needs a saved query registered by the app owner (see `docs/PROGRESS.md`); without it the result says "Teamwork Graph returned nothing". No rule uses it yet.
 
 ## Scopes
 
@@ -15,10 +14,8 @@ Every scope in `manifest.yml` and why it is there. A test fails if this table an
 
 | Scope | Reason |
 |---|---|
-| `read:jira-work` | Read the work item, its comments and its remote links as the current user. |
-| `read:page:confluence` | Read a linked Confluence page as the current user, so a decision can be quoted from it. |
-| `read:graph:issue:jira` | Teamwork Graph: start from the work item to find pages linked to it. |
-| `read:graph:page:confluence` | Teamwork Graph: return the linked Confluence pages. |
+| `read:jira-work` | Read the work item and its comments as the current user. |
+| `read:graph:issue:jira` | Teamwork Graph: start from the work item to find people connected to it. |
 | `read:graph:user:atlassian` | Teamwork Graph: return people connected to the work item (advisory, never a rule input). |
 | `storage:app` | Store decisions, handoff records and proposals in Forge storage. |
 

@@ -182,13 +182,9 @@ export async function runReadDecisionSource(payload: unknown, deps: Deps): Promi
       issueKey: key,
       parts: src.parts.map(({ from, text }) => ({ from, text })),
       truncated: src.truncated,
-      unreadablePages: src.unreadablePages,
-      teamworkGraphNothing: src.graphNothing,
-      quote: `Handoff Guard read ${src.parts.length} text parts of ${key} (description, comments and linked Confluence pages you can see)${
-        src.truncated ? "; the text was cut (20,000 characters or 3 pages)" : ""
-      }. ${src.unreadablePages} linked pages you cannot open were skipped.${
-        src.graphNothing ? " Teamwork Graph returned nothing; that does not mean no pages are linked." : ""
-      } Quote evidence from these parts only.`,
+      quote: `Handoff Guard read ${src.parts.length} text parts of ${key} (description and comments you can see)${
+        src.truncated ? "; the text was cut (20,000 characters)" : ""
+      }. Quote evidence from these parts only.`,
     };
   } catch (e) {
     return failure(schema, key, e);

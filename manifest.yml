@@ -91,7 +91,7 @@ modules:
       name: Read decision source
       function: read-source-fn
       actionVerb: GET
-      description: Reads the description, visible comments and linked Confluence pages (up to 3) of a work item as the person asking, so decisions can be quoted from them. Reads only.
+      description: Reads the description and visible comments of a work item as the person asking, so decisions can be quoted from them. Reads only.
       inputs:
         issueKey:
           title: Work item key
@@ -134,18 +134,9 @@ app:
   id: ari:cloud:ecosystem::app/8d2f4029-5c7f-49b4-a2b7-701a0ca1c1d2
   runtime:
     name: nodejs22.x
-  # Jira is the required app, Confluence optional: a Jira-only site installs unchanged. Locked after the
-  # first deploy (Forge docs: app compatibility).
-  compatibility:
-    jira:
-      required: true
-    confluence:
-      required: false
 permissions:
   scopes:
     - read:jira-work
     - read:graph:issue:jira
-    - read:graph:page:confluence
     - read:graph:user:atlassian
-    - read:page:confluence
     - storage:app

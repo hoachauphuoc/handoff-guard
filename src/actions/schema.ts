@@ -99,10 +99,6 @@ export type ReadSourceSuccess = {
   issueKey: string;
   parts: { from: string; text: string }[];
   truncated: boolean;
-  /** Linked Confluence pages skipped because the caller cannot open them. */
-  unreadablePages: number;
-  /** Teamwork Graph returned no page; this is not evidence that no page is linked. */
-  teamworkGraphNothing: boolean;
   quote: string;
 };
 

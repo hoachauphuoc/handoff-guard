@@ -92,7 +92,7 @@ function check(raw: unknown, parts: SourcePart[], ctx: Context, nowIso: string):
   const part = parts.find((p) => normalise(p.text).includes(wanted));
   if (!part) return "evidence_not_in_source";
   const id = "p-" + fnv1a([part.from, title, JSON.stringify(scope), JSON.stringify(constraints)].join("|"));
-  return { id, title, scope, constraints, evidence: part.page ? { quote, from: part.from, page: part.page } : { quote, from: part.from }, proposedAt: nowIso };
+  return { id, title, scope, constraints, evidence: { quote, from: part.from }, proposedAt: nowIso };
 }
 
 /**
