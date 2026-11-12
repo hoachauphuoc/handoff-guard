@@ -1,8 +1,8 @@
 # Progress
 
 ## Next
-1. Owner: give the dev site URL (`name.atlassian.net`) and register on Devpost.
-2. Then Claude: `forge install` on the dev site (development), check the panel on a work item.
+1. Owner: open a work item on `hoachauphuoc.atlassian.net` and confirm the Handoff Guard panel shows a verdict (not yet seen running). Register on Devpost.
+2. After any scope change: `forge install --upgrade -e development --site hoachauphuoc.atlassian.net --product jira`.
 3. Risk spikes: Rovo agent on the dev site, Teamwork Graph query, `rovo:mcp`, workflow validator.
 4. Owner labels `data/samples/` (38 Muse + 10 Sonnet adversarial). Then build `scripts/measure`.
 
@@ -23,3 +23,4 @@
 - Rule fixes from the critique: `no_sender`, `invalid_due_date`, case/space-insensitive matching. 8 rules, 12 tests pass.
 - Forge slice written, not registered or deployed: `manifest.yml` (issue panel, `read:jira-work`), resolver `previewHandoff` that runs `checkHandoff()` on the open work item, UI Kit panel. Typecheck passes. `forge register` stopped: the account has no Developer Space and the prompt needs a real terminal. Manifest app id is a placeholder until then, so `forge lint` cannot run.
 - Owner registered the app (Developer Space "PhuocHoa Dev"). `forge lint` clean and now part of `scripts/check.ps1`. Deployed to development (eligible for Runs on Atlassian). `noEmit` moved out of `tsconfig.json` because the Forge bundler needs emitted output; the typecheck script still passes `--noEmit`. Not installed on any site yet.
+- Installed the development build in Jira on `hoachauphuoc.atlassian.net` (scope `read:jira-work`). The panel has not been observed on a work item: the in-app browser is not signed in to the site.
