@@ -17,6 +17,7 @@ Every scope in `manifest.yml` and why it is there. A test fails if this table an
 | `read:jira-work` | Read the work item and its comments as the current user. |
 | `read:graph:issue:jira` | Teamwork Graph: start from the work item to find people connected to it. |
 | `read:graph:user:atlassian` | Teamwork Graph: return people connected to the work item (advisory, never a rule input). |
+| `read:page:confluence` | Read Confluence pages linked to a work item, as the current user, so decisions written there can be proposed. Optional: a Jira-only site works without it. |
 | `storage:app` | Store decisions, handoff records and proposals in Forge storage. |
 
 ## Rovo MCP server

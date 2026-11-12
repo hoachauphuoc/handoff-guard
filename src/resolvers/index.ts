@@ -3,6 +3,7 @@ import { runGatherHandoffContext } from "../actions/core";
 import { depsFor } from "../actions/deps";
 import { confirmProposal, dismissProposal } from "../decisions/confirm";
 import { unrecordedMarked, type MarkedState } from "../decisions/marked";
+import { pageStatusText } from "../decisions/pages";
 import { acknowledge } from "../handoff/acknowledge";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import type { HandoffRecord, PanelState } from "../handoff/types";
@@ -135,7 +136,11 @@ resolver.define("gatherContext", ({ context }) => {
 resolver.define("getMarked", async ({ context }): Promise<MarkedState> => {
   const ctx = context as Ctx;
   const [src, decisions] = await Promise.all([readSourceAsUser(ctx.extension.issue.key), getDecisions()]);
-  return { notInLedger: unrecordedMarked(src.parts, decisions), truncated: src.truncated };
+  return {
+    notInLedger: unrecordedMarked(src.parts, decisions),
+    truncated: src.truncated,
+    pagesText: src.pages ? pageStatusText(src.pages) : "",
+  };
 });
 
 export const handler = resolver.getDefinitions();

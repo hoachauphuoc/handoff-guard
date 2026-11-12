@@ -1,4 +1,5 @@
 import type { DecisionSource, Proposal } from "../decisions/types";
+import { pageStatusText } from "../decisions/pages";
 import { REASON_TEXT, validateCandidates } from "../decisions/validate";
 import { handoffFrom, previewHandoff } from "../handoff/build";
 import type { HandoffRecord } from "../handoff/types";
@@ -216,9 +217,10 @@ export async function runReadDecisionSource(payload: unknown, deps: Deps): Promi
       issueKey: key,
       parts: src.parts,
       truncated: src.truncated,
-      quote: `Handoff Guard read ${count(src.parts.length, "text part")} of ${key} (description and comments you can see)${
+      ...(src.pages ? { pages: src.pages } : {}),
+      quote: `Handoff Guard read ${count(src.parts.length, "text part")} of ${key} (description, comments and linked Confluence pages you can see)${
         src.truncated ? "; the text was cut (20,000 characters)" : ""
-      }. Quote evidence from these parts only.`,
+      }. ${src.pages ? pageStatusText(src.pages) + " " : ""}Quote evidence from these parts only.`,
     };
   } catch (e) {
     return failure(schema, key, e);
@@ -330,7 +332,7 @@ export async function runGatherHandoffContext(payload: unknown, accountId: strin
     const record = await deps.getRecord(issueId);
     const people = await readPeople(issueId, deps);
     const comments = src.parts
-      .filter((p) => p.from.includes(" comment "))
+      .filter((p) => p.from.startsWith(`${key} comment `))
       .slice(0, MAX_BRIEF_COMMENTS)
       .map(({ from, text }) => ({ from, text: text.slice(0, MAX_BRIEF_COMMENT_CHARS) }));
     return {

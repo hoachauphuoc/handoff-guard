@@ -1,4 +1,5 @@
 import type { Constraint, DecisionScope } from "../rules/types";
+import type { PageStatus } from "./pages";
 
 /**
  * A decision someone found in text but no person has confirmed. It has no `status` and no `source` on
@@ -23,4 +24,6 @@ export type DecisionSource = {
   labels: string[];
   parts: SourcePart[];
   truncated: boolean;
+  /** What happened to linked Confluence pages. Absent when no page read was attempted. */
+  pages?: PageStatus;
 };

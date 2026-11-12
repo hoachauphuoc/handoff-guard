@@ -21,6 +21,10 @@ export function sameDecision(decisions: Decision[], scope: DecisionScope, constr
   return decisions.find((d) => d.status === "decided" && ruleKey(d.scope, d.constraints) === want);
 }
 
+const PAGE = "Confluence page ";
+const sourceOf = (from: string): Decision["source"] =>
+  from.startsWith(PAGE) ? { kind: "confluence", ref: from.slice(PAGE.length) } : { kind: "jira", ref: from.replace(/ description$/, "") };
+
 export type ConfirmResult =
   | { ok: true; proposals: Proposal[]; decisions: Decision[] }
   | { ok: false; reason: "not_found" };
@@ -46,7 +50,7 @@ export function confirmProposal(
     id: "d-" + fnv1a(p.id),
     title: p.title,
     status: "decided",
-    source: { kind: "jira", ref: p.evidence.from.replace(/ description$/, "") },
+    source: sourceOf(p.evidence.from),
     scope: p.scope,
     constraints: p.constraints,
     confirmedBy: who,

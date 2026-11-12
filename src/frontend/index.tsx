@@ -224,6 +224,7 @@ const App = () => {
       {markedError !== null && (
         <Text>{`Marked decisions could not be read: ${markedError.includes("Allow access") ? CONSENT_TEXT : markedError}`}</Text>
       )}
+      {marked !== null && marked.pagesText !== "" && <Text>{marked.pagesText}</Text>}
       {marked !== null && marked.notInLedger.length > 0 && (
         <SectionMessage appearance="information" title="Marked decisions not in the ledger">
           <Stack space="space.050">
@@ -235,7 +236,7 @@ const App = () => {
             {marked.notInLedger.slice(0, 5).map((m, i) => (
               <Text key={i}>{`• "${m.text}" (${m.from})`}</Text>
             ))}
-            {marked.truncated && <Text>Only the first 20,000 characters of the description and comments were read.</Text>}
+            {marked.truncated && <Text>Only the first 20,000 characters of the description, comments and linked pages were read.</Text>}
             <Text>Ask Rovo to turn them into proposals, then confirm the ones you agree with.</Text>
             <Button onClick={() => void askRovo(`Propose decisions for ${state.issueKey} from its marked decisions.`)}>
               Find decisions with Rovo
@@ -296,7 +297,7 @@ const App = () => {
         )}
       </Stack>
       <Button onClick={() => void askRovo(`Explain the Handoff Guard check for ${state.issueKey}.`)}>Explain with Rovo</Button>
-      <Button onClick={() => void askRovo(`Propose decisions for ${state.issueKey} from its description and comments.`)}>
+      <Button onClick={() => void askRovo(`Propose decisions for ${state.issueKey} from its description, comments and linked pages.`)}>
         Find decisions with Rovo
       </Button>
       {rovoNote && <Text>{rovoNote}</Text>}

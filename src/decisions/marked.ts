@@ -3,7 +3,7 @@ import type { SourcePart } from "./types";
 import { MAX_QUOTE, normalise } from "./validate";
 
 export type MarkedDecision = { from: string; text: string };
-export type MarkedState = { notInLedger: MarkedDecision[]; truncated: boolean };
+export type MarkedState = { notInLedger: MarkedDecision[]; truncated: boolean; pagesText: string };
 
 /**
  * Marked decisions that no confirmed decision was made from. A decision counts as recorded when the words
