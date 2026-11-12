@@ -1,6 +1,7 @@
 import type { Decision } from "../rules/types";
 import type { Fingerprint } from "./drift";
-import { readBackProblems } from "./ipass";
+import { READ_BACK_MAX, READ_BACK_MIN, readBackProblems } from "./ipass";
+import { contradictions, type Contradiction } from "./teachback";
 import type { HandoffRecord } from "./types";
 
 export type AckResult =
@@ -40,12 +41,13 @@ export function acknowledge(
 export type AckAllResult =
   | { ok: true; record: HandoffRecord }
   | { ok: false; reason: "not_receiver" | "no_protocol" | "nothing_to_acknowledge" }
-  | { ok: false; reason: "read_back"; problems: string[] };
+  | { ok: false; reason: "read_back"; problems: string[]; contradictions: Contradiction[] };
 
 /**
  * One read-back acknowledges every binding decision. It must address all of them, not only the ones that are
  * new or stale: it replaces the earlier read-back, and each acknowledgement takes a new time and baseline, so
- * a stale acknowledgement is cleared by giving the read-back again.
+ * a stale acknowledgement is cleared by giving the read-back again. A read-back that addresses a decision but
+ * contradicts it (teach-back) is refused too, with the code's reason.
  */
 export function acknowledgeAll(
   record: HandoffRecord,
@@ -59,7 +61,11 @@ export function acknowledgeAll(
   if (record.protocol !== 1) return { ok: false, reason: "no_protocol" };
   if (binding.length === 0) return { ok: false, reason: "nothing_to_acknowledge" };
   const problems = readBackProblems(readBack, binding);
-  if (problems.length > 0) return { ok: false, reason: "read_back", problems };
+  const length = readBack.trim().length;
+  // A read-back of the wrong length gets only the length reason; there is nothing to compare yet.
+  const contradicted = length < READ_BACK_MIN || length > READ_BACK_MAX ? [] : contradictions(readBack, binding, nowIso);
+  if (problems.length > 0 || contradicted.length > 0)
+    return { ok: false, reason: "read_back", problems: [...problems, ...contradicted.map((c) => c.reason)], contradictions: contradicted };
   const ids = binding.map((d) => d.id);
   return {
     ok: true,

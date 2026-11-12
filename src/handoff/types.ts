@@ -1,4 +1,5 @@
 import type { Advisory } from "../rules/advisories";
+import type { Explanation } from "./explain";
 import type { Fingerprint } from "./drift";
 import type { Action } from "./ipass";
 import type { Proposal } from "../decisions/types";
@@ -59,4 +60,6 @@ export type PanelState = {
 };
 
 /** A refused read-back is an answer, not a failure: the reasons come back as data and nothing is stored. */
-export type AcknowledgeAllReply = { state: PanelState; reasons?: never } | { state?: never; reasons: string[] };
+export type AcknowledgeAllReply =
+  | { state: PanelState; reasons?: never; explanation?: never }
+  | { state?: never; reasons: string[]; explanation?: Explanation };

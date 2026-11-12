@@ -38,6 +38,8 @@ Handoff Guard follows the structure of the I-PASS handoff protocol (illness seve
 
 The read-back checks that each decision is addressed, not that it was understood.
 
+Teach-back: a read-back that addresses a decision but contradicts it is refused too, by plain code. That covers a date later than a date limit, a required label or component said to be skipped, optional or not needed, and a forbidden one said to be added. The refusal gives the code's reason. One sentence beside it, telling the receiver what to write instead, is written by a model through Forge LLMs (Claude Haiku 4.5, run on Atlassian's platform). The panel labels that sentence as model-written, and says so when it is missing. It never makes, lifts or changes a refusal.
+
 In hospitals, I-PASS was linked to fewer medical errors and preventable adverse events (Starmer et al., N Engl J Med 2014;371:1803-1812: 23% and 30% fewer). Those are clinical results from a hospital study. They are not a result of this app, which does not measure errors, harm or reassignments.
 
 ## Honesty notes
@@ -62,6 +64,8 @@ The one disagreement: a description that is only filler ("tbd see above"). Muse 
 
 - An agent can be the receiver of a handoff, by assigning it in the Assignee field, but it cannot acknowledge, so that handoff stays Needs info until a person changes the receiver.
 - The read-back checks that each decision is addressed, not that it was understood.
+- Teach-back catches only a fixed list of patterns: dates later than a limit, a negation word (skip, without, no, not, …) within three words before what a required value is about, "optional" or "not needed" after it, and an adding word before a forbidden value ("keep the hotfix label off" is not read as adding it, because a removal word follows). A date with no year is read as its next occurrence from the day of the read-back. Other contradictions are not caught, and a negation about something else nearby can be read as one (the receiver then rewrites the read-back).
+- The model sentence beside a teach-back refusal is sent the read-back and the code's reasons. Its wording varies between attempts.
 - A handoff prepared before read-back existed keeps one acknowledgement per decision, and the panel says that no read-back was checked.
 
 ## Privacy and security

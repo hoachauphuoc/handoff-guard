@@ -1,6 +1,6 @@
 # Privacy
 
-Handoff Guard stores only work records, in Forge storage of the installation. It has no external service and no network egress (the manifest has no `permissions.external`).
+Handoff Guard stores only work records, in Forge storage of the installation. It has no external service and no network egress (the manifest has no `permissions.external`). It uses Forge LLMs, which runs the model on Atlassian's platform (see below).
 
 ## What is stored
 
@@ -14,6 +14,10 @@ Handoff Guard stores only work records, in Forge storage of the installation. It
 - No chat. Rovo conversations are not saved by the app; the agent prompt forbids it.
 - No copy of work item descriptions, comments or Confluence pages beyond the short evidence quote in a proposal or confirmed decision. Page titles of linked pages are shown at request time and kept only inside that quote reference.
 - No Teamwork Graph results: they are read at request time and not saved. Teamwork Graph people are shown at request time and not stored by the app; Rovo's own chat history is governed by Atlassian.
+
+## Forge LLMs
+
+When a read-back is refused because it contradicts a decision, the app sends the read-back and the code's refusal reasons (which name the decision titles and values) to Forge LLMs and shows the one-sentence answer beside the reasons. Nothing else is sent. The answer is not stored. Forge LLMs runs the model inside Atlassian's platform with no data egress, and the app keeps the Runs on Atlassian eligibility (Atlassian: Forge LLMs API). Atlassian applies its own moderation to these requests.
 
 ## Who sees what
 

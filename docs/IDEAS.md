@@ -238,4 +238,60 @@ Keep the build order in section (d). Round two changes two things:
 3. **Replay plus Bounce Autopsy (3 + 8)** stay as the "loop" story if time remains.
 4. **Idea 13 (Drift) is a two-day filler** that merges with (E). **Idea 12 (JQL/Automation)** is the best reach story for Potential Impact but has a freshness risk; take it only if (A) to (D) are done by about 2026-12-05.
 
-## Tavily calls used: 82 (29 in round one under the 30-call limit; 17 in round two and 36 in round three, after the owner asked to continue)
+## (g) Fourth research round (30 more Tavily calls, 2026-11-12, after I-PASS, Drift, replay and the assignee spike were built)
+
+Each lead was checked against `src/` before it went in here. Two leads were dropped because the code already does them: reading Confluence decision nodes (`markedDecisions` in `src/adf.ts` is already used by `src/decisions/pages.ts`) and reading people from the Teamwork Graph (`src/twg/`).
+
+### New facts that change plans
+
+- **There are four bonus prizes, not two.** Besides Best Agents and Best MCP there are **Best apps with Teamwork Graph integration** (an app that "connects data into the graph and/or consumes data from the Teamwork Graph API") and **Best Marketplace published app**. The second needs only a listing that is published *or submitted for listing*, with a link to the listing or the review ticket. Each prize is $1,500 to six projects. [Devpost rules](https://codegeist2026.devpost.com/rules), [LeanZero summary](https://leanzero.net/tutorials/atlassian-teamwork-graph-api-forge-rovo-agent). Handoff Guard already reads the graph (`src/twg/`), so it may qualify for the Teamwork Graph prize as it stands. Submitting for listing is owner work, not code.
+- **The Teamwork Graph API moved to Preview on 15 October 2026.** It now uses object-level scopes (`read:graph:<object>:<product>`) and "curated" queries, and the broad product-wide scopes "are being retired". [Call the Teamwork Graph API](https://developer.atlassian.com/platform/teamwork-graph/call-the-teamwork-graph-api), [LeanZero](https://leanzero.net/tutorials/atlassian-teamwork-graph-api-forge-rovo-agent). The manifest declares `read:graph:issue:jira` and `read:graph:user:atlassian`, and `src/twg/` uses saved Cypher queries. **Unverified:** whether those names and the saved-query route still work after the change. A community thread asks the same thing for install-link apps, and a site enrolled in no EAP may still need an allowlist step; it had no answer in the snippet. [Developer community](https://community.developer.atlassian.com/t/codegeist-2026-is-rovo-on-judges-test-sites-and-can-an-install-link-app-call-teamwork-graph-preview-without-eap/103827). Check this before relying on that prize.
+- **The same thread asks whether Rovo is on the judges' test sites.** If it is not, every Rovo-only feature shows only its fallback text in judging. Principle 3 already names the source, but the video should not lean only on Rovo.
+- **Forge LLMs: Claude inside Forge with no egress.** It was in Preview, and an Atlassian blog now says it is GA. It is called through `chat()` in `@forge/llm`, and an app that uses it keeps the Runs on Atlassian badge. [Forge LLMs API](https://developer.atlassian.com/platform/forge/runtime-reference/forge-llms-api), [GA blog](https://www.atlassian.com/blog/development/forge-llms-api-is-now-ga-heres-how-you-can-build-ai-native-apps-on-atlassian), [Runs on Atlassian](https://developer.atlassian.com/platform/forge/runs-on-atlassian).
+  - Cost: billed to the developer, no free quota, billing from 1 June 2026. Haiku 4.5 costs 10 credits per 1M tokens ($1 input, $5 output); Opus 4.6 costs $5 input and $25 output. [Pricing](https://developer.atlassian.com/platform/forge/runtime-reference/forge-llms-api-pricing), [Community post](https://community.developer.atlassian.com/t/now-in-preview-build-ai-powered-forge-apps-with-atlassian-hosted-llms/101045).
+  - This is the answer to "the AI layer is thin and depends on Rovo". The app can write its own explanation even on a site without Rovo.
+  - Cost to the owner: a few cents a day at demo volume (my estimate, not a measured figure).
+- **Agent identity decides who appears in Jira.** A Studio agent runs either on the **user's account** (its actions are logged as that person) or on its **own agent account** (actions are credited to the agent). [Understand Rovo agent accounts](https://support.atlassian.com/studio/docs/understand-rovo-agent-accounts), [Atlas Bench](https://www.atlas-bench.com/resources/approve-and-audit-rovo-agents).
+  - Consequence for the assignee route: on a user-account agent, a change the agent makes looks like the person made it. Only an agent-account agent can show up as a distinct receiver.
+  - Add this to `docs/SPIKE-AGENT-GATE.md`. It narrows what the "agent as receiver" case can claim.
+- **Automation for Jira has "Use agent" and "Use Rovo" actions.** Both return a response variable that the next action in the rule can use. [Community guide](https://community.atlassian.com/forums/discussion/3275155/rovo-agents-and-automation-in-jira-building-a-sprint-release-manager-step-by-step). This is a second route for Idea 12: an Automation rule can call the Handoff Guard agent on "assignee changed" without a new module. Unverified on the dev site.
+- **Confluence's Decision report cannot see decisions made in Jira** (accepted community answer). [Community](https://community.atlassian.com/forums/discussion/3106288/do-decisions-in-jira-snyc-to-confluence-decision-reports). Handoff Guard keeps decisions from both places in one ledger, so this is a pitch line, not a feature to build.
+- **Evidence:**
+  - The NEJM citation is now checked: 10,740 admissions; medical errors fell 23% (24.5 to 18.8 per 100 admissions); preventable adverse events fell 30% (4.7 to 3.3 per 100). [NEJM](https://www.nejm.org/doi/full/10.1056/NEJMsa1405556), [PubMed 25372088](https://pubmed.ncbi.nlm.nih.gov/25372088). The open item in `docs/PROGRESS.md` can be closed.
+  - Teach-back (AHRQ TeamSTEPPS): the receiver says it back in their own words; if anything is wrong you "clarify and check again". [AHRQ](https://www.ahrq.gov/teamstepps-program/curriculum/communication/tools/teachback.html), [PLOS One systematic review](https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0231350).
+  - Turnover: Rigby, Zhu, Donadelli and Mockus (ICSE 2016) define "Knowledge at Risk" on abandoned files, meaning files whose authors have all left, in Chrome and at Avaya. [Paper PDF](https://users.encs.concordia.ca/~pcr/paper/Rigby2016ICSE.pdf).
+
+### 14. Teach-back loop: a read-back that contradicts a decision is refused (plain code), and Forge LLMs explains it (advisory)
+
+- **Pitch:** today the read-back must *mention* every binding decision. Teach-back says the real check is whether the receiver got it right. The rules can catch one class of error exactly: the read-back names a value that contradicts a decision. Example: "ship by 15 Dec" when the decision says 31 Dec, or "skip legal review" when that label is required. Forge LLMs then writes one sentence for the sender saying what to clarify, and the loop repeats ("clarify and check again").
+- **Pain:** teach-back is the evidence-based form of read-back; mention-only is the weaker form (AHRQ, PLOS One, above). Section (f) admitted this limit in the I-PASS idea.
+- **Why nobody does it:** I found no Jira tool that checks a receiver's own words against recorded decisions. The handoff tools in sections (a) and (f) store notes; they do not check them.
+- **Modules:** no new module. A pure `contradictions(readBack, decisions)` in `src/handoff/` (dates parsed and compared with a date limit; required or forbidden label values next to a negation word) and `@forge/llm` `chat()` with Haiku for the explanation.
+- **Fit:**
+  - A contradiction is a plain-code refusal and the model never decides; its text is labelled as written by the model.
+  - If the LLM call fails, the code's own reason is shown and the panel says so (principle 3).
+  - The read-back is already stored; no chat is stored.
+  - **Gap:** negation detection in plain code is shallow. Accept only a fixed list of patterns and say so in Limits.
+- **Size:** 2–3 days (1 for contradictions with tests, 1 for Forge LLMs with fallback, 0.5 for the panel and README).
+- **Risk and first spike:** the `@forge/llm` scope or manifest entry on the current Forge CLI, and whether billing needs a payment method on the developer account. Spike: one `chat()` call from the dev environment. Owner check: billing setup.
+- **Video scene:** the receiver types "Got it, I'll ship by Dec 15 and skip legal review." The box turns red: "Contradicts *Ship before 31 Dec*? No: 15 Dec is earlier, fine. Contradicts *Legal review required*: yes." The receiver retypes, and the box turns green.
+
+### 15. Knowledge at risk: decisions and handoffs held by someone who left
+
+- **Pitch:** a project page section lists in-flight handoffs whose sender has left, plus decisions whose only confirmer has left. A deactivated account and an unanswered acknowledgement count as "left". It is Rigby's "abandoned file" idea applied to decisions.
+- **Pain:** turnover-induced knowledge loss (Rigby et al., ICSE 2016). Handover documents "often go unread" when people leave ([Sensay press release](https://finance.yahoo.com/news/sensay-launches-world-first-ai-110000219.html), a vendor claim). Out-of-office reassignment apps move the assignee but carry no briefing ([Out of Office Automation for Jira](https://marketplace.atlassian.com/apps/1218305/out-of-office-automation-for-jira-outlook-google-tempo)).
+- **Why nobody does it:** offboarding tools in Jira are checklists and templates ([Atlassian Community](https://community.atlassian.com/forums/discussion/3316580/employee-offboarding-in-jira-how-to-build-a-secure-cross-team-process-with-or-without-jsm)). None of them points at the decisions a person held.
+- **Modules:** existing Decisions project page. Reads the user's `active` field from Jira (already in scope with `read:jira-user`; check the manifest).
+- **Fit:** an advisory list only, which never changes a verdict. No new storage.
+- **Size:** 1.5–2 days.
+- **Risk:** the dev site has no deactivated user. The scene needs a second test account that the owner deactivates.
+- **Video scene:** 10 seconds on the Decisions page showing "2 decisions are held only by someone who has left."
+
+### Ranking after round four
+
+1. **Owner actions worth more than code:** submit the app for Marketplace listing (bonus prize), and check that `src/twg/` works under the October Teamwork Graph Preview (Teamwork Graph prize). Neither needs a new feature.
+2. **Idea 14 (teach-back with Forge LLMs)** is the best answer to "the AI layer is thin". The code still decides; the AI becomes visible on every handoff and does not depend on Rovo being on the judges' site.
+3. **Idea 12 via the Automation "Use agent" action** before a JQL function. It is cheaper and reuses the agent.
+4. **Idea 15** only if the build is done by about 2026-12-10.
+
+## Tavily calls used: 112 (29 in round one under the 30-call limit; 17 in round two, 36 in round three and 30 in round four, after the owner asked to continue)

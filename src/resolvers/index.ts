@@ -15,6 +15,7 @@ import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import { driftByDecision, fingerprintOf, staleAcks } from "../handoff/drift";
 import type { AcknowledgeAllReply, HandoffRecord, PanelState } from "../handoff/types";
 import { readPageVersionAsUser } from "../confluence";
+import { explainRefusal } from "../llm";
 import { openItemsAsUser, readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
@@ -139,7 +140,12 @@ resolver.define("acknowledgeAll", async ({ context, payload }) => {
   const [decisions, record] = await Promise.all([getDecisions(), getRecord(issueId)]);
   if (!record) throw new Error("No handoff has been prepared for this work item.");
   const out = acknowledgeAll(record, ctx.accountId ?? null, bindingDecisions(decisions, item), readBack, new Date().toISOString(), fingerprintOf(item));
-  if (!out.ok && out.reason === "read_back") return { reasons: out.problems } satisfies AcknowledgeAllReply;
+  // A model sentence is asked for only when the code found a contradiction; it is shown beside the reasons.
+  if (!out.ok && out.reason === "read_back")
+    return {
+      reasons: out.problems,
+      ...(out.contradictions.length > 0 ? { explanation: await explainRefusal(readBack, out.contradictions) } : {}),
+    } satisfies AcknowledgeAllReply;
   if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
   await putRecord(issueId, out.record);
   return { state: await panelState(ctx) } satisfies AcknowledgeAllReply;

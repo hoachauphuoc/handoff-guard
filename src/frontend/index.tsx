@@ -11,6 +11,8 @@ import type { AcknowledgeAllReply, PanelState } from "../handoff/types";
 import { GUIDE_SOURCE, PRACTICE_NONE, PRACTICE_TITLE, guideView, type StepNeed, type StepState } from "../guide/steps";
 import { HINTS } from "../guide/hints";
 import { BEFORE_READ_BACK, CONTINGENCY_MAX, READ_BACK_MAX, READ_BACK_MIN, READ_BACK_NOTE } from "../handoff/ipass";
+import { explanationNote, type Explanation } from "../handoff/explain";
+import { TEACH_BACK_NOTE } from "../handoff/teachback";
 import type { Verdict } from "../rules/types";
 
 const LOOK: Record<Verdict, { text: string; appearance: "success" | "moved" | "removed" }> = {
@@ -47,6 +49,7 @@ const App = () => {
   // Refusals a person can cause are answers, not failures to check: they appear beside their box and the panel stays.
   const [contingencyNote, setContingencyNote] = useState<string | null>(null);
   const [ackNotes, setAckNotes] = useState<string[]>([]);
+  const [explanation, setExplanation] = useState<Explanation | null>(null);
   const [guideOpen, setGuideOpen] = useState<boolean | null>(null);
 
   // Rovo only explains and proposes. Whatever happens here, the verdict shown above stays the rule check's.
@@ -91,12 +94,16 @@ const App = () => {
   const acknowledgeAll = () => {
     setBusy(true);
     setAckNotes([]);
+    setExplanation(null);
     return invoke<AcknowledgeAllReply>("acknowledgeAll", { readBack })
       .then(
         (r) => {
           const reply = r as AcknowledgeAllReply;
           if (reply.state) setState(reply.state);
-          else setAckNotes(reply.reasons);
+          else {
+            setAckNotes(reply.reasons);
+            setExplanation(reply.explanation ?? null);
+          }
         },
         (e) => setAckNotes([plainError(e)]),
       )
@@ -273,6 +280,8 @@ const App = () => {
           {ackNotes.map((n, i) => (
             <Text key={i}>{n}</Text>
           ))}
+          {explanation && "text" in explanation && <Text>{explanation.text}</Text>}
+          {explanation && <Text>{explanationNote(explanation)}</Text>}
           {protocol && record.readBack && <Text>{`Read-back from the receiver: "${record.readBack}"`}</Text>}
           {protocol && state.isReceiver && waiting.length > 0 && (
             <>
@@ -286,7 +295,7 @@ const App = () => {
               </Button>
             </>
           )}
-          {protocol && <Text>{READ_BACK_NOTE}</Text>}
+          {protocol && <Text>{`${READ_BACK_NOTE} ${TEACH_BACK_NOTE}`}</Text>}
         </>
       ) : (
         <Text>No handoff is prepared for this work item. Pick a receiver above, then click Prepare handoff.</Text>

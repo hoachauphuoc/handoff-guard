@@ -176,19 +176,19 @@ describe("acknowledging under protocol 1", () => {
 
   it("refuses while any decision is unaddressed, and says which", () => {
     const out = acknowledgeAll(record(), "b", binding, "I will keep the legal-reviewed label on, thanks a lot", "t1", fp);
-    expect(out).toEqual({ ok: false, reason: "read_back", problems: ['Your read-back does not mention "Ship by 31 December" (date 2026-12-31).'] });
+    expect(out).toEqual({ ok: false, reason: "read_back", problems: ['Your read-back does not mention "Ship by 31 December" (date 2026-12-31).'], contradictions: [] });
   });
 
   it("answers a refused read-back with every reason as data and stores nothing", () => {
     const r = record();
     const out = acknowledgeAll(r, "b", binding, "I will follow everything that was decided here", "t1", fp);
-    expect(out).toEqual({ ok: false, reason: "read_back", problems: expect.arrayContaining([expect.stringContaining("Launch work"), expect.stringContaining("Ship by")]) });
+    expect(out).toEqual({ ok: false, reason: "read_back", problems: expect.arrayContaining([expect.stringContaining("Launch work"), expect.stringContaining("Ship by")]), contradictions: [] });
     expect("record" in out).toBe(false);
     expect(r).toEqual(record());
     // The resolver returns the reasons before it writes, and the panel shows them without the Forge prefix.
     const handler = resolvers.slice(resolvers.indexOf('resolver.define("acknowledgeAll"'), resolvers.indexOf('resolver.define("saveContingency"'));
-    expect(handler.indexOf("return { reasons")).toBeGreaterThan(-1);
-    expect(handler.indexOf("return { reasons")).toBeLessThan(handler.indexOf("putRecord"));
+    expect(handler.indexOf("reasons: out.problems")).toBeGreaterThan(-1);
+    expect(handler.indexOf("reasons: out.problems")).toBeLessThan(handler.indexOf("putRecord"));
     expect(panel).toContain("plainError(e)");
   });
 

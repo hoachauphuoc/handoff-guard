@@ -191,6 +191,11 @@ modules:
       handler: index.proposeDecisionsAction
     - key: gather-fn
       handler: index.gatherHandoffContextAction
+  # Forge LLMs writes the sentence beside a teach-back refusal; the refusal itself is plain code.
+  llm:
+    - key: llm-app
+      model:
+        - claude
 resources:
   - key: main
     path: src/frontend/index.tsx
