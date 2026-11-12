@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
 import type { PanelState } from "../handoff/types";
+import { GUIDE_SOURCE, PRACTICE_NONE, PRACTICE_TITLE, guideView, type StepNeed, type StepState } from "../guide/steps";
+import { HINTS } from "../guide/hints";
 import type { Verdict } from "../rules/types";
 
 const LOOK: Record<Verdict, { text: string; appearance: "success" | "moved" | "removed" }> = {
@@ -10,12 +12,22 @@ const LOOK: Record<Verdict, { text: string; appearance: "success" | "moved" | "r
   blocked: { text: "Blocked", appearance: "removed" },
 };
 
+const STEP_LOOK: Record<StepState, { text: string; appearance: "success" | "inprogress" | "default" | "new" }> = {
+  done: { text: "Done", appearance: "success" },
+  next: { text: "Next", appearance: "inprogress" },
+  todo: { text: "To do", appearance: "default" },
+  manual: { text: "Manual", appearance: "new" },
+};
+const NEEDS: Record<StepNeed, string> = { teammate: "a teammate", rovo: "Rovo", admin: "a Jira admin" };
+
 const App = () => {
   const [state, setState] = useState<PanelState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [rovoNote, setRovoNote] = useState<string | null>(null);
+  // null: follow the default (open until a handoff exists); a click on the toggle overrides it.
+  const [guideOpen, setGuideOpen] = useState<boolean | null>(null);
 
   // Rovo only explains. Whatever happens here, the verdict shown above stays the rule check's.
   const explain = async (issueKey: string) => {
@@ -56,15 +68,47 @@ const App = () => {
     const consent = error.includes("Allow access");
     return (
       <SectionMessage appearance="error" title="Handoff Guard could not check this work item">
-        <Text>{consent ? "Allow access: Handoff Guard needs your permission to read this work item as you." : error}</Text>
+        <Text>{consent
+            ? "Allow access: Handoff Guard needs your permission to read this work item as you. Click Allow access when Jira asks, then reload the page."
+            : error}</Text>
       </SectionMessage>
     );
   }
   if (!state) return <Text>Checking the handoffâ€¦</Text>;
 
   const { record, result } = state;
+  const guide = guideView(state);
+  const open = guideOpen ?? record === null;
   return (
     <Stack space="space.100">
+      <Text>
+        Getting started: {guide.doneCount} of {guide.total} steps done.
+      </Text>
+      <Button onClick={() => setGuideOpen(!open)}>{open ? "Hide steps" : "Show steps"}</Button>
+      {open &&
+        guide.steps.map((step) => (
+          <Stack key={step.id} space="space.050">
+            <Text>
+              <Lozenge appearance={STEP_LOOK[step.state].appearance}>{STEP_LOOK[step.state].text}</Lozenge> {step.title}
+              {step.needs ? ` (needs ${NEEDS[step.needs]})` : ""}
+            </Text>
+            {(step.state === "next" || step.state === "manual") && <Text>{step.how}</Text>}
+            {step.id === "item_ready" && (
+              <SectionMessage appearance="information" title={PRACTICE_TITLE}>
+                {state.practiceFindings.length === 0 ? (
+                  <Text>{PRACTICE_NONE}</Text>
+                ) : (
+                  state.practiceFindings.map((f, i) => (
+                    <Text key={i}>
+                      • {f.message} {HINTS[f.rule]}
+                    </Text>
+                  ))
+                )}
+              </SectionMessage>
+            )}
+          </Stack>
+        ))}
+      {open && <Text>{GUIDE_SOURCE}</Text>}
       <UserPicker
         label="Receiver"
         name="receiver"
@@ -101,7 +145,7 @@ const App = () => {
           ))}
         </>
       ) : (
-        <Text>No handoff is prepared for this work item. Pick a receiver and prepare one.</Text>
+        <Text>No handoff is prepared for this work item. Pick a receiver above, then click Prepare handoff.</Text>
       )}
       {state.decisionCount === 0 && (
         <Button isDisabled={busy} onClick={() => call("loadSampleDecisions")}>

@@ -1,13 +1,24 @@
 import Resolver from "@forge/resolver";
 import { acknowledge } from "../handoff/acknowledge";
-import { handoffFrom } from "../handoff/build";
+import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import type { HandoffRecord, PanelState } from "../handoff/types";
 import { readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
+import type { Finding } from "../rules/types";
 import { mergeDecisions, sampleDecisions } from "../samples/decisions";
 import { getDecisions, getRecord, putDecisions, putRecord } from "../store";
 
 const resolver = new Resolver();
+
+// Only findings about the work item itself: the practice handoff has made-up people, so receiver and
+// acknowledgement findings would be noise.
+const PRACTICE_RULES: Finding["rule"][] = [
+  "empty_description",
+  "no_due_date",
+  "invalid_due_date",
+  "contradicts_decision",
+  "invalid_constraint",
+];
 
 type Ctx = { accountId?: string; extension: { issue: { key: string; id: string } } };
 
@@ -15,6 +26,10 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
   const { item, issueId } = await readItem(ctx.extension.issue.key);
   const [decisions, record] = await Promise.all([getDecisions(), getRecord(issueId)]);
   const viewerId = ctx.accountId ?? null;
+  const practice = checkHandoff(
+    walkthroughHandoff(item, viewerId, bindingDecisions(decisions, item).map((d) => d.id)),
+    decisions,
+  );
   return {
     issueKey: ctx.extension.issue.key,
     record,
@@ -22,6 +37,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     viewerId,
     isReceiver: record !== null && viewerId !== null && viewerId === record.toId,
     decisionCount: decisions.length,
+    practiceFindings: practice.findings.filter((f) => PRACTICE_RULES.includes(f.rule)),
   };
 }
 

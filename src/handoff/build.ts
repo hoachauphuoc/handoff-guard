@@ -68,3 +68,15 @@ export function previewHandoff(
 ): Handoff {
   return { item, fromId: record?.fromId ?? callerId, toId: receiverId, acknowledged: [] };
 }
+
+export const WALKTHROUGH_RECEIVER = "example-receiver (practice)";
+
+/**
+ * A made-up handoff used only by the panel's practice check, so a newcomer sees what is missing from the
+ * work item before choosing a receiver. Every binding decision counts as acknowledged, which keeps the
+ * practice findings about the work item itself. Nothing built here may reach the validator, the Rovo
+ * actions or the measure script: it is not a real handoff and must never produce a verdict.
+ */
+export function walkthroughHandoff(item: WorkItem, viewerId: string | null, bindingIds: string[]): Handoff {
+  return { item, fromId: viewerId ?? "example-sender (practice)", toId: WALKTHROUGH_RECEIVER, acknowledged: bindingIds };
+}

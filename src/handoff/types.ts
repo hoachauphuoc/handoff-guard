@@ -1,4 +1,4 @@
-import type { HandoffResult } from "../rules/types";
+import type { Finding, HandoffResult } from "../rules/types";
 
 /** A prepared handoff, stored per work item. Sender and receiver are Atlassian account ids. */
 export type HandoffRecord = {
@@ -19,4 +19,6 @@ export type PanelState = {
   viewerId: string | null;
   isReceiver: boolean;
   decisionCount: number;
+  /** Findings about the work item itself from a made-up handoff. Deliberately not a verdict. */
+  practiceFindings: Finding[];
 };
