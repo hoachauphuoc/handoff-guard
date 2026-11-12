@@ -11,10 +11,11 @@ import { acknowledge } from "../handoff/acknowledge";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import type { HandoffRecord, PanelState } from "../handoff/types";
 import { openItemsAsUser, readItemAsUser as readItem } from "../jira";
-import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
+import { bindingDecisions, checkHandoff, isIsoDate } from "../rules/checkHandoff";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
 import { changeText, suggestFixes } from "../rules/feasible";
 import { impactOf } from "../rules/impact";
+import { replayDiff, type ReplayChange } from "../rules/replay";
 import type { Proposal } from "../decisions/types";
 import type { Finding } from "../rules/types";
 import { mergeDecisions, sampleDecisions } from "../samples/decisions";
@@ -182,6 +183,25 @@ resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageSt
     open.capped,
     new Date().toISOString(),
   );
+});
+
+export type ReplayState = { date: string; changes: ReplayChange[]; scanned: number; capped: boolean };
+
+// Replays the project's stored handoffs against the decisions of an earlier date. The clock is read here, at
+// the edge, and passed to the pure functions; nothing is written.
+resolver.define("replayOn", async ({ context, payload }): Promise<ReplayState> => {
+  const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
+  const date = String((payload as { date?: string }).date ?? "");
+  const now = new Date();
+  const thenIso = `${date}T23:59:59.999Z`;
+  if (!isIsoDate(date) || Date.parse(thenIso) > now.getTime()) throw new Error("Pick a date that is today or earlier.");
+  const [open, decisions] = await Promise.all([openItemsAsUser(projectKey), getDecisions()]);
+  const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
+  const inputs = open.items.flatMap((i, n) => {
+    const r = records[n];
+    return r ? [{ item: i.item, fromId: r.fromId, toId: r.toId, acknowledged: r.acknowledged, acknowledgedAt: r.acknowledgedAt, preparedAt: r.preparedAt }] : [];
+  });
+  return { date, changes: replayDiff(inputs, decisions, thenIso, now.toISOString()), scanned: open.items.length, capped: open.capped };
 });
 
 // A person retires a decision from the Decisions page. The rules already ignore anything not "decided".

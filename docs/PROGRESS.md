@@ -161,3 +161,9 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Removed the now unused `sameDecision`. A date limit that differs is not an "opposite" case: a stricter candidate makes the old limit redundant and a looser one is already met.
 - 206 tests, `check.ps1` PASS, `npm run measure` unchanged (47/48).
 - Not observed on the site: the Supersede button, "Confirm and supersede" on a real proposal.
+
+### 2026-11-12, slice D: replay on a date (development 7.5.0)
+- `src/rules/replay.ts` (pure, no clock): `decisionsAsOf` (confirmed by then, not yet superseded; a decision with no `confirmedAt` counts as always in force, one superseded without a time as current), `replayAt` (the stored handoff against given decisions; acknowledgements given after the instant are ignored, ones with no time are kept), `replayDiff` (handoffs whose verdict differs between the date and now, with the decision titles that explain it). Today's side uses the stored statuses, not `decisionsAsOf`.
+- Decisions page: a date control (`replayOn` resolver; the clock is read in the resolver and a future date is refused) and the changed handoffs. The page says only decisions and acknowledgements are replayed and work item fields are read as they are now, because Jira history is not read.
+- 215 tests, `check.ps1` PASS. No scope added. `npm run measure` was not affected (replay is not imported by the rule check or the validator; a test pins that).
+- Not observed on the site: the date control and a real flip on MOBL.

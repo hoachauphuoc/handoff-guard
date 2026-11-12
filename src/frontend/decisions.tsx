@@ -1,14 +1,27 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, User } from "@forge/react";
+import ForgeReconciler, { Button, DatePicker, Lozenge, SectionMessage, Stack, Text, User } from "@forge/react";
 import { invoke } from "@forge/bridge";
 import type { DecisionsPageState } from "../decisions/page";
 import { count } from "../plural";
+import type { ReplayState } from "../resolvers";
 
 const VERDICT = { blocked: { text: "Blocked", appearance: "removed" }, needs_info: { text: "Needs info", appearance: "moved" } } as const;
 
 const App = () => {
   const [state, setState] = useState<DecisionsPageState | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [replay, setReplay] = useState<ReplayState | null>(null);
+  const [replayError, setReplayError] = useState<string | null>(null);
+
+  // A bad date or a failed read stays beside the control; it does not replace the page.
+  const replayOn = (date: string) =>
+    invoke<ReplayState>("replayOn", { date }).then(
+      (r) => {
+        setReplay(r as ReplayState);
+        setReplayError(null);
+      },
+      (e) => setReplayError(String(e)),
+    );
 
   const load = () =>
     invoke<DecisionsPageState>("getDecisionsPage").then(
@@ -79,6 +92,23 @@ const App = () => {
           )}
         </Stack>
       ))}
+      <Text>Replay on a date</Text>
+      <Text>
+        Pick a date to see which prepared handoffs would have had a different verdict then. Only decisions and acknowledgements are replayed;
+        work item fields are read as they are now.
+      </Text>
+      <DatePicker name="replay-date" onChange={(v: string) => void replayOn(v)} />
+      {replayError !== null && <Text>{replayError}</Text>}
+      {replay !== null && (
+        <Stack space="space.050">
+          <Text>
+            {`${replay.changes.length === 0 ? "No handoff differs" : `${count(replay.changes.length, "handoff")} differ${replay.changes.length === 1 ? "s" : ""}`} between ${replay.date} and today, among ${count(replay.scanned, "open work item")}${replay.capped ? " (list cut at 100)" : ""}.`}
+          </Text>
+          {replay.changes.map((c) => (
+            <Text key={c.key}>{`${c.key} ${c.summary}: ${c.then} then, ${c.now} now. ${c.changedBy.length > 0 ? `Changed by: ${c.changedBy.join("; ")}.` : "No decision explains the change."}`}</Text>
+          ))}
+        </Stack>
+      )}
       <Text>Handoffs in flight</Text>
       {state.inFlight.length === 0 && <Text>No prepared handoff in this project is waiting on anything.</Text>}
       {state.inFlight.map((h) => (
