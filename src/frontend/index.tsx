@@ -70,7 +70,7 @@ const App = () => {
       </SectionMessage>
     );
   }
-  if (!state) return <Text>Checking the handoffâ€¦</Text>;
+  if (!state) return <Text>Checking the handoff…</Text>;
 
   const { record, result } = state;
   const guide = guideView(state);
@@ -124,7 +124,7 @@ const App = () => {
             <Lozenge appearance={LOOK[result.verdict].appearance}>{LOOK[result.verdict].text}</Lozenge>
           </Text>
           {result.findings.map((f, i) => (
-            <Text key={i}>â€¢ {f.message}</Text>
+            <Text key={i}>• {f.message}</Text>
           ))}
           {result.binding.map((d) => (
             <Stack key={d.id} space="space.050">
