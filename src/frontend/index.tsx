@@ -183,12 +183,19 @@ const App = () => {
               <Text>
                 {d.title} (source: {d.source.kind} {d.source.ref})
               </Text>
-              {state.isReceiver && !record.acknowledged.includes(d.id) && (
+              {(state.drift[d.id] ?? []).length > 0 && (
+                <Text>{`${state.isReceiver ? "Changed since you acknowledged" : "Changed since the receiver acknowledged"}: ${(state.drift[d.id] ?? []).join("; ")}.`}</Text>
+              )}
+              {state.isReceiver && (!record.acknowledged.includes(d.id) || state.stale.includes(d.id)) && (
                 <Button isDisabled={busy} onClick={() => call("acknowledgeDecision", { decisionId: d.id })}>
-                  Acknowledge
+                  {state.stale.includes(d.id) ? "Acknowledge again" : "Acknowledge"}
                 </Button>
               )}
-              {record.acknowledged.includes(d.id) && <Text>Acknowledged.</Text>}
+              {record.acknowledged.includes(d.id) && !state.stale.includes(d.id) && (
+                <Text>
+                  {state.untracked.includes(d.id) ? "Acknowledged. No baseline was stored, so later changes to the work item are not tracked." : "Acknowledged."}
+                </Text>
+              )}
             </Stack>
           ))}
         </>

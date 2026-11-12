@@ -50,6 +50,11 @@ export type Handoff = {
   toId: string | null;
   /** Decision ids the receiver has acknowledged reading. */
   acknowledged: string[];
+  /**
+   * Decision id -> why an acknowledgement no longer holds (a field the decision reads changed after it was
+   * given). Worked out outside the rules from the record; here it is plain data, like `acknowledged`.
+   */
+  stale?: Record<string, string>;
 };
 
 export type Finding = {

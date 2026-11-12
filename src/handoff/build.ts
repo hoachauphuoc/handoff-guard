@@ -1,4 +1,6 @@
-import type { Finding, Handoff, HandoffResult, WorkItem } from "../rules/types";
+import { bindingDecisions } from "../rules/checkHandoff";
+import type { Decision, Finding, Handoff, HandoffResult, WorkItem } from "../rules/types";
+import { staleAcks } from "./drift";
 import type { HandoffRecord, ValidatorResponse } from "./types";
 
 type JiraFields = {
@@ -56,9 +58,15 @@ export function itemsFromSearch(json: unknown): { items: { item: WorkItem; issue
   return { items, capped: body.isLast === false || typeof body.nextPageToken === "string" };
 }
 
-export function handoffFrom(item: WorkItem, record: HandoffRecord | null): Handoff {
+export function handoffFrom(item: WorkItem, record: HandoffRecord | null, decisions: Decision[]): Handoff {
   return record
-    ? { item, fromId: record.fromId, toId: record.toId, acknowledged: record.acknowledged }
+    ? {
+        item,
+        fromId: record.fromId,
+        toId: record.toId,
+        acknowledged: record.acknowledged,
+        stale: staleAcks(record.acknowledged, record.acknowledgedWith, item, bindingDecisions(decisions, item)),
+      }
     : { item, fromId: null, toId: null, acknowledged: [] };
 }
 

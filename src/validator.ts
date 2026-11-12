@@ -32,7 +32,7 @@ export async function validate(payload: ValidatorPayload): Promise<ValidatorResp
     if (!record) {
       return { result: false, errorMessage: "Prepare the handoff in the Handoff Guard panel first." };
     }
-    return validatorResponse(checkHandoff(handoffFrom(item, record), decisions));
+    return validatorResponse(checkHandoff(handoffFrom(item, record, decisions), decisions));
   } catch (e) {
     return failClosed(e);
   }

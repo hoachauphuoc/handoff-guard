@@ -1,4 +1,5 @@
 import type { Advisory } from "../rules/advisories";
+import type { Fingerprint } from "./drift";
 import type { Proposal } from "../decisions/types";
 import type { Finding, HandoffResult } from "../rules/types";
 
@@ -12,6 +13,8 @@ export type HandoffRecord = {
   acknowledgedAt: Record<string, string>;
   /** How the record came about. Absent on records saved before reassignment detection: those were manual. */
   origin?: "manual" | "reassignment";
+  /** What the work item looked like when each decision was acknowledged. Absent on older acknowledgements. */
+  acknowledgedWith?: Record<string, Fingerprint>;
 };
 
 export type ValidatorResponse = { result: boolean; errorMessage?: string };
@@ -34,5 +37,11 @@ export type PanelState = {
   /** Open work items of the project each proposal would contradict; null when they could not be counted. */
   /** Per proposal: the confirmed decisions it would make redundant or answer differently. A person may retire them while confirming. */
   supersedes: Record<string, { id: string; title: string }[]>;
+  /** Decision ids whose acknowledgement went stale because a field the decision reads changed. */
+  stale: string[];
+  /** Per acknowledged decision: everything that changed on the work item since it was acknowledged. */
+  drift: Record<string, string[]>;
+  /** Acknowledged decisions with no stored baseline, so changes since then cannot be told. */
+  untracked: string[];
   proposalImpact: Record<string, { count: number; capped: boolean }> | null;
 };

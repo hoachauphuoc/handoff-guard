@@ -158,7 +158,7 @@ export async function runCheckHandoff(payload: unknown, accountId: string | null
         quote: quoteFor(key, null),
       };
     }
-    const handoff = stored ? handoffFrom(item, record) : previewHandoff(item, record, receiver as string, accountId);
+    const handoff = stored ? handoffFrom(item, record, decisions) : previewHandoff(item, record, receiver as string, accountId);
     const result = checkHandoff(handoff, decisions);
     return {
       schema,

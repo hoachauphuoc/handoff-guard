@@ -49,7 +49,7 @@ const deps = (over: Partial<Deps> & { rec?: HandoffRecord | null; decisions?: De
 describe("check-handoff", () => {
   it("stored basis equals the panel check exactly", async () => {
     const out = await runCheckHandoff({ issueKey: "ops-1" }, "caller", deps());
-    const expected = checkHandoff(handoffFrom(item, record), [decision]);
+    const expected = checkHandoff(handoffFrom(item, record, [decision]), [decision]);
     expect(out).toMatchObject({ ok: true, basis: "stored", verdict: expected.verdict, senderId: "from", receiverId: "to" });
     if (out.ok) expect(out.findings).toEqual(expected.findings);
   });
@@ -520,7 +520,7 @@ describe("check-handoff fixes", () => {
   it("are a sibling: quote, verdict and findings equal the plain rule check", async () => {
     const late = { ...item, dueDate: "2027-03-01" };
     const out = await runCheckHandoff({ issueKey: "OPS-1" }, null, deps({ it: late }));
-    const expected = checkHandoff(handoffFrom(late, record), [decision]);
+    const expected = checkHandoff(handoffFrom(late, record, [decision]), [decision]);
     if (!out.ok) throw new Error("expected ok");
     expect(out.fixes).toEqual(['Set the due date on or before 2026-12-31 ("Ship by 2026")']);
     expect(out.verdict).toBe(expected.verdict);

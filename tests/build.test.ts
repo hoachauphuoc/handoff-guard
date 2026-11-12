@@ -36,11 +36,11 @@ describe("applyModifiedFields", () => {
 
 describe("handoffFrom", () => {
   it("has no people without a record", () => {
-    expect(handoffFrom(item, null)).toEqual({ item, fromId: null, toId: null, acknowledged: [] });
+    expect(handoffFrom(item, null, [])).toEqual({ item, fromId: null, toId: null, acknowledged: [] });
   });
   it("copies the record", () => {
     const r: HandoffRecord = { fromId: "a", toId: "b", acknowledged: ["d"], preparedAt: "t", acknowledgedAt: {} };
-    expect(handoffFrom(item, r)).toEqual({ item, fromId: "a", toId: "b", acknowledged: ["d"] });
+    expect(handoffFrom(item, r, [])).toEqual({ item, fromId: "a", toId: "b", acknowledged: ["d"], stale: {} });
   });
 });
 

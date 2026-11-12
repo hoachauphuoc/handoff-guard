@@ -27,7 +27,7 @@ export function inFlight(entries: { item: WorkItem; record: HandoffRecord | null
   const out: InFlight[] = [];
   for (const { item, record } of entries) {
     if (record === null) continue;
-    const result = checkHandoff(handoffFrom(item, record), decisions);
+    const result = checkHandoff(handoffFrom(item, record, decisions), decisions);
     if (result.verdict === "clear") continue;
     const title = (id: string | undefined) => result.binding.find((d) => d.id === id)?.title;
     out.push({

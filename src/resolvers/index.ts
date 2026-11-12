@@ -10,6 +10,7 @@ import { pagesToCheck, sourceNotes, type PageVersion, type SourceChecks } from "
 import { buildDecisionsPage, type DecisionsPageState } from "../decisions/page";
 import { acknowledge } from "../handoff/acknowledge";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
+import { driftByDecision, fingerprintOf, staleAcks } from "../handoff/drift";
 import type { HandoffRecord, PanelState } from "../handoff/types";
 import { readPageVersionAsUser } from "../confluence";
 import { openItemsAsUser, readItemAsUser as readItem } from "../jira";
@@ -62,7 +63,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
   return {
     issueKey: ctx.extension.issue.key,
     record,
-    result: record ? checkHandoff(handoffFrom(item, record), decisions) : null,
+    result: record ? checkHandoff(handoffFrom(item, record, decisions), decisions) : null,
     viewerId,
     isReceiver: record !== null && viewerId !== null && viewerId === record.toId,
     decisionCount: decisions.length,
@@ -74,6 +75,9 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
       ...watchAssignee(item, record, bindingDecisions(decisions, item)),
     ],
     fixes: suggestFixes(item, decisions).changes.map(changeText),
+    stale: record ? Object.keys(staleAcks(record.acknowledged, record.acknowledgedWith, item, bindingDecisions(decisions, item))) : [],
+    drift: record ? driftByDecision(record.acknowledged, record.acknowledgedWith, item) : {},
+    untracked: record ? record.acknowledged.filter((id) => record.acknowledgedWith?.[id] === undefined) : [],
     proposalImpact: await impactFor(item.projectKey, proposals),
     supersedes: Object.fromEntries(
       proposals.map((p) => {
@@ -112,7 +116,8 @@ resolver.define("acknowledgeDecision", async ({ context, payload }) => {
   if (!record) throw new Error("No handoff has been prepared for this work item.");
   const binding = bindingDecisions(decisions, item).map((d) => d.id);
   // The receiver is checked here, on the server; the button in the panel is only a convenience.
-  const out = acknowledge(record, ctx.accountId ?? null, decisionId, binding, new Date().toISOString());
+  const stale = decisionId in staleAcks(record.acknowledged, record.acknowledgedWith, item, bindingDecisions(decisions, item));
+  const out = acknowledge(record, ctx.accountId ?? null, decisionId, binding, new Date().toISOString(), fingerprintOf(item), stale);
   if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
   await putRecord(issueId, out.record);
   return panelState(ctx);

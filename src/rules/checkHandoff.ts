@@ -117,11 +117,17 @@ export function checkHandoff(handoff: Handoff, decisions: Decision[]): HandoffRe
   const binding = bindingDecisions(decisions, item);
   for (const decision of binding) {
     findings.push(...decisionFindings(decision, item));
-    if (!handoff.acknowledged.includes(decision.id)) {
+    // A stale acknowledgement counts as not given, with the reason. It is the same finding and the same
+    // severity, so no new verdict appears and `clear` still never carries a finding.
+    const stale = handoff.stale?.[decision.id];
+    if (!handoff.acknowledged.includes(decision.id) || stale !== undefined) {
       findings.push({
         rule: "decision_not_acknowledged",
         severity: "info_needed",
-        message: `The receiver has not acknowledged "${decision.title}".`,
+        message:
+          stale !== undefined
+            ? `The receiver acknowledged "${decision.title}", but ${stale}; it needs to be acknowledged again.`
+            : `The receiver has not acknowledged "${decision.title}".`,
         decisionId: decision.id,
       });
     }

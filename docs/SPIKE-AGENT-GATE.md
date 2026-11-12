@@ -35,3 +35,9 @@ One Agent session was started on TD-1 by this test. It holds the refusal text ab
 - Seen on 7.7.0, MOBL-53, started from the Agents button: the agent began with the quote (Blocked), listed the binding decisions and next steps, but never said whether it may proceed; the words proceed, decline and start did not occur. It answered in the handoff-brief format.
 - Fix (7.8.0): `check-handoff` returns a `startLine` field, fixed text chosen in code by the verdict ("The rule check says Clear, so I may start." / "I will not start this work item: the rule check says Blocked." / the same with "Needs info" / "No handoff is prepared, so there is no verdict and I will not start this work item."). Rule 18 now tells the agent to answer in this order: the quote, the `startLine` copied exactly, the binding decisions, the findings; not to use the brief format; and to treat being started with no message as a request to start. The model never writes a start or decline sentence.
 - To record after 7.8.0 (not yet observed: starting the agent needs a signed-in browser session): what the agent says, word for word for the first three lines, on MOBL-53 (expected Blocked) and on TD-1.
+
+## Agent lines after 7.8.0 (observed by the owner session, 2026-11-12, started from the Agents button with no message)
+
+- TD-1: "Handoff Guard rule check for TD-1: Clear. No findings." / "The rule check says Clear, so I may start." / then the heading "Possible conflicts (advisory, not a verdict)" with "The assignee is not the receiver of the prepared handoff."
+- MOBL-53: "Handoff Guard rule check for MOBL-53: Blocked. Findings: No due date is set. …" / "I will not start this work item: the rule check says Blocked." / then the headings "Binding decisions" and "Findings".
+- Replay for 2026-11-12 (today) is accepted and answers "No handoff differs between 2026-11-12 and today, among 50 open work items."
