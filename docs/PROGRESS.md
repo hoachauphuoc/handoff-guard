@@ -220,3 +220,11 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Spike notes: `docs/SPIKE-FORGE-LLM.md`. Research: `docs/IDEAS.md` sections (a) to (g). The NEJM figures are now checked against the journal and PubMed (IDEAS section (g)), closing the item above.
 - The two bug fixes (removal word, yearless date) were written by the Sonnet runner and reviewed here. 293 tests, `check.ps1` PASS. Nothing under `src/rules/` changed, so `npm run measure` was not rerun.
 - Not seen on the site: a refused read-back with the model sentence, and the corrected read-back being accepted.
+
+### 2026-11-12, fixes after the full project review
+- `.gitattributes` (`* text=auto eol=lf`): a Windows clone with `core.autocrlf=true` no longer turns the text-pinned tests red.
+- `canSupersede` in `src/decisions/supersede.ts`: only the confirmer retires a decision from the Decisions page (no recorded confirmer: anyone signed in). The resolver checks it; the row flag only hides the button. "Confirm and supersede" in the panel is unchanged and still retires decisions confirmed by others: owner's decision.
+- Not fixed, recorded in README Limits: the ledger is one storage key (two writes at once can lose one); a reassignment to a new receiver starts a new record.
+- Docs brought in line with the code: README install section and the note that the labelling policy restates the rules; `docs/DEVPOST.md` (295 tests, features since 6.x; the "What's next" sentence is new wording for the owner to check); `docs/SECURITY.md` (the validator's one `asApp()` read); `docs/PRIVACY.md` (fingerprint, Confluence page id and version).
+- Written by the Sonnet runner, reviewed here. 295 tests, `check.ps1` PASS.
+- Open, owner's: production is still 2.0.0; whether production is Jira-only (`compatibility`, `read:page:confluence`); Teamwork Graph saved-query keys on a fresh install; `docs/VIDEO.md` against what production will contain.

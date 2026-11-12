@@ -17,11 +17,16 @@ When a work item changes hands, the decisions that bind it (a deadline, a requir
 - **Rovo agent.** Explains the verdict, quoting the rule check's sentence exactly. It finds decisions written in the description and comments and proposes them with a word-for-word quote as evidence. A proposal binds nothing until a person confirms it in the panel. A repeat of a confirmed decision is rejected.
 - **Handoff brief.** Pulls what the receiver needs, including people connected to the item from Teamwork Graph (shared with, mentioned). Advisory; no rule reads it.
 - **Workflow validator.** A transition with the validator only goes through when the handoff is Clear.
+- **I-PASS structure.** The panel follows the I-PASS handoff protocol over the rule check: a severity label beside the verdict, a patient-summary brief, an action list with an owner per finding, an optional "if ... then ..." contingency from the sender, and one read-back from the receiver. The rule check stays the only thing that decides.
+- **Teach-back.** A read-back that addresses a decision but contradicts it (a date past the limit, a required label said to be skipped, a forbidden one said to be added) is refused by plain code. One sentence beside the refusal, telling the receiver what to write instead, is written by a model through Forge LLMs and labelled as model-written; it never makes or lifts a refusal.
+- **Handoff drift.** If the due date, a label or a component that a decision reads changes after the receiver acknowledged it, the acknowledgement goes stale and the panel shows what changed.
+- **Replay on a date.** The Decisions page shows which prepared handoffs would have had a different verdict on an earlier date, using the decisions and acknowledgements as they stood then.
+- **Superseding decisions.** A decision that makes older ones redundant, or moves a deadline, can be confirmed with the older ones retired; the person who confirmed a decision can also retire it from the Decisions page. A superseded decision binds nothing.
 - **Rovo MCP server.** The same five actions are exposed through the `rovo:mcp` module for external agents.
 
 ## How we built it
 
-Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Forge imports, `rovo:agent` with five actions, `rovo:mcp`, `jira:workflowValidator`, and two saved Teamwork Graph Cypher queries called with `asUser()`. 130+ unit tests. Only decisions and handoff records are stored; no chat is stored.
+Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Forge imports, `rovo:agent` with five actions, `rovo:mcp`, `jira:workflowValidator`, and two saved Teamwork Graph Cypher queries called with `asUser()`. 295 unit tests. Only decisions and handoff records are stored; no chat is stored.
 
 ## Measurement
 
@@ -35,7 +40,7 @@ Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Fo
 
 ## What's next
 
-Read decisions from Confluence pages, and let a team mark a decision superseded from the panel.
+Watch more sources for decisions, and let teams share decisions across projects.
 
 ## Links
 

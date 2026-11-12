@@ -4,7 +4,7 @@ A Forge app for Jira. When a work item is handed to someone else, rules check wh
 
 ## Install (for judges)
 
-1. Install the app on a Jira site (development build: `forge install -e development --product jira`). The app is Jira-only.
+1. Install the app on a Jira site from the installation link in the Devpost submission. The app needs Jira; Confluence is optional (it is only used to read linked pages). Developers working on the app install their own build with `forge install -e development --product jira`.
 2. Open a work item. The Handoff Guard panel shows a getting-started checklist.
 3. Optional: the Teamwork Graph people lookup needs a saved query registered by the app owner (see `docs/PROGRESS.md`); without it the result says "Teamwork Graph returned nothing". No rule uses it yet.
 
@@ -47,6 +47,7 @@ In hospitals, I-PASS was linked to fewer medical errors and preventable adverse 
 - The samples used to measure the rules are synthetic.
 - The labels on those samples are written by a model (Muse), not by people.
 - The measured figure is "agreement with Muse labels", not accuracy. Every number below comes from `npm run measure` (2026-11-12).
+- The labelling instructions given to Muse (`scripts/label_samples.py`) restate the app's rules in prose, so the agreement figure mostly measures whether Muse applied that specification the same way the code does, not whether the rules are the right rules. Of the 48 samples, 38 were written by Muse itself, which also labeled them; the other 10 are adversarial cases written by Claude Sonnet.
 
 ## Measurement
 
@@ -66,6 +67,9 @@ The one disagreement: a description that is only filler ("tbd see above"). Muse 
 - The read-back checks that each decision is addressed, not that it was understood.
 - Teach-back catches only a fixed list of patterns: dates later than a limit, a negation word (skip, without, no, not, …) within three words before what a required value is about, "optional" or "not needed" after it, and an adding word before a forbidden value ("keep the hotfix label off" is not read as adding it, because a removal word follows). A date with no year is read as its next occurrence from the day of the read-back. Other contradictions are not caught, and a negation about something else nearby can be read as one (the receiver then rewrites the read-back).
 - The model sentence beside a teach-back refusal is sent the read-back and the code's reasons. Its wording varies between attempts.
+- All decisions are stored under one storage key, so two people confirming or superseding at the same moment can lose one of the two changes.
+- Only the person who confirmed a decision can supersede it from the Decisions page (decisions with no recorded confirmer, such as the samples, can be superseded by anyone signed in). "Confirm and supersede" in the panel retires the older decisions the new one makes redundant, whoever confirmed them.
+- Reassigning a work item to a different person starts a new handoff record: the earlier acknowledgements, read-back and contingency are not carried over.
 - A handoff prepared before read-back existed keeps one acknowledgement per decision, and the panel says that no read-back was checked.
 
 ## Privacy and security
