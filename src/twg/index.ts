@@ -21,7 +21,6 @@ const deps: Deps = {
   },
 };
 
-// Not called yet: reserved for the later "who is involved" step. It adds no rule input.
 export async function peopleFromGraph(cloudId: string | null, issueId: string) {
   return twgPeople(deps, cloudId === null ? null : issueAri(cloudId, issueId));
 }

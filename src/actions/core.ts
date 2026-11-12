@@ -12,7 +12,10 @@ import {
   type CheckHandoffOutput,
   type CheckHandoffSuccess,
   type ErrorCode,
+  type GatherOutput,
   type ListBindingOutput,
+  type People,
+  type PeopleRead,
   type ProposeOutput,
   type ReadSourceOutput,
 } from "./schema";
@@ -25,8 +28,14 @@ export type Deps = {
   readSource: (key: string) => Promise<DecisionSource>;
   getProposals: (issueId: string) => Promise<Proposal[]>;
   putProposals: (issueId: string, proposals: Proposal[]) => Promise<void>;
+  /** The cloud id is bound by the caller, so this file never sees Forge context. */
+  people: (issueId: string) => Promise<PeopleRead>;
   now: () => string;
 };
+
+export const MAX_BRIEF_DESCRIPTION = 2000;
+export const MAX_BRIEF_COMMENTS = 10;
+export const MAX_BRIEF_COMMENT_CHARS = 600;
 
 const MAX_CANDIDATES_CHARS = 20_000;
 const CANDIDATES_SHAPE =
@@ -270,6 +279,74 @@ export async function runProposeDecisions(payload: unknown, deps: Deps): Promise
       quote: `Handoff Guard saved ${count(kept.length, "proposed decision")} for ${key} and rejected ${rejected.length}${
         rejected.length > 0 ? ` (${rejected.map((r) => `#${r.index + 1}: ${r.message}`).join(" ")})` : ""
       }. Proposed decisions do not bind anything until a person confirms them in the Handoff Guard panel.`,
+    };
+  } catch (e) {
+    return failure(schema, key, e);
+  }
+}
+
+const PEOPLE_NOTE = {
+  no_query: "Teamwork Graph was not asked: no saved query is registered for this app.",
+  no_site: "Teamwork Graph was not asked: the site id is unknown.",
+  nothing:
+    "Teamwork Graph returned nothing. That can mean no permission or nobody is connected; it is not a fact about the work item.",
+  ok: "People connected to this work item according to Teamwork Graph; advisory, not checked by any rule. Shared with: direct shares in the last 90 days.",
+} as const;
+
+// A failing graph call must not fail the brief: people are advisory and the check does not read them.
+async function readPeople(issueId: string, deps: Deps): Promise<People> {
+  let read: PeopleRead;
+  try {
+    read = await deps.people(issueId);
+  } catch {
+    read = { status: "nothing", sharedWith: [], mentioned: [] };
+  }
+  const base = { source: "Teamwork Graph" as const, status: read.status };
+  if (read.status === "ok") return { ...base, sharedWith: read.sharedWith, mentioned: read.mentioned, note: PEOPLE_NOTE.ok };
+  const note = read.status === "nothing" ? PEOPLE_NOTE.nothing : read.reason === "no_site" ? PEOPLE_NOTE.no_site : PEOPLE_NOTE.no_query;
+  return { ...base, sharedWith: [], mentioned: [], note };
+}
+
+const peopleQuote = (p: People): string =>
+  p.status === "ok" ? `${p.sharedWith.length} shared with, ${p.mentioned.length} mentioned` : p.status === "nothing" ? "returned nothing" : "was not asked";
+
+// Reads only. The verdict comes from runCheckHandoff, whose result is passed through untouched; nothing
+// gathered here (comments, people) is an input to it.
+export async function runGatherHandoffContext(payload: unknown, accountId: string | null, deps: Deps): Promise<GatherOutput> {
+  const schema = SCHEMA_VERSION.gather;
+  const parsed = parse(payload, false);
+  if (!parsed.ok) return failure(schema, null, null, parsed.message);
+  const { key } = parsed;
+  const check = await runCheckHandoff({ issueKey: key }, accountId, deps);
+  if (!check.ok) return { schema, ok: false, source: "rules", issueKey: key, error: check.error, quote: check.quote };
+  try {
+    const [{ item, issueId }, src, decisions] = await Promise.all([deps.readItem(key), deps.readSource(key), deps.getDecisions()]);
+    const people = await readPeople(issueId, deps);
+    const comments = src.parts
+      .filter((p) => p.from.includes(" comment "))
+      .slice(0, MAX_BRIEF_COMMENTS)
+      .map(({ from, text }) => ({ from, text: text.slice(0, MAX_BRIEF_COMMENT_CHARS) }));
+    return {
+      schema,
+      ok: true,
+      source: "rules",
+      issueKey: key,
+      item: {
+        key: item.key,
+        projectKey: item.projectKey,
+        summary: item.summary,
+        description: item.description.slice(0, MAX_BRIEF_DESCRIPTION),
+        descriptionTruncated: item.description.length > MAX_BRIEF_DESCRIPTION,
+        labels: item.labels,
+        components: item.components,
+        dueDate: item.dueDate,
+        assigneeId: item.assigneeId,
+      },
+      comments,
+      check,
+      binding: check.binding.map((b) => ({ ...b, constraints: decisions.find((d) => d.id === b.id)?.constraints ?? [] })),
+      people,
+      quote: `${check.quote} Handoff Guard gathered context for ${key}: ${count(comments.length, "comment")} read. Teamwork Graph: ${peopleQuote(people)}. A brief written from this is advisory and is not stored.`,
     };
   } catch (e) {
     return failure(schema, key, e);

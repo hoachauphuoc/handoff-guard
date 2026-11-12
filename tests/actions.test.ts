@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { callerAccountId, callerCloudId, runCheckHandoff, runListBindingDecisions, runProposeDecisions, runReadDecisionSource, type Deps } from "../src/actions/core";
+import { callerAccountId, callerCloudId, runCheckHandoff, runGatherHandoffContext, runListBindingDecisions, runProposeDecisions, runReadDecisionSource, type Deps } from "../src/actions/core";
 import { dismissProposal } from "../src/decisions/confirm";
 import type { DecisionSource, Proposal } from "../src/decisions/types";
 import { handoffFrom } from "../src/handoff/build";
@@ -41,6 +41,8 @@ const deps = (over: Partial<Deps> & { rec?: HandoffRecord | null; decisions?: De
   readSource: over.readSource ?? failing(new Error("must not read the source")),
   getProposals: over.getProposals ?? failing(new Error("must not read proposals")),
   putProposals: over.putProposals ?? failing(new Error("must not write proposals")),
+  // Throws by default: check, list, source and propose prove they never call the graph.
+  people: over.people ?? failing(new Error("must not read the graph")),
   now: () => "2026-11-12T00:00:00.000Z",
 });
 
@@ -370,5 +372,115 @@ describe("callerAccountId", () => {
     expect(callerAccountId({ context: { accountId: "a1" } }, { accountId: "a2" })).toBe("a1");
     expect(callerAccountId({}, { accountId: "a2" })).toBe("a2");
     expect(callerAccountId(undefined, undefined)).toBeNull();
+  });
+});
+
+describe("gather-handoff-context", () => {
+  const comment = (id: number, text = "c") => ({ from: `OPS-1 comment ${id}`, text });
+  const src = (parts: DecisionSource["parts"]): DecisionSource => ({ ...SOURCE, parts });
+  const graph = (r: Awaited<ReturnType<Deps["people"]>>) => async () => r;
+  const gather = (over: Parameters<typeof deps>[0] = {}, payload: unknown = { issueKey: "OPS-1" }) =>
+    runGatherHandoffContext(
+      payload,
+      "caller",
+      deps({ readSource: async () => SOURCE, people: graph({ status: "ok", sharedWith: ["a"], mentioned: ["b"] }), ...over }),
+    );
+
+  it("carries the very same check object check-handoff returns", async () => {
+    const out = await gather();
+    const direct = await runCheckHandoff({ issueKey: "OPS-1" }, "caller", deps());
+    expect(out.ok && out.check).toEqual(direct);
+    expect(out).toMatchObject({ ok: true, source: "rules", schema: "handoff-guard/handoff-context@1" });
+  });
+
+  it("joins binding decisions with their constraints", async () => {
+    const out = await gather();
+    if (out.ok) {
+      expect(out.binding).toEqual([
+        { id: "d1", title: "Ship by 2026", source: decision.source, constraints: decision.constraints, acknowledged: true },
+      ]);
+    }
+  });
+
+  it("keeps at most 10 comments of 600 characters, newest first, and never the description", async () => {
+    const parts = [
+      { from: "OPS-1 description", text: "D".repeat(3000) },
+      ...Array.from({ length: 12 }, (_, i) => comment(100 - i, "x".repeat(700))),
+    ];
+    const out = await gather({ readSource: async () => src(parts), it: { ...item, description: "D".repeat(3000) } });
+    if (!out.ok) throw new Error("expected ok");
+    expect(out.comments).toHaveLength(10);
+    expect(out.comments[0]?.from).toBe("OPS-1 comment 100");
+    expect(out.comments.every((c) => c.text.length === 600 && c.from.includes(" comment "))).toBe(true);
+    expect(out.item.description).toHaveLength(2000);
+    expect(out.item.descriptionTruncated).toBe(true);
+    expect(out.quote).toContain("10 comments read.");
+  });
+
+  it("does not flag a short description as cut, and says 1 comment", async () => {
+    const out = await gather({ readSource: async () => src([comment(1)]) });
+    if (!out.ok) throw new Error("expected ok");
+    expect(out.item.descriptionTruncated).toBe(false);
+    expect(out.quote).toContain("1 comment read.");
+  });
+
+  it("starts the quote with the check quote and ends with the advisory sentence", async () => {
+    const out = await gather();
+    if (!out.ok) throw new Error("expected ok");
+    expect(out.quote.startsWith(out.check.quote + " Handoff Guard gathered context for OPS-1: ")).toBe(true);
+    expect(out.quote).toContain("Teamwork Graph: 1 shared with, 1 mentioned.");
+    expect(out.quote.endsWith("A brief written from this is advisory and is not stored.")).toBe(true);
+  });
+
+  it("reports each people status with its own note", async () => {
+    const asked = await gather();
+    expect(asked.ok && asked.people).toMatchObject({ source: "Teamwork Graph", status: "ok", sharedWith: ["a"], mentioned: ["b"] });
+    expect(asked.ok && asked.people.note).toContain("Shared with: direct shares in the last 90 days.");
+    const none = await gather({ people: graph({ status: "nothing", sharedWith: [], mentioned: [] }) });
+    expect(none.ok && none.people.note).toBe(
+      "Teamwork Graph returned nothing. That can mean no permission or nobody is connected; it is not a fact about the work item.",
+    );
+    if (none.ok) expect(none.quote).toContain("Teamwork Graph: returned nothing.");
+    const noQuery = await gather({ people: graph({ status: "not_configured", reason: "no_query", sharedWith: [], mentioned: [] }) });
+    expect(noQuery.ok && noQuery.people.note).toBe("Teamwork Graph was not asked: no saved query is registered for this app.");
+    const noSite = await gather({ people: graph({ status: "not_configured", reason: "no_site", sharedWith: [], mentioned: [] }) });
+    expect(noSite.ok && noSite.people.note).toBe("Teamwork Graph was not asked: the site id is unknown.");
+    if (noSite.ok) expect(noSite.quote).toContain("Teamwork Graph: was not asked.");
+  });
+
+  it("turns a failing graph call into nothing, not an error", async () => {
+    const out = await gather({ people: failing(new Error("403")) });
+    expect(out).toMatchObject({ ok: true, people: { status: "nothing", sharedWith: [], mentioned: [] } });
+    expect(JSON.stringify(out)).not.toContain("403");
+  });
+
+  it("people never change the check", async () => {
+    const a = await gather({ people: graph({ status: "ok", sharedWith: ["x", "y"], mentioned: [] }) });
+    const b = await gather({ people: graph({ status: "nothing", sharedWith: [], mentioned: [] }) });
+    expect(a.ok && b.ok && a.check).toEqual(b.ok && b.check);
+  });
+
+  it("returns the check error unchanged", async () => {
+    const out = await gather({ readItem: failing(new JiraReadError("consent", "Allow access: x")) });
+    expect(out).toMatchObject({ ok: false, source: "rules", issueKey: "OPS-1", error: { code: "consent", message: "Allow access: x" } });
+    expect(await gather({}, {})).toMatchObject({ ok: false, error: { code: "bad_input" } });
+  });
+
+  it("is the only action that asks the graph", async () => {
+    let asked = 0;
+    const spy = {
+      people: async () => {
+        asked++;
+        return { status: "ok" as const, sharedWith: [], mentioned: [] };
+      },
+    };
+    const { d } = proposeDeps();
+    await runCheckHandoff({ issueKey: "OPS-1" }, null, deps(spy));
+    await runListBindingDecisions({ issueKey: "OPS-1" }, deps(spy));
+    await runReadDecisionSource({ issueKey: "OPS-1" }, deps({ ...spy, readSource: async () => SOURCE }));
+    await runProposeDecisions({ issueKey: "OPS-1", candidates: JSON.stringify([good]) }, { ...d, ...spy });
+    expect(asked).toBe(0);
+    await gather(spy);
+    expect(asked).toBe(1);
   });
 });

@@ -1,11 +1,14 @@
 // JSON Schema (2020-12) for the Rovo action inputs and outputs. Kept free of Forge imports so a later
 // rovo:mcp module can reuse the same contract. Rovo itself takes no output schema; these document it.
 
+import type { Constraint } from "../rules/types";
+
 export const SCHEMA_VERSION = {
   check: "handoff-guard/check-handoff@1",
   list: "handoff-guard/binding-decisions@1",
   source: "handoff-guard/decision-source@1",
   propose: "handoff-guard/propose-decisions@1",
+  gather: "handoff-guard/handoff-context@1",
 } as const;
 
 export const CheckHandoffInputSchema = {
@@ -28,6 +31,7 @@ export const ListBindingInputSchema = {
 } as const;
 
 export const ReadSourceInputSchema = ListBindingInputSchema;
+export const GatherInputSchema = ListBindingInputSchema;
 
 export const ProposeInputSchema = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
@@ -48,6 +52,7 @@ export type CheckHandoffInput = { issueKey?: string; receiverAccountId?: string 
 export type ListBindingInput = { issueKey?: string };
 export type ReadSourceInput = ListBindingInput;
 export type ProposeInput = { issueKey?: string; candidates: string };
+export type GatherInput = { issueKey?: string };
 
 export type ErrorCode = "bad_input" | "consent" | "not_found" | "jira_error" | "internal";
 
@@ -115,3 +120,49 @@ export type ProposeSuccess = {
 };
 
 export type ProposeOutput = ProposeSuccess | ActionError<typeof SCHEMA_VERSION.propose>;
+
+export type PeopleStatus = "ok" | "nothing" | "not_configured";
+
+/** What the graph call returned. `reason` only says why nothing was asked. */
+export type PeopleRead = {
+  status: PeopleStatus;
+  sharedWith: string[];
+  mentioned: string[];
+  reason?: "no_site" | "no_query";
+};
+
+/** Advisory and never a rule input: the verdict does not read it. */
+export type People = {
+  source: "Teamwork Graph";
+  status: PeopleStatus;
+  sharedWith: string[];
+  mentioned: string[];
+  note: string;
+};
+
+export type GatherSuccess = {
+  schema: typeof SCHEMA_VERSION.gather;
+  ok: true;
+  source: "rules";
+  issueKey: string;
+  item: {
+    key: string;
+    projectKey: string;
+    summary: string;
+    description: string;
+    descriptionTruncated: boolean;
+    labels: string[];
+    components: string[];
+    dueDate: string | null;
+    assigneeId: string | null;
+  };
+  /** Newest first; comments only, never the description. */
+  comments: { from: string; text: string }[];
+  /** The same object check-handoff returns, untouched. */
+  check: CheckHandoffSuccess;
+  binding: { id: string; title: string; source: DecisionSource; constraints: Constraint[]; acknowledged: boolean }[];
+  people: People;
+  quote: string;
+};
+
+export type GatherOutput = GatherSuccess | ActionError<typeof SCHEMA_VERSION.gather>;

@@ -1,4 +1,6 @@
 import Resolver from "@forge/resolver";
+import { runGatherHandoffContext } from "../actions/core";
+import { depsFor } from "../actions/deps";
 import { confirmProposal, dismissProposal } from "../decisions/confirm";
 import { acknowledge } from "../handoff/acknowledge";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
@@ -21,7 +23,7 @@ const PRACTICE_RULES: Finding["rule"][] = [
   "invalid_constraint",
 ];
 
-type Ctx = { accountId?: string; extension: { issue: { key: string; id: string } } };
+type Ctx = { accountId?: string; cloudId?: string; extension: { issue: { key: string; id: string } } };
 
 async function panelState(ctx: Ctx): Promise<PanelState> {
   const { item, issueId } = await readItem(ctx.extension.issue.key);
@@ -108,6 +110,13 @@ resolver.define("dismissProposal", async ({ context, payload }) => {
   const { issueId } = await readItem(ctx.extension.issue.key);
   await putProposals(issueId, dismissProposal(await getProposals(issueId), id));
   return panelState(ctx);
+});
+
+// The brief only reads. It runs the same function the Rovo action runs, as the viewer, so what the panel
+// shows and what Rovo is given cannot differ.
+resolver.define("gatherContext", ({ context }) => {
+  const ctx = context as Ctx;
+  return runGatherHandoffContext({ issueKey: ctx.extension.issue.key }, ctx.accountId ?? null, depsFor(ctx.cloudId ?? null));
 });
 
 export const handler = resolver.getDefinitions();

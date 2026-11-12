@@ -1,4 +1,6 @@
-// Pure: no Forge imports. Teamwork Graph data is advisory. It can add people for a later context step,
+import type { PeopleRead } from "../actions/schema";
+
+// Pure: no Forge imports. Teamwork Graph data is advisory. It adds people to the handoff brief,
 // but it never reaches checkHandoff(); a missing scope returns empty rows, not an error, so "nothing" is
 // reported as such and never as a fact. Pages are not queried: a Jira-only app cannot read their text.
 
@@ -62,10 +64,19 @@ async function ids(deps: Deps, name: QueryName, ari: string): Promise<string[]> 
   }
 }
 
-/** People connected to the work item. For a later context step only; no rule reads them. */
-export async function twgPeople(deps: Deps, ari: string | null): Promise<{ sharedWith: string[]; mentioned: string[] }> {
-  if (ari === null) return { sharedWith: [], mentioned: [] };
+/**
+ * People connected to the work item, for the handoff brief only; no rule reads them. The status keeps
+ * "we did not ask" apart from "we asked and got nothing", because a missing scope or permission looks
+ * like an empty answer.
+ */
+export async function twgPeople(deps: Deps, ari: string | null): Promise<PeopleRead> {
+  const none = { sharedWith: [], mentioned: [] };
+  if (ari === null) return { status: "not_configured", reason: "no_site", ...none };
+  if (deps.queryKey("shared") === null && deps.queryKey("mentioned") === null) {
+    return { status: "not_configured", reason: "no_query", ...none };
+  }
   const [shared, mentioned] = await Promise.all([ids(deps, "shared", ari), ids(deps, "mentioned", ari)]);
   const accounts = (xs: string[]) => [...new Set(xs.flatMap((x) => accountIdFromAri(x) ?? []))];
-  return { sharedWith: accounts(shared), mentioned: accounts(mentioned) };
+  const out = { sharedWith: accounts(shared), mentioned: accounts(mentioned) };
+  return { status: out.sharedWith.length + out.mentioned.length > 0 ? "ok" : "nothing", ...out };
 }

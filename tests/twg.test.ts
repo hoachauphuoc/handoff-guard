@@ -35,12 +35,33 @@ describe("Teamwork Graph parse", () => {
   });
 });
 
-describe("Teamwork Graph people failures", () => {
-  it("returns nothing, not an error, when unconfigured or failing", async () => {
-    const none = { sharedWith: [], mentioned: [] };
-    expect(await twgPeople(deps({ queryKey: () => null }), "ari")).toEqual(none);
-    expect(await twgPeople(deps({ call: async () => { throw new Error("403"); } }), "ari")).toEqual(none);
-    expect(await twgPeople(deps({ call: async () => ({ data: { customQuery: null }, errors: [{ message: "x" }] }) }), "ari")).toEqual(none);
+describe("Teamwork Graph people statuses", () => {
+  const empty = { sharedWith: [], mentioned: [] };
+  it("says not_configured when no query key is set or the site is unknown", async () => {
+    expect(await twgPeople(deps({ queryKey: () => null }), "ari")).toEqual({ status: "not_configured", reason: "no_query", ...empty });
+    expect(await twgPeople(deps(), null)).toEqual({ status: "not_configured", reason: "no_site", ...empty });
+  });
+
+  it("says nothing, not an error, when the call fails or returns no rows", async () => {
+    expect(
+      await twgPeople(
+        deps({
+          call: async () => {
+            throw new Error("403");
+          },
+        }),
+        "ari",
+      ),
+    ).toEqual({ status: "nothing", ...empty });
+    expect(await twgPeople(deps({ call: async () => ({ data: { customQuery: null }, errors: [{ message: "x" }] }) }), "ari")).toEqual({
+      status: "nothing",
+      ...empty,
+    });
+  });
+
+  it("asks with one key when only one is registered", async () => {
+    const out = await twgPeople(deps({ queryKey: (n) => (n === "shared" ? "s" : null), call: async () => ok(USER("a")) }), "ari");
+    expect(out).toEqual({ status: "ok", sharedWith: ["a"], mentioned: [] });
   });
 });
 
@@ -48,11 +69,7 @@ describe("Teamwork Graph people", () => {
   it("returns distinct account ids per relation", async () => {
     const call = async (key: string) => (key === "s" ? ok(USER("a"), USER("a"), USER("b")) : ok(USER("c")));
     const out = await twgPeople(deps({ queryKey: (n) => (n === "shared" ? "s" : "m"), call }), "ari");
-    expect(out).toEqual({ sharedWith: ["a", "b"], mentioned: ["c"] });
-  });
-
-  it("returns empty lists when there is no ARI", async () => {
-    expect(await twgPeople(deps(), null)).toEqual({ sharedWith: [], mentioned: [] });
+    expect(out).toEqual({ status: "ok", sharedWith: ["a", "b"], mentioned: ["c"] });
   });
 });
 
@@ -73,6 +90,11 @@ describe("Teamwork Graph boundaries", () => {
   it("never reaches the verdict path", () => {
     for (const src of [rules, validator, acknowledge, build, jira, coreActions, measure]) {
       expect(src).not.toMatch(/\/twg|twg\//);
+    }
+    // The brief may carry people (core does), but the rules, the validator, the shared builders and the
+    // measure script know nothing of them.
+    for (const src of [rules, validator, acknowledge, build, jira, measure]) {
+      expect(src).not.toMatch(/twgPeople|peopleFromGraph|sharedWith/);
     }
   });
 });

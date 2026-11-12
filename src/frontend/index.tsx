@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
+import type { GatherOutput } from "../actions/schema";
+import { constraintText, reachText } from "../decisions/reach";
 import { count } from "../plural";
-import { reachText } from "../decisions/reach";
 import type { PanelState } from "../handoff/types";
 import { GUIDE_SOURCE, PRACTICE_NONE, PRACTICE_TITLE, guideView, type StepNeed, type StepState } from "../guide/steps";
 import { HINTS } from "../guide/hints";
@@ -22,11 +23,15 @@ const STEP_LOOK: Record<StepState, { text: string; appearance: "success" | "inpr
 };
 const NEEDS: Record<StepNeed, string> = { teammate: "a teammate", rovo: "Rovo", admin: "a Jira admin" };
 
+const CONSENT_TEXT =
+  "Allow access: Handoff Guard needs your permission to read this work item as you. Click Allow access when Jira asks, then reload the page.";
+
 const App = () => {
   const [state, setState] = useState<PanelState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [brief, setBrief] = useState<GatherOutput | null>(null);
   const [rovoNote, setRovoNote] = useState<string | null>(null);
   // null: follow the default (open until a handoff exists); a click on the toggle overrides it.
   const [guideOpen, setGuideOpen] = useState<boolean | null>(null);
@@ -57,6 +62,18 @@ const App = () => {
       .finally(() => setBusy(false));
   };
 
+  // The brief is a read: it fills its own section and never touches the verdict state above it.
+  const gather = () => {
+    setBusy(true);
+    setBrief(null);
+    return invoke<GatherOutput>("gatherContext")
+      .then(
+        (b) => setBrief(b as GatherOutput),
+        (e) => setError(String(e)),
+      )
+      .finally(() => setBusy(false));
+  };
+
   useEffect(() => {
     void call("getPanel");
   }, []);
@@ -66,7 +83,7 @@ const App = () => {
     return (
       <SectionMessage appearance="error" title="Handoff Guard could not check this work item">
         <Text>{consent
-            ? "Allow access: Handoff Guard needs your permission to read this work item as you. Click Allow access when Jira asks, then reload the page."
+            ? CONSENT_TEXT
             : error}</Text>
       </SectionMessage>
     );
@@ -173,6 +190,53 @@ const App = () => {
           Load sample decisions (demo)
         </Button>
       )}
+      <Stack space="space.100">
+        <Text>Handoff brief</Text>
+        <Button isDisabled={busy} onClick={() => void gather()}>
+          Gather handoff context
+        </Button>
+        {brief && !brief.ok && (
+          <SectionMessage appearance="error" title="Handoff Guard could not gather the context">
+            <Text>{brief.error.code === "consent" ? CONSENT_TEXT : brief.error.message}</Text>
+          </SectionMessage>
+        )}
+        {brief && brief.ok && (
+          <>
+            <Text>
+              {`${brief.item.summary}. ${brief.item.dueDate ? `Due ${brief.item.dueDate}` : "No due date"}. Labels: ${
+                brief.item.labels.join(", ") || "none"
+              }. Components: ${brief.item.components.join(", ") || "none"}.`}
+            </Text>
+            <Text>{count(brief.binding.length, "decision") + " bind this work item."}</Text>
+            {brief.binding.map((d) => (
+              <Stack key={d.id} space="space.050">
+                <Text>{d.title}</Text>
+                {d.constraints.map((c, i) => (
+                  <Text key={i}>{constraintText(c)}</Text>
+                ))}
+              </Stack>
+            ))}
+            <Text>People connected (Teamwork Graph)</Text>
+            {brief.people.status === "ok" ? (
+              <>
+                {brief.people.sharedWith.length > 0 && <Text>Shared with:</Text>}
+                {brief.people.sharedWith.map((id) => (
+                  <User key={`s-${id}`} accountId={id} />
+                ))}
+                {brief.people.mentioned.length > 0 && <Text>Mentioned:</Text>}
+                {brief.people.mentioned.map((id) => (
+                  <User key={`m-${id}`} accountId={id} />
+                ))}
+                <Text>{brief.people.note}</Text>
+              </>
+            ) : (
+              <Text>{brief.people.note}</Text>
+            )}
+            <Button onClick={() => void askRovo(`Write the handoff brief for ${brief.issueKey}.`)}>Write the brief with Rovo</Button>
+            <Text>Source: Jira read as you, rule check, Teamwork Graph. Nothing in this section is stored.</Text>
+          </>
+        )}
+      </Stack>
       <Button onClick={() => void askRovo(`Explain the Handoff Guard check for ${state.issueKey}.`)}>Explain with Rovo</Button>
       <Button onClick={() => void askRovo(`Propose decisions for ${state.issueKey} from its description and comments.`)}>
         Find decisions with Rovo

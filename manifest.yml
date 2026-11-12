@@ -24,6 +24,7 @@ modules:
         - Which decisions bind this work item?
         - Why is this handoff blocked?
         - Which decisions are written in this work item?
+        - Write the handoff brief for this work item
       prompt: >
         You are Handoff Guard. A rule check decides every handoff verdict; you only explain it.
 
@@ -48,11 +49,18 @@ modules:
         10. Quote evidence exactly; never invent or paraphrase it.
 
         11. If propose-decisions reports rejected items, read each message, fix those candidates and call it once more. When the sentence says all work and the work item has no such label, use scope {"kind":"project"}.
+
+        12. For a brief, summary or "what does the receiver need to know", call gather-handoff-context, then write these headings in this order: Verdict (the check quote copied exactly); What this work is; Where it stands (from comments, newest first, cite "comment <id>"); Decisions that bind it (every one, with its constraints); What the receiver must do (every finding word for word, each followed by one plain next step); People connected (Teamwork Graph). End with the sentence: "This brief was written by Rovo from the Handoff Guard result; it is advisory and is not stored."
+
+        13. Under People connected, if people.status is nothing write exactly "Teamwork Graph returned nothing"; if not_configured write "Teamwork Graph was not asked"; otherwise give only the count and say names are in the Handoff Guard panel. Never print account ids. Never treat people as a reason the handoff passes or fails.
+
+        14. Never add a fact that is not in an action result from this conversation; where the text does not say, write "not stated".
       actions:
         - check-handoff
         - list-binding-decisions
         - read-decision-source
         - propose-decisions
+        - gather-handoff-context
   rovo:mcp:
     - key: handoff-guard-mcp
       name: Handoff Guard
@@ -61,6 +69,7 @@ modules:
         - list-binding-decisions
         - read-decision-source
         - propose-decisions
+        - gather-handoff-context
   action:
     - key: check-handoff
       name: Check handoff
@@ -116,6 +125,17 @@ modules:
           type: string
           required: true
           description: 'A JSON array, as a string, of {title, scope, constraints, evidence}. scope is one of {"kind":"project"} (all work in this project), {"kind":"workItem"} (this work item only) or {"kind":"label","label":"x"} (only if this work item already has label x). constraints is 1 to 3 of {"kind":"dueNotAfter","date":"YYYY-MM-DD"}, {"kind":"labelRequired","label":"x"} or {"kind":"componentForbidden","component":"x"}. evidence is {"quote":"..."} copied word for word from the read-decision-source result. Example: [{"title":"Launch work needs legal review","scope":{"kind":"project"},"constraints":[{"kind":"labelRequired","label":"legal-reviewed"}],"evidence":{"quote":"all launch work needs the legal-reviewed label"}}]'
+    - key: gather-handoff-context
+      name: Gather handoff context
+      function: gather-fn
+      actionVerb: GET
+      description: "Collects what a receiver needs about a work item: fields, visible comments, the rule check result, binding decisions and people connected to it in Teamwork Graph. Reads only; stores nothing."
+      inputs:
+        issueKey:
+          title: Work item key
+          type: string
+          required: false
+          description: Work item key such as OPS-1. Defaults to the work item the chat was opened from.
   function:
     - key: resolver
       handler: index.handler
@@ -129,6 +149,8 @@ modules:
       handler: index.readDecisionSourceAction
     - key: propose-fn
       handler: index.proposeDecisionsAction
+    - key: gather-fn
+      handler: index.gatherHandoffContextAction
 resources:
   - key: main
     path: src/frontend/index.tsx
