@@ -4,7 +4,7 @@
 1. Owner: register on Devpost. Ask the Developer Community (tag `codegeist-2026`) about billing: "Forge App Hosting - Handoff Guard" asks for a payment method before 2026-12-01, which is before the submission date.
 2. Dev site is now the Codegeist demo site `one-atlas-hxpc.atlassian.net` (expires 2027-02-10). After any scope change: `forge install --upgrade -e development --demo-site --product jira`.
 3. The demo site showed no work items right after provisioning. Check again for seeded data; if still empty, create a space and a work item, then verify the panel there.
-3. Risk spikes: Rovo agent on the dev site, Teamwork Graph query, `rovo:mcp`.
+3. Risk spikes still open: Teamwork Graph query, `rovo:mcp`. The Rovo agent and actions are built (see C1-C4 below); the owner tests them.
 4. Owner (optional): spot-check a few Muse labels in `data/labels.json`; to override one, change `verdict` and delete its `by` field.
 5. Panel semantics: the preview hands the item "from the viewer to the current assignee", so a self-assigned item reads "same person". Next product slice: pick the receiver in the panel, and store decisions so the panel has something to bind.
 
@@ -40,3 +40,12 @@
 - S5 `jira:workflowValidator` (`validate`), fails closed, blocks without a prepared record. Deployed to development. Not added to any workflow yet; `forge lint` did not ask for a resolver.
 - Not observed on the live site yet: the panel UI (UserPicker, Prepare, Acknowledge, sample button) and the validator in a workflow.
 - README must note: the validator reads as the app; `modifiedFields` ignores description and components.
+
+### 2026-11-12, slices C1-C4 (Rovo actions and agent)
+- C1 `src/jira.ts` (`FIELDS`, `readItemAsUser`) and `src/jira-error.ts` (`JiraReadError` with code consent/not_found/jira_error) shared by the panel and the actions.
+- C2 actions `check-handoff` and `list-binding-decisions` (verb GET, read-only, never write storage). Core in `src/actions/core.ts` with injected deps; JSON Schema and types in `src/actions/schema.ts`. Jira reads use `asUser()` only; a failure returns `ok:false` code `consent`, never an app fallback. Every output has `source:"rules"` and a fixed `quote`. 11 tests.
+- C3 `rovo:agent` `handoff-guard-agent` ("Handoff Guard") with an inline prompt; `tests/agent.test.ts` pins the prompt rules and checks manifest inputs against the schemas.
+- C4 panel button "Explain with Rovo": `rovo.isEnabled()` then `rovo.open`; both failure paths say the verdict comes from the rule check.
+- Deployed to development (3.2.0 then 3.3.0). No scope change, so no `--approve`; `one-atlas-hxpc` shows Up-to-date. The old `hoachauphuoc` install is Outdated (not upgraded).
+- Not observed yet (owner): Rovo active on `one-atlas-hxpc`; the agent appears in Rovo chat (known bug ROVO-1239: missing if Rovo was activated after install); `asUser()` works inside an action (consent prompt); where `accountId` sits on a real call; the "Explain with Rovo" button.
+- TO REMOVE after the owner confirms: `logShape()` in `src/actions/index.ts` logs only key names of payload, `payload.context`, `payload.context.jira` and context once per action call (`forge logs -e development`). Delete it and its two calls.
