@@ -122,3 +122,11 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Deployed 6.3.0 to development from a clean checkout of `70a47e4` (the uncommitted `checkHandoff.ts` / `feasible.ts` work was not included). Observed live: panel "Gather handoff context" on MOBL-53 shows "People connected (Teamwork Graph) - Shared with: Mitch Davis". The mentioned query is not observed (no @mention on MOBL-53).
 - Site ids: cloudId `10047494-96a6-4058-af3b-cdaae10ba319`, MOBL-53 issueId `66331`.
 - The next CLI deploy replaces 6.3.0; the two variables persist.
+
+### 2026-11-12, handoff brief, plurals, advisories (commits 7179dcf, 70a47e4, 0c7b148, 159e722)
+- 7179dcf: `count()` plurals in quotes and panel, `callerCloudId` (payload.context.cloudId, context.cloudId, installContext site ARI, else null), dismiss-path test.
+- 70a47e4: action `gather-handoff-context` (fields, comments, the same check object as `check-handoff`, binding decisions with constraints, Teamwork Graph people with status ok/nothing/not_configured), panel section "Handoff brief", agent rules 12-14.
+- 0c7b148: Fix Advisor audit, minimal edits only: panel text and agent rule 15 now say nothing was changed in Jira, a person makes the edits, run the check again, other findings still apply; tests that `fixes` leave quote, verdict and findings of `check-handoff` unchanged and that `checkHandoff.ts` and `validator.ts` do not import `feasible`. No contradictions-after figure exists, so nothing to align there.
+- 159e722: `src/rules/advisories.ts` (`watchConflicts`: due_before_limit, description_date_after_due, different_limits; facts only). `advisories` is a sibling field of `gather-handoff-context` and of `PanelState`, empty without a handoff basis; `check-handoff` does not carry it. Panel section "Also worth a look (advisory, not part of the verdict)"; agent rule 16. Property test: 300 seeded mutations leave `checkHandoff` output identical.
+- Deployed to development as 6.2.0 (after B) and 6.7.0 (after D); both minor, no approval, no scope change. 147 tests, `check.ps1` PASS.
+- Not observed on the site: the advisories section in the panel, agent rule 16 in Rovo Chat, the brief with real graph people after D.
