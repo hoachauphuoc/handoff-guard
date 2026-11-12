@@ -1,0 +1,103 @@
+{
+  "synthetic": true,
+  "labeled": false,
+  "provider": "muse",
+  "model": "muse-spark-1.3-contributor",
+  "generatedAt": "20261112T013558Z",
+  "samples": [
+    {
+      "note": "careful project manager voice, clean handoff with full description, receiver, due date and acknowledgement",
+      "handoff": {
+        "item": {
+          "key": "BRM-42",
+          "projectKey": "BRM",
+          "summary": "North depot inventory audit transition completed with checklist verified",
+          "description": "Hello team, I have completed the inventory checklist for the north depot and attached verification steps in sections 1 to 3. Please review at your convenience and confirm next ownership. Thank you very much for your careful attention.",
+          "labels": [
+            "audit-ready"
+          ],
+          "components": [
+            "field-ops"
+          ],
+          "dueDate": "2026-11-20",
+          "assigneeId": "u-kiri"
+        },
+        "fromId": "u-kiri",
+        "toId": "u-bren",
+        "acknowledged": [
+          "d-north-1"
+        ]
+      },
+      "decisions": [
+        {
+          "id": "d-north-1",
+          "title": "North depot audit items need audit-ready label before month end",
+          "status": "decided",
+          "source": {
+            "kind": "ledger",
+            "ref": "ledger-8891"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "BRM"
+          },
+          "constraints": [
+            {
+              "kind": "labelRequired",
+              "label": "audit-ready"
+            },
+            {
+              "kind": "dueNotAfter",
+              "date": "2026-11-30"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "note": "rushed support agent voice, missing receiver description due date and acknowledgement plus label and component break",
+      "handoff": {
+        "item": {
+          "key": "SPT-77",
+          "projectKey": "SPT",
+          "summary": "URGENT pls take this!! customer waiting sry no time!!!",
+          "description": "",
+          "labels": [],
+          "components": [
+            "legacy-bridge"
+          ],
+          "dueDate": null,
+          "assigneeId": null
+        },
+        "fromId": "u-tess",
+        "toId": null,
+        "acknowledged": []
+      },
+      "decisions": [
+        {
+          "id": "d-queue-7",
+          "title": "Queue tickets must carry hotfix-queue label and avoid legacy-bridge",
+          "status": "decided",
+          "source": {
+            "kind": "ledger",
+            "ref": "ledger-4520"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "SPT"
+          },
+          "constraints": [
+            {
+              "kind": "labelRequired",
+              "label": "hotfix-queue"
+            },
+            {
+              "kind": "componentForbidden",
+              "component": "legacy-bridge"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

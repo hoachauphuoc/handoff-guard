@@ -13,6 +13,21 @@ Handoff Guard: a Forge app for Atlassian Codegeist 2026. When a Jira work item i
 - Claude may run `forge deploy -e development` and `forge install` on the owner's dev site after the owner has logged in. Production deploys, Marketplace submission and the Devpost submission are the owner's.
 - No company business data, real customer names or employer material anywhere in this repo.
 
+## Dev-only tools (never in `src/`, never in the product)
+
+| Runner | Role | Does not do |
+|---|---|---|
+| Claude Opus | Rule and measure design, risk spikes, review before commit, final pass on README and video script | Bulk generation |
+| Claude Sonnet | Day-to-day implementation: Forge UI, resolvers, tests, `scripts/` | Changing rule semantics without an Opus-level review |
+| Claude Haiku | Mechanical work: search, lint fixes, running `check.ps1`, progress notes | Design, labels |
+| Muse (`muse-spark-1.3-contributor` only) | Bulk sample generation, first critic of README and video script | Labels |
+| Baseten (one open model) | Adversarial samples, second critic from a different model family | Labels |
+| Tavily | Fresh Forge/Rovo docs on demand | Anything else |
+
+- Ground-truth labels come only from the rules or the owner. No model grades the product. Model-generated data is marked synthetic in the README.
+- Endpoints and model IDs: `scripts/models.json`. Generator: `scripts/gen_samples.py`.
+- Keys live outside the repo in `C:\Users\phuochoa\.bjt\` (`Baseten.txt`, `Muse.txt`, `tavily_api_key.txt`), read by `scripts/` only. Claude never opens, prints or copies these files. Never put key values in CLAUDE.md or any tracked file.
+
 ## Product principles (each has a test)
 
 1. Rules decide the verdict, the model writes words: `checkHandoff()` is plain code; Rovo only explains findings.
