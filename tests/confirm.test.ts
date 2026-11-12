@@ -89,3 +89,11 @@ describe("confirm and dismiss", () => {
     expect(decisions).toEqual([other]);
   });
 });
+
+describe("rule keys tell requiring from forbidding", () => {
+  it("does not treat a required label and the same label forbidden as the same rule", () => {
+    const stored: Decision = { ...other, id: "d-req", status: "decided", scope: proposal.scope, constraints: [{ kind: "labelRequired", label: "x" }] };
+    const out = confirmProposal([{ ...proposal, constraints: [{ kind: "labelForbidden", label: "x" }] }], [stored], proposal.id, "u", NOW);
+    expect(out.ok && out.decisions).toHaveLength(2);
+  });
+});

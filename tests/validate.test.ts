@@ -110,3 +110,12 @@ describe("candidate shape", () => {
     expect(out.rejected).toEqual([]);
   });
 });
+
+describe("new constraint kinds", () => {
+  it("keeps labelForbidden and componentRequired and still rejects an unknown kind", () => {
+    const q = "all launch work needs the legal-reviewed label";
+    const ok = run([cand(q, { constraints: [{ kind: "labelForbidden", label: "draft" }, { kind: "componentRequired", component: "web" }] })]);
+    expect(ok.kept[0]?.constraints).toEqual([{ kind: "labelForbidden", label: "draft" }, { kind: "componentRequired", component: "web" }]);
+    expect(reasons([cand(q, { constraints: [{ kind: "labelMaybe", label: "x" }] })])).toEqual(["bad_constraint"]);
+  });
+});

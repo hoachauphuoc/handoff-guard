@@ -28,7 +28,8 @@ export const REASON_TEXT: Record<RejectReason, string> = {
   bad_title: "The title is missing or longer than 120 characters.",
   bad_scope:
     'The scope does not fit this work item: use {"kind":"project"}, {"kind":"workItem"}, or {"kind":"label","label":L} where L is a label this work item already has.',
-  bad_constraint: "constraints must hold 1 to 3 entries of kind dueNotAfter (date), labelRequired (label) or componentForbidden (component).",
+  bad_constraint:
+    "constraints must hold 1 to 3 entries of kind dueNotAfter (date), labelRequired or labelForbidden (label), componentRequired or componentForbidden (component).",
   bad_date: "A dueNotAfter date must be a real calendar date written YYYY-MM-DD.",
   no_evidence: "evidence.quote is missing or not between 12 and 300 characters.",
   evidence_not_in_source: "evidence.quote was not found word for word in the work item text; copy it exactly from read-decision-source.",
@@ -83,14 +84,14 @@ function constraintsOf(raw: unknown): Constraint[] | "bad_constraint" | "bad_dat
       const d = str(c.date);
       if (d === null || !isIsoDate(d)) return "bad_date";
       out.push({ kind: "dueNotAfter", date: d });
-    } else if (c.kind === "labelRequired") {
+    } else if (c.kind === "labelRequired" || c.kind === "labelForbidden") {
       const l = str(c.label);
       if (l === null) return "bad_constraint";
-      out.push({ kind: "labelRequired", label: l });
-    } else if (c.kind === "componentForbidden") {
+      out.push({ kind: c.kind, label: l });
+    } else if (c.kind === "componentRequired" || c.kind === "componentForbidden") {
       const comp = str(c.component);
       if (comp === null) return "bad_constraint";
-      out.push({ kind: "componentForbidden", component: comp });
+      out.push({ kind: c.kind, component: comp });
     } else return "bad_constraint";
   }
   return out;

@@ -127,3 +127,39 @@ describe("feasible stays out of the verdict path", () => {
     expect(validatorSource).not.toMatch(/feasible/);
   });
 });
+
+describe("labelForbidden and componentRequired", () => {
+  const project = { kind: "project", projectKey: "OPS" } as const;
+
+  it("removes a forbidden label and adds a required component", () => {
+    const d = decision({ scope: project, constraints: [{ kind: "labelForbidden", label: "draft" }, { kind: "componentRequired", component: "marketing" }] });
+    const out = suggestFixes(item({ labels: ["campaign", "Draft"], components: ["web"] }), [d]);
+    expect(out.after.labels).toEqual(["campaign"]);
+    expect(out.after.components).toEqual(["web", "marketing"]);
+    expect(out.changes.map(changeText)).toEqual([
+      'Remove label "Draft" ("Campaigns ship before 15 December")',
+      'Add component "marketing" ("Campaigns ship before 15 December")',
+    ]);
+    expect(contradictions(out.after, [d])).toEqual([]);
+  });
+
+  it("does not choose between decisions that require and forbid the same label", () => {
+    const ds = [
+      decision({ id: "r", title: "Needs legal", scope: project, constraints: [{ kind: "labelRequired", label: "legal" }] }),
+      decision({ id: "f", title: "No legal on campaigns", scope: project, constraints: [{ kind: "labelForbidden", label: "Legal" }] }),
+    ];
+    const out = suggestFixes(item({ labels: [] }), ds);
+    expect(out.changes).toEqual([]);
+    expect(out.unresolved).toEqual([{ field: "labels", value: "legal", requiredBy: ["Needs legal"], forbiddenBy: ["No legal on campaigns"] }]);
+  });
+
+  it("takes back an added label that is itself the scope of a decision forbidding it", () => {
+    const ds = [
+      decision({ id: "r", title: "Needs legal", scope: project, constraints: [{ kind: "labelRequired", label: "legal" }, { kind: "labelRequired", label: "audit" }] }),
+      decision({ id: "f", title: "Legal items skip audit", scope: { kind: "label", label: "legal" }, constraints: [{ kind: "labelForbidden", label: "audit" }] }),
+    ];
+    const out = suggestFixes(item({ labels: [] }), ds);
+    expect(out.changes.map(changeText)).not.toContain('Add label "audit" ("Needs legal")');
+    expect(out.unresolved.map((u) => u.value)).toContain("audit");
+  });
+});

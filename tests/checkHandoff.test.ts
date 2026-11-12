@@ -192,3 +192,21 @@ describe("checkItem", () => {
     expect(checkItem(it2, ds)).toEqual(fromHandoff);
   });
 });
+
+describe("labelForbidden and componentRequired", () => {
+  const forbid = decision({ constraints: [{ kind: "labelForbidden", label: "Draft " }] });
+  const need = decision({ id: "D-2", title: "Campaigns name their owner team", constraints: [{ kind: "componentRequired", component: "marketing" }] });
+
+  it("blocks an item that carries a forbidden label, comparing the way the rules do", () => {
+    const r = checkHandoff(handoff({ item: item({ labels: ["campaign", "DRAFT"] }), acknowledged: ["D-1"] }), [forbid]);
+    expect(r.verdict).toBe("blocked");
+    expect(r.findings.map((f) => f.message)).toEqual(['Contradicts "Campaigns ship before 15 December": label "Draft " is not allowed.']);
+  });
+
+  it("blocks an item that lacks a required component and passes once it has it", () => {
+    const base = { acknowledged: ["D-2"] };
+    const bad = checkHandoff(handoff({ ...base }), [need]);
+    expect(bad.findings.map((f) => f.message)).toEqual(['Contradicts "Campaigns name their owner team": component "marketing" is missing.']);
+    expect(checkHandoff(handoff({ ...base, item: item({ components: ["Marketing"] }) }), [need])).toMatchObject({ verdict: "clear", findings: [] });
+  });
+});

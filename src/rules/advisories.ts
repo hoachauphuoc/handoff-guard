@@ -1,9 +1,9 @@
-import { isIsoDate } from "./checkHandoff";
+import { isIsoDate, norm } from "./checkHandoff";
 import type { Decision, WorkItem } from "./types";
 import { count } from "../plural";
 
 export type Advisory = {
-  kind: "due_before_limit" | "description_date_after_due" | "different_limits";
+  kind: "due_before_limit" | "description_date_after_due" | "different_limits" | "decisions_disagree";
   message: string;
   decisionIds: string[];
 };
@@ -52,6 +52,28 @@ export function watchConflicts(item: WorkItem, binding: Decision[]): Advisory[] 
       message: `Decisions set different date limits: ${limits.map((l) => `${l.d.title} (${l.date})`).join(", ")}; the rule check uses the earliest.`,
       decisionIds: [...new Set(limits.map((l) => l.d.id))],
     });
+  }
+
+  // One decision requires what another forbids: the rule check reports a contradiction whichever way the
+  // item is edited, so this names the disagreement instead of leaving the person to find it.
+  for (const kind of ["label", "component"] as const) {
+    const listed = (want: "Required" | "Forbidden") =>
+      binding.flatMap((d) =>
+        d.constraints.flatMap((c) => (c.kind === `${kind}${want}` ? [{ d, value: "label" in c ? c.label : "component" in c ? c.component : "" }] : [])),
+      );
+    const required = listed("Required");
+    const forbidden = listed("Forbidden");
+    for (const value of [...new Set(required.map((r) => norm(r.value)))]) {
+      const need = required.filter((r) => norm(r.value) === value);
+      const ban = forbidden.filter((f) => norm(f.value) === value);
+      if (ban.length === 0) continue;
+      const titles = (xs: typeof need) => [...new Set(xs.map((x) => `"${x.d.title}"`))].join(", ");
+      out.push({
+        kind: "decisions_disagree",
+        message: `Decisions disagree about the ${kind} "${need[0]!.value}": ${titles(need)} requires it and ${titles(ban)} forbids it.`,
+        decisionIds: [...new Set([...need, ...ban].map((x) => x.d.id))],
+      });
+    }
   }
   return out;
 }

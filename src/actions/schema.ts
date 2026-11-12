@@ -42,7 +42,7 @@ export const ProposeInputSchema = {
     candidates: {
       type: "string",
       description:
-        'A JSON array, as a string, of {title, scope, constraints, evidence}. scope is one of {"kind":"project"} (all work in this project), {"kind":"workItem"} (this work item only) or {"kind":"label","label":"x"} (only if this work item already has label x). constraints is 1 to 3 of {"kind":"dueNotAfter","date":"YYYY-MM-DD"}, {"kind":"labelRequired","label":"x"} or {"kind":"componentForbidden","component":"x"}. evidence is {"quote":"..."} copied word for word from the read-decision-source result. Example: [{"title":"Launch work needs legal review","scope":{"kind":"project"},"constraints":[{"kind":"labelRequired","label":"legal-reviewed"}],"evidence":{"quote":"all launch work needs the legal-reviewed label"}}]',
+        'A JSON array, as a string, of {title, scope, constraints, evidence}. scope is one of {"kind":"project"} (all work in this project), {"kind":"workItem"} (this work item only) or {"kind":"label","label":"x"} (only if this work item already has label x). constraints is 1 to 3 of {"kind":"dueNotAfter","date":"YYYY-MM-DD"}, {"kind":"labelRequired","label":"x"}, {"kind":"labelForbidden","label":"x"}, {"kind":"componentRequired","component":"x"} or {"kind":"componentForbidden","component":"x"}. evidence is {"quote":"..."} copied word for word from the read-decision-source result. Example: [{"title":"Launch work needs legal review","scope":{"kind":"project"},"constraints":[{"kind":"labelRequired","label":"legal-reviewed"}],"evidence":{"quote":"all launch work needs the legal-reviewed label"}}]',
     },
   },
   required: ["candidates"],

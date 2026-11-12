@@ -6,8 +6,9 @@ import type { Proposal } from "./types";
 
 const scopeKey = (s: DecisionScope): string =>
   s.kind === "project" ? `project:${norm(s.projectKey)}` : s.kind === "label" ? `label:${norm(s.label)}` : `workItem:${norm(s.key)}`;
+// The kind is part of the key: requiring a label and forbidding it are different rules.
 const constraintKey = (c: Constraint): string =>
-  c.kind === "dueNotAfter" ? `due:${c.date.trim()}` : c.kind === "labelRequired" ? `label:${norm(c.label)}` : `component:${norm(c.component)}`;
+  c.kind === "dueNotAfter" ? `due:${c.date.trim()}` : "label" in c ? `${c.kind}:${norm(c.label)}` : `${c.kind}:${norm(c.component)}`;
 const ruleKey = (scope: DecisionScope, constraints: Constraint[]): string =>
   [scopeKey(scope), ...[...new Set(constraints.map(constraintKey))].sort()].join("|");
 

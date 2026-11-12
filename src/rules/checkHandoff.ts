@@ -44,6 +44,12 @@ function violation(constraint: Constraint, item: WorkItem, decision: Decision): 
       return has(item.labels, constraint.label)
         ? null
         : contradiction(decision, `label "${constraint.label}" is missing`);
+    case "labelForbidden":
+      return has(item.labels, constraint.label) ? contradiction(decision, `label "${constraint.label}" is not allowed`) : null;
+    case "componentRequired":
+      return has(item.components, constraint.component)
+        ? null
+        : contradiction(decision, `component "${constraint.component}" is missing`);
     case "componentForbidden":
       return has(item.components, constraint.component)
         ? contradiction(decision, `component "${constraint.component}" is not allowed`)

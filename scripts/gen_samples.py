@@ -53,6 +53,8 @@ SCHEMA = """Each sample is a JSON object:
     "constraints": [
         {"kind": "dueNotAfter", "date": "YYYY-MM-DD"}
       | {"kind": "labelRequired", "label": string}
+      | {"kind": "labelForbidden", "label": string}
+      | {"kind": "componentRequired", "component": string}
       | {"kind": "componentForbidden", "component": string}
     ]
   }]
@@ -141,7 +143,7 @@ def valid(s) -> bool:
                 and d["source"]["kind"] in ("confluence", "jira", "ledger")
                 and isinstance(d["source"]["ref"], str)
                 and d["scope"]["kind"] in ("project", "label", "workItem")
-                and all(c["kind"] in ("dueNotAfter", "labelRequired", "componentForbidden") for c in d["constraints"])
+                and all(c["kind"] in ("dueNotAfter", "labelRequired", "labelForbidden", "componentRequired", "componentForbidden") for c in d["constraints"])
             )
         return bool(ok)
     except (KeyError, TypeError):

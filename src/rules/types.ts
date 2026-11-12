@@ -14,6 +14,8 @@ export type WorkItem = {
 export type Constraint =
   | { kind: "dueNotAfter"; date: string }
   | { kind: "labelRequired"; label: string }
+  | { kind: "labelForbidden"; label: string }
+  | { kind: "componentRequired"; component: string }
   | { kind: "componentForbidden"; component: string };
 
 export type DecisionScope =

@@ -184,3 +184,24 @@ describe("verdict-path sources", () => {
     for (const src of [rules, validator, build, measure]) expect(src).not.toMatch(/advisor/i);
   });
 });
+
+describe("decisions_disagree", () => {
+  it("names a label one decision requires and another forbids, as a fact", () => {
+    const ds = [
+      decision({ id: "a", title: "Needs legal", constraints: [{ kind: "labelRequired", label: "legal" }] }),
+      decision({ id: "b", title: "No legal here", constraints: [{ kind: "labelForbidden", label: "Legal" }] }),
+    ];
+    const out = watchConflicts(item(), ds).filter((a) => a.kind === "decisions_disagree");
+    expect(out).toEqual([
+      { kind: "decisions_disagree", message: 'Decisions disagree about the label "legal": "Needs legal" requires it and "No legal here" forbids it.', decisionIds: ["a", "b"] },
+    ]);
+  });
+
+  it("is silent when requirements and bans are about different values", () => {
+    const ds = [
+      decision({ id: "a", constraints: [{ kind: "componentRequired", component: "web" }] }),
+      decision({ id: "b", constraints: [{ kind: "componentForbidden", component: "legacy" }] }),
+    ];
+    expect(kinds(item(), ds)).not.toContain("decisions_disagree");
+  });
+});

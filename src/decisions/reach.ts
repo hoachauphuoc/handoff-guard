@@ -19,6 +19,10 @@ export function constraintText(c: Constraint): string {
       return `The due date must be on or before ${c.date}.`;
     case "labelRequired":
       return `The label "${c.label}" is required.`;
+    case "labelForbidden":
+      return `The label "${c.label}" is not allowed.`;
+    case "componentRequired":
+      return `The component "${c.component}" is required.`;
     case "componentForbidden":
       return `The component "${c.component}" is not allowed.`;
   }
