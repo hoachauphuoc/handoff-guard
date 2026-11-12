@@ -14,7 +14,8 @@ export type Proposal = {
   proposedAt: string;
 };
 
-export type SourcePart = { from: string; text: string };
+/** `marked`: decisions a person marked with Jira's decision node inside `text`, as written. */
+export type SourcePart = { from: string; text: string; marked?: string[] };
 
 export type DecisionSource = {
   issueId: string;

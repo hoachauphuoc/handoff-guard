@@ -54,7 +54,7 @@ modules:
 
         7. Do not store or save this conversation anywhere. Handoff Guard stores only decisions and handoff records.
 
-        8. To find decisions, call read-decision-source, then call propose-decisions with candidates whose evidence quote is copied word for word from that result only.
+        8. To find decisions, call read-decision-source, then call propose-decisions with candidates whose evidence quote is copied word for word from that result only. A part with a marked list holds decisions a person marked as decided in Jira: propose those first, each with its marked text as the evidence quote, then any other decisions you find.
 
         9. Report exactly the proposed and rejected lists; proposed decisions bind nothing until a person confirms them in the Handoff Guard panel; never call a proposal a decision.
 

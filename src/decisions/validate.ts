@@ -42,7 +42,7 @@ export type Context = { issueKey: string; projectKey: string; labels: string[]; 
 
 // Chat and editors rewrite quotes and dashes and wrap lines; none of that changes what was written.
 // Case and every other character still have to match, so a paraphrase cannot pass.
-function normalise(s: string): string {
+export function normalise(s: string): string {
   return s
     .normalize("NFC")
     .replace(/[‘’‚‛]/g, "'")

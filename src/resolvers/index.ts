@@ -2,6 +2,7 @@ import Resolver from "@forge/resolver";
 import { runGatherHandoffContext } from "../actions/core";
 import { depsFor } from "../actions/deps";
 import { confirmProposal, dismissProposal } from "../decisions/confirm";
+import { unrecordedMarked, type MarkedState } from "../decisions/marked";
 import { acknowledge } from "../handoff/acknowledge";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import type { HandoffRecord, PanelState } from "../handoff/types";
@@ -11,6 +12,7 @@ import { watchAssignee, watchConflicts } from "../rules/advisories";
 import { changeText, suggestFixes } from "../rules/feasible";
 import type { Finding } from "../rules/types";
 import { mergeDecisions, sampleDecisions } from "../samples/decisions";
+import { readSourceAsUser } from "../source";
 import { getDecisions, getProposals, getRecord, putDecisions, putProposals, putRecord } from "../store";
 
 const resolver = new Resolver();
@@ -126,6 +128,14 @@ resolver.define("dismissProposal", async ({ context, payload }) => {
 resolver.define("gatherContext", ({ context }) => {
   const ctx = context as Ctx;
   return runGatherHandoffContext({ issueKey: ctx.extension.issue.key }, ctx.accountId ?? null, depsFor(ctx.cloudId ?? null));
+});
+
+// Read separately from the panel state so a slow or refused comment read never delays the verdict. Nothing
+// returned here is stored, and it is not an input to the rule check.
+resolver.define("getMarked", async ({ context }): Promise<MarkedState> => {
+  const ctx = context as Ctx;
+  const [src, decisions] = await Promise.all([readSourceAsUser(ctx.extension.issue.key), getDecisions()]);
+  return { notInLedger: unrecordedMarked(src.parts, decisions), truncated: src.truncated };
 });
 
 export const handler = resolver.getDefinitions();

@@ -27,8 +27,8 @@ export type ConfirmResult =
 
 /**
  * Turns one proposal into a decision. The decision id comes from the proposal id, so confirming again
- * replaces the same decision instead of adding a second. The evidence quote is not copied into the
- * decision: its source ref says where to read it, and the rules have no use for it.
+ * replaces the same decision instead of adding a second. The evidence stays on the decision only to
+ * recognise, later, which marked decisions are already recorded; the rules never read it.
  */
 export function confirmProposal(
   proposals: Proposal[],
@@ -51,6 +51,7 @@ export function confirmProposal(
     constraints: p.constraints,
     confirmedBy: who,
     confirmedAt: nowIso,
+    evidence: p.evidence,
   };
   return { ok: true, proposals: rest, decisions: mergeDecisions(decisions, [decision]) };
 }

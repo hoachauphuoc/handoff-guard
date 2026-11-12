@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
 import type { GatherOutput } from "../actions/schema";
+import type { MarkedState } from "../decisions/marked";
 import { constraintText, reachText } from "../decisions/reach";
 import { count } from "../plural";
 import type { PanelState } from "../handoff/types";
@@ -33,6 +34,8 @@ const App = () => {
   const [busy, setBusy] = useState(false);
   const [brief, setBrief] = useState<GatherOutput | null>(null);
   const [rovoNote, setRovoNote] = useState<string | null>(null);
+  const [marked, setMarked] = useState<MarkedState | null>(null);
+  const [markedError, setMarkedError] = useState<string | null>(null);
   // null: follow the default (open until a handoff exists); a click on the toggle overrides it.
   const [guideOpen, setGuideOpen] = useState<boolean | null>(null);
 
@@ -74,8 +77,18 @@ const App = () => {
       .finally(() => setBusy(false));
   };
 
+  // Marked decisions are read after the panel, and again after a confirm so the count falls.
+  const readMarked = () =>
+    invoke<MarkedState>("getMarked").then(
+      (m) => {
+        setMarked(m as MarkedState);
+        setMarkedError(null);
+      },
+      (e) => setMarkedError(String(e)),
+    );
+
   useEffect(() => {
-    void call("getPanel");
+    void call("getPanel").then(() => void readMarked());
   }, []);
 
   if (error) {
@@ -196,7 +209,7 @@ const App = () => {
                 <Text>{p.title}</Text>
                 <Text>{reachText(p.scope)}</Text>
                 <Text>{`Evidence: "${p.evidence.quote}" (${p.evidence.from})`}</Text>
-                <Button isDisabled={busy} onClick={() => call("confirmProposal", { proposalId: p.id })}>
+                <Button isDisabled={busy} onClick={() => call("confirmProposal", { proposalId: p.id }).then(() => void readMarked())}>
                   Confirm
                 </Button>
                 <Button isDisabled={busy} onClick={() => call("dismissProposal", { proposalId: p.id })}>
@@ -205,6 +218,28 @@ const App = () => {
                 <Text>Rovo may propose it again later.</Text>
               </Stack>
             ))}
+          </Stack>
+        </SectionMessage>
+      )}
+      {markedError !== null && (
+        <Text>{`Marked decisions could not be read: ${markedError.includes("Allow access") ? CONSENT_TEXT : markedError}`}</Text>
+      )}
+      {marked !== null && marked.notInLedger.length > 0 && (
+        <SectionMessage appearance="information" title="Marked decisions not in the ledger">
+          <Stack space="space.050">
+            <Text>
+              {`${count(marked.notInLedger.length, "decision")} marked as decided in this work item ${
+                marked.notInLedger.length === 1 ? "is" : "are"
+              } not in the ledger, so ${marked.notInLedger.length === 1 ? "it binds" : "they bind"} nothing yet:`}
+            </Text>
+            {marked.notInLedger.slice(0, 5).map((m, i) => (
+              <Text key={i}>{`• "${m.text}" (${m.from})`}</Text>
+            ))}
+            {marked.truncated && <Text>Only the first 20,000 characters of the description and comments were read.</Text>}
+            <Text>Ask Rovo to turn them into proposals, then confirm the ones you agree with.</Text>
+            <Button onClick={() => void askRovo(`Propose decisions for ${state.issueKey} from its marked decisions.`)}>
+              Find decisions with Rovo
+            </Button>
           </Stack>
         </SectionMessage>
       )}

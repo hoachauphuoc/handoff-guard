@@ -214,7 +214,7 @@ export async function runReadDecisionSource(payload: unknown, deps: Deps): Promi
       ok: true,
       source: "rules",
       issueKey: key,
-      parts: src.parts.map(({ from, text }) => ({ from, text })),
+      parts: src.parts,
       truncated: src.truncated,
       quote: `Handoff Guard read ${count(src.parts.length, "text part")} of ${key} (description and comments you can see)${
         src.truncated ? "; the text was cut (20,000 characters)" : ""

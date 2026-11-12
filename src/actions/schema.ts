@@ -105,7 +105,8 @@ export type ReadSourceSuccess = {
   ok: true;
   source: "rules";
   issueKey: string;
-  parts: { from: string; text: string }[];
+  /** `marked`: decisions a person marked with Jira's decision node inside `text`; propose these first. */
+  parts: { from: string; text: string; marked?: string[] }[];
   truncated: boolean;
   quote: string;
 };

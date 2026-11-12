@@ -34,6 +34,8 @@ export type Decision = {
   /** Set when a person confirmed a proposal. The rules ignore both fields. */
   confirmedBy?: string;
   confirmedAt?: string;
+  /** The words a proposal was confirmed from, so a marked decision can be told apart from one already recorded. */
+  evidence?: { quote: string; from: string };
 };
 
 export type Handoff = {
