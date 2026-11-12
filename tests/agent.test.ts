@@ -89,3 +89,20 @@ describe("conflict advisories rule", () => {
     expect(manifest).not.toContain("Rovo's reading");
   });
 });
+
+describe("agent gate", () => {
+  it("runs the check before any work and declines unless the verdict is Clear", () => {
+    for (const phrase of [
+      "When asked to work on, take, start or pick up a work item, do nothing else first",
+      "call check-handoff, then gather-handoff-context",
+      "Proceed only when the verdict is Clear",
+      "never call a verdict Clear that the action did not return",
+    ]) {
+      expect(manifest).toContain(phrase);
+    }
+  });
+
+  it("uses the work item the agent was started from when no key is given", () => {
+    expect(manifest).toContain("use the work item you were started from");
+  });
+});

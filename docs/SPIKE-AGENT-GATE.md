@@ -24,3 +24,8 @@ One Agent session was started on TD-1 by this test. It holds the refusal text ab
 1. Add the prompt rule, redeploy to development, start the agent on MOBL-53 (blocked) and TD-1 (clear), and record what it says.
 2. Test the transition route in the workflow editor.
 3. Only then spend time on `rovo:skill` and the MCP client test.
+
+## After the prompt rule (development 7.2.0)
+
+- Built: agent rule 18 (run `check-handoff` then `gather-handoff-context` first, report the quote, list binding decisions, proceed only on Clear), rule 1 now defaults the key to the work item the agent was started from, and a `rovo:skill` "handoff-check" (`skills/handoff-check/SKILL.md`, `source.dir` in the manifest). `forge lint` and `forge deploy` accept the skill; the manifest has no field that links a skill to actions (`actions` is rejected: "rovo:skill should NOT have additional property 'actions'"), so the skill text tells the calling agent to use the two actions by name.
+- Not yet observed: what the agent says when started on MOBL-53 (expected: Blocked or Needs info, declines) and on TD-1 (expected: runs the check first). The Agents button needs a signed-in browser session; a person has to start it and paste the answer here. Whether another agent can call the skill is also untried.
