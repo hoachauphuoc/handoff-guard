@@ -51,6 +51,14 @@ modules:
         - list-binding-decisions
         - read-decision-source
         - propose-decisions
+  rovo:mcp:
+    - key: handoff-guard-mcp
+      name: Handoff Guard
+      tools:
+        - check-handoff
+        - list-binding-decisions
+        - read-decision-source
+        - propose-decisions
   action:
     - key: check-handoff
       name: Check handoff

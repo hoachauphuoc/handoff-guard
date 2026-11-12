@@ -129,6 +129,8 @@ describe("list-binding-decisions", () => {
     if (none.ok) expect(none.quote).toBe("No recorded decision binds OPS-1.");
     const bad = await runListBindingDecisions({}, deps());
     expect(bad).toMatchObject({ ok: false, error: { code: "bad_input" } });
+    // Over MCP there is no work item context, so the message must say what a key looks like.
+    expect(bad.ok === false && bad.error.message).toContain("PROJECT-123");
   });
 });
 

@@ -31,6 +31,9 @@ const MAX_CANDIDATES_CHARS = 20_000;
 const CANDIDATES_SHAPE =
   'candidates must be a JSON array, given as a string of at most 20,000 characters, of {"title", "scope":{"kind","..."}, "constraints":[{"kind","..."}], "evidence":{"quote"}}.';
 
+// Over MCP there is no work item context, so the key always comes from the input and every bad_input
+// message has to say what a valid key looks like.
+const KEY_FORMAT = "A work item key has the form PROJECT-123, for example OPS-1.";
 const KEY = /^[A-Z][A-Z0-9_]+-\d+$/;
 const VERDICT_TEXT: Record<Verdict, "Clear" | "Needs info" | "Blocked"> = {
   clear: "Clear",
@@ -46,9 +49,9 @@ function parse(payload: unknown, wantReceiver: boolean): Parsed {
   const p = (payload && typeof payload === "object" ? payload : {}) as Record<string, unknown>;
   const ctxKey = (p.context as { jira?: { issueKey?: unknown } } | undefined)?.jira?.issueKey;
   const raw = [p.issueKey, ctxKey].find((v) => typeof v === "string" && v.trim() !== "");
-  if (typeof raw !== "string") return { ok: false, message: "No work item key was given. Ask for the key, for example OPS-1." };
+  if (typeof raw !== "string") return { ok: false, message: "No work item key was given." };
   const key = raw.trim().toUpperCase();
-  if (!KEY.test(key)) return { ok: false, message: `"${raw.trim()}" is not a work item key such as OPS-1.` };
+  if (!KEY.test(key)) return { ok: false, message: `"${raw.trim()}" is not a work item key.` };
   let receiver: string | null = null;
   if (wantReceiver && p.receiverAccountId !== undefined && p.receiverAccountId !== null) {
     if (typeof p.receiverAccountId !== "string") return { ok: false, message: "receiverAccountId must be a text value." };
@@ -64,7 +67,7 @@ function failure<S extends (typeof SCHEMA_VERSION)[keyof typeof SCHEMA_VERSION]>
   fixedMessage?: string,
 ): ActionError<S> {
   const code: ErrorCode = fixedMessage !== undefined ? "bad_input" : e instanceof JiraReadError ? e.code : "internal";
-  const message = fixedMessage ?? (e instanceof JiraReadError ? e.message : "Handoff Guard hit an unexpected error.");
+  const message = fixedMessage !== undefined ? `${fixedMessage} ${KEY_FORMAT}` : (e instanceof JiraReadError ? e.message : "Handoff Guard hit an unexpected error.");
   return {
     schema,
     ok: false,

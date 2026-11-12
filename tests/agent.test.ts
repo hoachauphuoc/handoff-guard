@@ -41,3 +41,21 @@ describe("agent manifest", () => {
     expect(inputNames("propose-decisions").sort()).toEqual(Object.keys(ProposeInputSchema.properties).sort());
   });
 });
+
+describe("Rovo MCP module", () => {
+  const section = (from: string, to: string) => manifest.slice(manifest.indexOf(from), manifest.indexOf(to));
+  const keys = (block: string, re: RegExp) => [...block.matchAll(re)].map((m) => m[1]).sort();
+  const actionKeys = keys(section("\n  action:\n", "\n  function:\n"), /^ {4}- key: (\S+)/gm);
+
+  it("exposes exactly the action keys, the same set the agent lists", () => {
+    const mcp = section("  rovo:mcp:", "\n  action:\n");
+    expect(keys(mcp, /^ {8}- (\S+)/gm)).toEqual(actionKeys);
+    expect(keys(section("      actions:", "\n  rovo:mcp:"), /^ {8}- (\S+)/gm)).toEqual(actionKeys);
+    expect(actionKeys.length).toBeGreaterThan(0);
+  });
+
+  it("is one module with the agreed key and name", () => {
+    expect(manifest.match(/^ {2}rovo:mcp:/gm)).toHaveLength(1);
+    expect(manifest).toContain("- key: handoff-guard-mcp\n      name: Handoff Guard");
+  });
+});

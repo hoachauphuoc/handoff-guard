@@ -17,9 +17,12 @@ const deps: Deps = {
 
 type Ctx = { accountId?: string; cloudId?: string };
 
-// The site id builds the work item ARI for Teamwork Graph. Whether Rovo actions carry cloudId is unconfirmed
-// (logShape below shows it); without it Teamwork Graph is skipped and the result says it returned nothing.
-const withCloud = (context: Ctx): Deps => ({ ...deps, readSource: (key) => readSourceAsUser(key, context?.cloudId ?? null) });
+// The site id builds the work item ARI for Teamwork Graph. The Rovo MCP tutorial shows it in payload.context
+// (not yet seen on a real call here; logShape below shows it); without it Teamwork Graph is skipped and the result says it returned nothing.
+const withCloud = (payload: unknown, context: Ctx): Deps => {
+  const cloudId = (payload as { context?: { cloudId?: unknown } } | undefined)?.context?.cloudId ?? context?.cloudId;
+  return { ...deps, readSource: (key) => readSourceAsUser(key, typeof cloudId === "string" ? cloudId : null) };
+};
 
 // TEMPORARY (see docs/PROGRESS.md): logs key names only, never values, to show where accountId and the
 // Jira context sit on a real Rovo call. Remove after the owner confirms.
@@ -48,10 +51,10 @@ export async function listBindingDecisionsAction(payload: unknown, context: Ctx)
 
 export async function readDecisionSourceAction(payload: unknown, context: Ctx) {
   logShape(payload, context);
-  return runReadDecisionSource(payload, withCloud(context));
+  return runReadDecisionSource(payload, withCloud(payload, context));
 }
 
 export async function proposeDecisionsAction(payload: unknown, context: Ctx) {
   logShape(payload, context);
-  return runProposeDecisions(payload, withCloud(context));
+  return runProposeDecisions(payload, withCloud(payload, context));
 }
