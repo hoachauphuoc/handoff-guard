@@ -99,6 +99,8 @@ export type ReadSourceSuccess = {
   issueKey: string;
   parts: { from: string; text: string }[];
   truncated: boolean;
+  /** Linked Confluence pages skipped because the caller cannot open them. */
+  unreadablePages: number;
   quote: string;
 };
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
 import { reachText } from "../decisions/reach";
+import { EVIDENCE_HIDDEN } from "../decisions/view";
 import type { PanelState } from "../handoff/types";
 import { GUIDE_SOURCE, PRACTICE_NONE, PRACTICE_TITLE, guideView, type StepNeed, type StepState } from "../guide/steps";
 import { HINTS } from "../guide/hints";
@@ -70,7 +71,7 @@ const App = () => {
       </SectionMessage>
     );
   }
-  if (!state) return <Text>Checking the handoff…</Text>;
+  if (!state) return <Text>Checking the handoffâ€¦</Text>;
 
   const { record, result } = state;
   const guide = guideView(state);
@@ -96,7 +97,7 @@ const App = () => {
                 ) : (
                   state.practiceFindings.map((f, i) => (
                     <Text key={i}>
-                      � {f.message} {HINTS[f.rule]}
+                      • {f.message} {HINTS[f.rule]}
                     </Text>
                   ))
                 )}
@@ -124,7 +125,7 @@ const App = () => {
             <Lozenge appearance={LOOK[result.verdict].appearance}>{LOOK[result.verdict].text}</Lozenge>
           </Text>
           {result.findings.map((f, i) => (
-            <Text key={i}>• {f.message}</Text>
+            <Text key={i}>â€¢ {f.message}</Text>
           ))}
           {result.binding.map((d) => (
             <Stack key={d.id} space="space.050">
@@ -155,9 +156,11 @@ const App = () => {
                 <Text>{p.title}</Text>
                 <Text>{reachText(p.scope)}</Text>
                 <Text>
-                  Evidence: "{p.evidence.quote}" ({p.evidence.from})
+                  {p.evidence.quote === null
+                    ? `${EVIDENCE_HIDDEN} (${p.evidence.from}).`
+                    : `Evidence: "${p.evidence.quote}" (${p.evidence.from})`}
                 </Text>
-                <Button isDisabled={busy} onClick={() => call("confirmProposal", { proposalId: p.id })}>
+                <Button isDisabled={busy || !p.canConfirm} onClick={() => call("confirmProposal", { proposalId: p.id })}>
                   Confirm
                 </Button>
                 <Button isDisabled={busy} onClick={() => call("dismissProposal", { proposalId: p.id })}>

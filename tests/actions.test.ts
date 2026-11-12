@@ -138,6 +138,7 @@ const SOURCE: DecisionSource = {
   labels: ["launch"],
   parts: [{ from: "OPS-1 description", text: "Decision: all launch work needs the legal-reviewed label before 2026-12-15." }],
   truncated: false,
+  unreadablePages: 0,
 };
 const good = {
   title: "Launch work needs legal review",

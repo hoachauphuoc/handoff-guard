@@ -1,4 +1,6 @@
 import api, { route } from "@forge/api";
+import { readPageAsUser, remoteLinkPages } from "./confluence";
+import { MAX_SOURCE_CHARS, capParts, collectPages } from "./decisions/confluence";
 import type { DecisionSource, SourcePart } from "./decisions/types";
 import { toWorkItem } from "./handoff/build";
 import { JiraReadError } from "./jira-error";
@@ -6,8 +8,6 @@ import type { WorkItem } from "./rules/types";
 
 // API v2 returns the description as plain text; v3 returns a document tree the rules cannot read.
 export const FIELDS = "summary,description,labels,components,duedate,assignee,project";
-
-export const MAX_SOURCE_CHARS = 20_000;
 
 // When Jira asks for consent the error says so; it is never retried as the app, which would hide the
 // missing access.
@@ -49,23 +49,19 @@ export async function readSourceAsUser(key: string): Promise<DecisionSource> {
     raw.push({ from: `${key} comment ${c.id}`, text: c.body });
   }
 
-  let left = MAX_SOURCE_CHARS;
-  let truncated = false;
-  const parts: SourcePart[] = [];
-  for (const p of raw) {
-    if (left <= 0) {
-      truncated = true;
-      break;
-    }
-    if (p.text.length > left) truncated = true;
-    parts.push({ from: p.from, text: p.text.slice(0, left) });
-    left -= p.text.length;
-  }
+  // Jira text comes first so a long page cannot push out the work item's own words.
+  const pages = await readLinkedPages(key);
+  const { parts, truncated } = capParts([...raw, ...pages.parts], MAX_SOURCE_CHARS);
   return {
     issueId: String(issue.id),
     projectKey: String(issue.fields?.project?.key ?? ""),
     labels: Array.isArray(issue.fields?.labels) ? issue.fields.labels.filter((l: unknown) => typeof l === "string") : [],
     parts,
-    truncated,
+    truncated: truncated || pages.truncated,
+    unreadablePages: pages.unreadable,
   };
+}
+
+async function readLinkedPages(key: string) {
+  return collectPages(await remoteLinkPages(key), readPageAsUser);
 }

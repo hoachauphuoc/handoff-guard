@@ -5,7 +5,7 @@ import type { Proposal } from "./types";
 
 export type ConfirmResult =
   | { ok: true; proposals: Proposal[]; decisions: Decision[] }
-  | { ok: false; reason: "not_found" };
+  | { ok: false; reason: "not_found" | "evidence_not_visible" };
 
 /**
  * Turns one proposal into a decision. The decision id comes from the proposal id, so confirming again
@@ -18,14 +18,20 @@ export function confirmProposal(
   id: string,
   who: string,
   nowIso: string,
+  openablePages: ReadonlySet<string> = new Set(),
 ): ConfirmResult {
   const p = proposals.find((x) => x.id === id);
   if (!p) return { ok: false, reason: "not_found" };
+  // The confirmer must be able to read the evidence they are confirming; restrictions inherited from a
+  // parent page are invisible to the restrictions API, so the caller proves it by re-reading the page.
+  if (p.evidence.page && !openablePages.has(p.evidence.page.pageId)) return { ok: false, reason: "evidence_not_visible" };
   const decision: Decision = {
     id: "d-" + fnv1a(p.id),
     title: p.title,
     status: "decided",
-    source: { kind: "jira", ref: p.evidence.from.replace(/ description$/, "") },
+    source: p.evidence.page
+      ? { kind: "confluence", ref: p.evidence.page.ref }
+      : { kind: "jira", ref: p.evidence.from.replace(/ description$/, "") },
     scope: p.scope,
     constraints: p.constraints,
     confirmedBy: who,

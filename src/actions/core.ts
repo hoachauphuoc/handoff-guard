@@ -177,11 +177,12 @@ export async function runReadDecisionSource(payload: unknown, deps: Deps): Promi
       ok: true,
       source: "rules",
       issueKey: key,
-      parts: src.parts,
+      parts: src.parts.map(({ from, text }) => ({ from, text })),
       truncated: src.truncated,
-      quote: `Handoff Guard read ${src.parts.length} text parts of ${key} (description and comments you can see)${
-        src.truncated ? "; the text was cut at 20,000 characters" : ""
-      }. Quote evidence from these parts only.`,
+      unreadablePages: src.unreadablePages,
+      quote: `Handoff Guard read ${src.parts.length} text parts of ${key} (description, comments and linked Confluence pages you can see)${
+        src.truncated ? "; the text was cut (20,000 characters or 3 pages)" : ""
+      }. ${src.unreadablePages} linked pages you cannot open were skipped. Quote evidence from these parts only.`,
     };
   } catch (e) {
     return failure(schema, key, e);

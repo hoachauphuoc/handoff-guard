@@ -1,5 +1,8 @@
 import Resolver from "@forge/resolver";
 import { confirmProposal, dismissProposal } from "../decisions/confirm";
+import type { Proposal } from "../decisions/types";
+import { proposalViews } from "../decisions/view";
+import { openablePageIds } from "../confluence";
 import { acknowledge } from "../handoff/acknowledge";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import type { HandoffRecord, PanelState } from "../handoff/types";
@@ -10,6 +13,10 @@ import { mergeDecisions, sampleDecisions } from "../samples/decisions";
 import { getDecisions, getProposals, getRecord, putDecisions, putProposals, putRecord } from "../store";
 
 const resolver = new Resolver();
+
+// Inherited page restrictions are not visible to the restrictions API, so the only reliable test of "may this
+// viewer read the evidence" is to read the page as them, every time the evidence is shown or confirmed.
+const pageIdsOf = (ps: Proposal[]): string[] => ps.flatMap((p) => (p.evidence.page ? [p.evidence.page.pageId] : []));
 
 // Only findings about the work item itself: the practice handoff has made-up people, so receiver and
 // acknowledgement findings would be noise.
@@ -26,6 +33,7 @@ type Ctx = { accountId?: string; extension: { issue: { key: string; id: string }
 async function panelState(ctx: Ctx): Promise<PanelState> {
   const { item, issueId } = await readItem(ctx.extension.issue.key);
   const [decisions, record, proposals] = await Promise.all([getDecisions(), getRecord(issueId), getProposals(issueId)]);
+  const openable = await openablePageIds(pageIdsOf(proposals));
   const viewerId = ctx.accountId ?? null;
   const practice = checkHandoff(
     walkthroughHandoff(item, viewerId, bindingDecisions(decisions, item).map((d) => d.id)),
@@ -38,7 +46,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     viewerId,
     isReceiver: record !== null && viewerId !== null && viewerId === record.toId,
     decisionCount: decisions.length,
-    proposals,
+    proposals: proposalViews(proposals, openable),
     practiceFindings: practice.findings.filter((f) => PRACTICE_RULES.includes(f.rule)),
   };
 }
@@ -92,8 +100,15 @@ resolver.define("confirmProposal", async ({ context, payload }) => {
   const id = String((payload as { proposalId?: string }).proposalId ?? "");
   const { issueId } = await readItem(ctx.extension.issue.key);
   const [proposals, decisions] = await Promise.all([getProposals(issueId), getDecisions()]);
-  const out = confirmProposal(proposals, decisions, id, ctx.accountId, new Date().toISOString());
-  if (!out.ok) throw new Error("That proposal is no longer there. Reload the page to see the current list.");
+  const openable = await openablePageIds(pageIdsOf(proposals.filter((p) => p.id === id)));
+  const out = confirmProposal(proposals, decisions, id, ctx.accountId, new Date().toISOString(), openable);
+  if (!out.ok) {
+    throw new Error(
+      out.reason === "evidence_not_visible"
+        ? "Evidence is on a Confluence page you cannot open, so you cannot confirm this decision."
+        : "That proposal is no longer there. Reload the page to see the current list.",
+    );
+  }
   // The decision is saved first: if the second write fails the proposal is still listed and confirming
   // again changes nothing, whereas the other order could lose the decision.
   await putDecisions(out.decisions);
