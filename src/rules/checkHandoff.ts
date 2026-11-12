@@ -1,5 +1,16 @@
 import type { Constraint, Decision, Finding, Handoff, HandoffResult, Verdict, WorkItem } from "./types";
 
+// People type labels, components and ids by hand; "Legal-Reviewed " and "legal-reviewed" mean the same thing.
+const norm = (s: string): string => s.trim().toLowerCase();
+const has = (list: string[], value: string): boolean => list.some((x) => norm(x) === norm(value));
+
+// Dates are compared as strings, which is only correct for a real, zero-padded YYYY-MM-DD.
+function isIsoDate(s: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = new Date(`${s}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
+
 function applies(decision: Decision, item: WorkItem): boolean {
   // A superseded decision no longer binds anyone; showing it would block work on a dead rule.
   if (decision.status !== "decided") return false;
@@ -7,7 +18,7 @@ function applies(decision: Decision, item: WorkItem): boolean {
     case "project":
       return decision.scope.projectKey === item.projectKey;
     case "label":
-      return item.labels.includes(decision.scope.label);
+      return has(item.labels, decision.scope.label);
     case "workItem":
       return decision.scope.key === item.key;
   }
@@ -16,14 +27,14 @@ function applies(decision: Decision, item: WorkItem): boolean {
 function violation(constraint: Constraint, item: WorkItem): string | null {
   switch (constraint.kind) {
     case "dueNotAfter":
-      // An unset due date is reported once by the no_due_date rule, not again per decision.
-      return item.dueDate !== null && item.dueDate > constraint.date
+      // An unset or malformed due date is reported once by its own rule, not again per decision.
+      return item.dueDate !== null && isIsoDate(item.dueDate) && item.dueDate > constraint.date
         ? `due date ${item.dueDate} is after ${constraint.date}`
         : null;
     case "labelRequired":
-      return item.labels.includes(constraint.label) ? null : `label "${constraint.label}" is missing`;
+      return has(item.labels, constraint.label) ? null : `label "${constraint.label}" is missing`;
     case "componentForbidden":
-      return item.components.includes(constraint.component)
+      return has(item.components, constraint.component)
         ? `component "${constraint.component}" is not allowed`
         : null;
   }
@@ -37,9 +48,12 @@ export function checkHandoff(handoff: Handoff, decisions: Decision[]): HandoffRe
   const { item } = handoff;
   const findings: Finding[] = [];
 
+  if (handoff.fromId === null) {
+    findings.push({ rule: "no_sender", severity: "info_needed", message: "The handoff has no sender." });
+  }
   if (handoff.toId === null) {
     findings.push({ rule: "no_receiver", severity: "block", message: "The handoff has no receiver." });
-  } else if (handoff.toId === handoff.fromId) {
+  } else if (handoff.fromId !== null && norm(handoff.toId) === norm(handoff.fromId)) {
     findings.push({ rule: "same_person", severity: "block", message: "Sender and receiver are the same person." });
   }
   if (item.description.trim() === "") {
@@ -47,6 +61,12 @@ export function checkHandoff(handoff: Handoff, decisions: Decision[]): HandoffRe
   }
   if (item.dueDate === null) {
     findings.push({ rule: "no_due_date", severity: "info_needed", message: "No due date is set." });
+  } else if (!isIsoDate(item.dueDate)) {
+    findings.push({
+      rule: "invalid_due_date",
+      severity: "info_needed",
+      message: `The due date "${item.dueDate}" is not a valid YYYY-MM-DD date.`,
+    });
   }
 
   const binding = bindingDecisions(decisions, item);

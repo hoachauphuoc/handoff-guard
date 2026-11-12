@@ -41,10 +41,12 @@ export type Handoff = {
 
 export type Finding = {
   rule:
+    | "no_sender"
     | "no_receiver"
     | "same_person"
     | "empty_description"
     | "no_due_date"
+    | "invalid_due_date"
     | "contradicts_decision"
     | "decision_not_acknowledged";
   severity: "block" | "info_needed";

@@ -105,6 +105,38 @@ describe("checkHandoff", () => {
     expect(rules(r)).toEqual(["no_due_date"]);
   });
 
+  it("asks for the sender when it is missing", () => {
+    const r = checkHandoff(handoff({ fromId: null }), []);
+    expect(r.verdict).toBe("needs_info");
+    expect(rules(r)).toEqual(["no_sender"]);
+    expect(rules(checkHandoff(handoff({ fromId: null, toId: null }), []))).toEqual(["no_sender", "no_receiver"]);
+  });
+
+  it("treats ids, labels and components as the same when only case or outer spaces differ", () => {
+    expect(rules(checkHandoff(handoff({ fromId: "u-ana", toId: " U-Ana" }), []))).toEqual(["same_person"]);
+
+    const d = decision({
+      id: "D-3",
+      scope: { kind: "label", label: "Campaign " },
+      constraints: [
+        { kind: "labelRequired", label: "legal-reviewed" },
+        { kind: "componentForbidden", component: "legacy-mailer" },
+      ],
+    });
+    const ok = item({ labels: ["campaign", "Legal-Reviewed "] });
+    expect(checkHandoff(handoff({ item: ok, acknowledged: ["D-3"] }), [d]).verdict).toBe("clear");
+    const bad = item({ labels: ["campaign", "legal-reviewed"], components: ["Legacy-Mailer"] });
+    expect(rules(checkHandoff(handoff({ item: bad, acknowledged: ["D-3"] }), [d]))).toEqual(["contradicts_decision"]);
+  });
+
+  it("reports a malformed due date instead of comparing it", () => {
+    for (const dueDate of ["2026-2-9", "2026-02-30", "next week"]) {
+      const r = checkHandoff(handoff({ item: item({ dueDate }), acknowledged: ["D-1"] }), [decision()]);
+      expect(r.verdict).toBe("needs_info");
+      expect(rules(r)).toEqual(["invalid_due_date"]);
+    }
+  });
+
   it("never returns clear together with a finding", () => {
     const cases = [
       handoff(),
