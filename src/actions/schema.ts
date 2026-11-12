@@ -1,6 +1,7 @@
 // JSON Schema (2020-12) for the Rovo action inputs and outputs. Kept free of Forge imports so a later
 // rovo:mcp module can reuse the same contract. Rovo itself takes no output schema; these document it.
 
+import type { Advisory } from "../rules/advisories";
 import type { Constraint } from "../rules/types";
 
 export const SCHEMA_VERSION = {
@@ -164,6 +165,8 @@ export type GatherSuccess = {
   check: CheckHandoffSuccess;
   binding: { id: string; title: string; source: DecisionSource; constraints: Constraint[]; acknowledged: boolean }[];
   people: People;
+  /** Sibling of `check`, never part of it: facts to look at, not findings. Empty when there is no handoff basis. */
+  advisories: Advisory[];
   quote: string;
 };
 

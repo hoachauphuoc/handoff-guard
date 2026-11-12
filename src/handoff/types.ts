@@ -1,3 +1,4 @@
+import type { Advisory } from "../rules/advisories";
 import type { Proposal } from "../decisions/types";
 import type { Finding, HandoffResult } from "../rules/types";
 
@@ -26,4 +27,6 @@ export type PanelState = {
   proposals: Proposal[];
   /** Plain-text edits that would stop the item contradicting its binding decisions. Advice only. */
   fixes: string[];
+  /** Facts beside the verdict, never inside it. Empty without a prepared handoff. */
+  advisories: Advisory[];
 };

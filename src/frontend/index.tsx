@@ -144,6 +144,15 @@ const App = () => {
           {result.findings.map((f, i) => (
             <Text key={i}>• {f.message}</Text>
           ))}
+          {state.advisories.length > 0 && (
+            <SectionMessage appearance="information" title="Also worth a look (advisory, not part of the verdict)">
+              <Stack space="space.050">
+                {state.advisories.map((a, i) => (
+                  <Text key={i}>• {a.message}</Text>
+                ))}
+              </Stack>
+            </SectionMessage>
+          )}
           {result.binding.map((d) => (
             <Stack key={d.id} space="space.050">
               <Text>

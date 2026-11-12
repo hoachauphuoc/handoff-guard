@@ -81,3 +81,11 @@ describe("Rovo MCP module", () => {
     expect(manifest).toContain("- key: handoff-guard-mcp\n      name: Handoff Guard");
   });
 });
+
+describe("conflict advisories rule", () => {
+  it("copies the list under its heading and invents nothing", () => {
+    expect(manifest).toContain("Possible conflicts (advisory, not a verdict)");
+    expect(manifest).toContain("never state a conflict that is not in advisories");
+    expect(manifest).not.toContain("Rovo's reading");
+  });
+});

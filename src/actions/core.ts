@@ -4,6 +4,7 @@ import { handoffFrom, previewHandoff } from "../handoff/build";
 import type { HandoffRecord } from "../handoff/types";
 import { JiraReadError } from "../jira-error";
 import { count } from "../plural";
+import { watchConflicts } from "../rules/advisories";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import { changeText, suggestFixes } from "../rules/feasible";
 import type { Decision, HandoffResult, Verdict, WorkItem } from "../rules/types";
@@ -351,6 +352,7 @@ export async function runGatherHandoffContext(payload: unknown, accountId: strin
       check,
       binding: check.binding.map((b) => ({ ...b, constraints: decisions.find((d) => d.id === b.id)?.constraints ?? [] })),
       people,
+      advisories: check.basis === "none" ? [] : watchConflicts(item, bindingDecisions(decisions, item)),
       quote: `${check.quote} Handoff Guard gathered context for ${key}: ${count(comments.length, "comment")} read. Teamwork Graph: ${peopleQuote(people)}. A brief written from this is advisory and is not stored.`,
     };
   } catch (e) {
