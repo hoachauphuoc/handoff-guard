@@ -1,0 +1,15 @@
+{
+  "name": "handoff-guard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Forge app: every handoff carries the decisions that bind it.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

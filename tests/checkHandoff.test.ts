@@ -1,0 +1,120 @@
+import { describe, expect, it } from "vitest";
+import { bindingDecisions, checkHandoff } from "../src/rules/checkHandoff";
+import type { Decision, Handoff, WorkItem } from "../src/rules/types";
+
+const item = (over: Partial<WorkItem> = {}): WorkItem => ({
+  key: "OPS-12",
+  projectKey: "OPS",
+  summary: "Launch the spring campaign",
+  description: "Landing page, mailing list and budget are attached.",
+  labels: ["campaign"],
+  components: [],
+  dueDate: "2026-12-10",
+  assigneeId: "u-sender",
+  ...over,
+});
+
+const handoff = (over: Partial<Handoff> = {}): Handoff => ({
+  item: item(),
+  fromId: "u-sender",
+  toId: "u-receiver",
+  acknowledged: [],
+  ...over,
+});
+
+const decision = (over: Partial<Decision> = {}): Decision => ({
+  id: "D-1",
+  title: "Campaigns ship before 15 December",
+  status: "decided",
+  source: { kind: "confluence", ref: "page-101" },
+  scope: { kind: "label", label: "campaign" },
+  constraints: [{ kind: "dueNotAfter", date: "2026-12-15" }],
+  ...over,
+});
+
+const rules = (r: ReturnType<typeof checkHandoff>) => r.findings.map((f) => f.rule);
+
+describe("checkHandoff", () => {
+  it("is clear when nothing is missing and no decision binds", () => {
+    const r = checkHandoff(handoff(), []);
+    expect(r).toEqual({ verdict: "clear", findings: [], binding: [] });
+  });
+
+  it("blocks a handoff with no receiver or to the sender", () => {
+    expect(checkHandoff(handoff({ toId: null }), []).verdict).toBe("blocked");
+    expect(rules(checkHandoff(handoff({ toId: "u-sender" }), []))).toEqual(["same_person"]);
+  });
+
+  it("asks for information when description or due date is missing", () => {
+    const r = checkHandoff(handoff({ item: item({ description: "  ", dueDate: null }) }), []);
+    expect(r.verdict).toBe("needs_info");
+    expect(rules(r)).toEqual(["empty_description", "no_due_date"]);
+  });
+
+  it("blocks work that contradicts a binding decision and names the decision", () => {
+    const r = checkHandoff(handoff({ item: item({ dueDate: "2026-12-20" }), acknowledged: ["D-1"] }), [decision()]);
+    expect(r.verdict).toBe("blocked");
+    expect(r.findings).toEqual([
+      {
+        rule: "contradicts_decision",
+        severity: "block",
+        message: 'Contradicts "Campaigns ship before 15 December": due date 2026-12-20 is after 2026-12-15.',
+        decisionId: "D-1",
+      },
+    ]);
+  });
+
+  it("needs acknowledgement of a binding decision even when the work complies", () => {
+    const r = checkHandoff(handoff(), [decision()]);
+    expect(r.verdict).toBe("needs_info");
+    expect(rules(r)).toEqual(["decision_not_acknowledged"]);
+    expect(checkHandoff(handoff({ acknowledged: ["D-1"] }), [decision()]).verdict).toBe("clear");
+  });
+
+  it("checks required labels and forbidden components", () => {
+    const d = decision({
+      id: "D-2",
+      title: "Legal reviews every campaign",
+      constraints: [
+        { kind: "labelRequired", label: "legal-reviewed" },
+        { kind: "componentForbidden", component: "legacy-mailer" },
+      ],
+    });
+    const r = checkHandoff(
+      handoff({ item: item({ components: ["legacy-mailer"] }), acknowledged: ["D-2"] }),
+      [d],
+    );
+    expect(r.verdict).toBe("blocked");
+    expect(r.findings.map((f) => f.message)).toEqual([
+      'Contradicts "Legal reviews every campaign": label "legal-reviewed" is missing.',
+      'Contradicts "Legal reviews every campaign": component "legacy-mailer" is not allowed.',
+    ]);
+  });
+
+  it("ignores superseded decisions and decisions scoped elsewhere", () => {
+    const decisions = [
+      decision({ id: "D-old", status: "superseded" }),
+      decision({ id: "D-other", scope: { kind: "project", projectKey: "HR" } }),
+      decision({ id: "D-item", scope: { kind: "workItem", key: "OPS-12" }, constraints: [] }),
+    ];
+    expect(bindingDecisions(decisions, item()).map((d) => d.id)).toEqual(["D-item"]);
+  });
+
+  it("does not report a missing due date twice when a decision limits the date", () => {
+    const r = checkHandoff(handoff({ item: item({ dueDate: null }), acknowledged: ["D-1"] }), [decision()]);
+    expect(rules(r)).toEqual(["no_due_date"]);
+  });
+
+  it("never returns clear together with a finding", () => {
+    const cases = [
+      handoff(),
+      handoff({ toId: null }),
+      handoff({ item: item({ dueDate: null }) }),
+      handoff({ item: item({ dueDate: "2027-01-01" }) }),
+    ];
+    for (const h of cases) {
+      const r = checkHandoff(h, [decision()]);
+      expect(r.verdict === "clear").toBe(r.findings.length === 0);
+    }
+  });
+});
