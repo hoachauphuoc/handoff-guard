@@ -1,5 +1,5 @@
 import type { DecisionSource, Proposal } from "../decisions/types";
-import { validateCandidates } from "../decisions/validate";
+import { REASON_TEXT, validateCandidates } from "../decisions/validate";
 import { handoffFrom, previewHandoff } from "../handoff/build";
 import type { HandoffRecord } from "../handoff/types";
 import { JiraReadError } from "../jira-error";
@@ -191,6 +191,24 @@ export async function runReadDecisionSource(payload: unknown, deps: Deps): Promi
   }
 }
 
+// A model often omits the key that only restates which work item it is reading. Reach is limited to the
+// current item's project and key anyway, so filling a missing one from the item grants nothing; a key that
+// is present but names another project or item is left alone and still rejected. Label scope is not
+// filled: the item has to carry the label already.
+function fillScopes(candidates: unknown, item: { issueKey: string; projectKey: string }): unknown {
+  const fill = (c: unknown): unknown => {
+    const s = (c as { scope?: unknown } | null)?.scope as Record<string, unknown> | null | undefined;
+    if (!c || typeof c !== "object" || !s || typeof s !== "object") return c;
+    const missing = (v: unknown) => v === undefined || v === null || (typeof v === "string" && v.trim() === "");
+    if (s.kind === "project" && missing(s.projectKey)) return { ...c, scope: { ...s, projectKey: item.projectKey } };
+    if (s.kind === "workItem" && missing(s.key)) return { ...c, scope: { ...s, key: item.issueKey } };
+    return c;
+  };
+  if (Array.isArray(candidates)) return candidates.map(fill);
+  const wrapped = candidates as { candidates?: unknown } | null;
+  return wrapped && Array.isArray(wrapped.candidates) ? { ...wrapped, candidates: wrapped.candidates.map(fill) } : candidates;
+}
+
 // GET is the verb on purpose: FRGE-1601 makes a non-GET action ask a person to confirm each call. The
 // only write here is a bounded set of proposals in app storage; no decision, handoff record or Jira data.
 export async function runProposeDecisions(payload: unknown, deps: Deps): Promise<ProposeOutput> {
@@ -210,12 +228,13 @@ export async function runProposeDecisions(payload: unknown, deps: Deps): Promise
     // The source is read again here, as the caller: quotes are checked against Jira, never against what
     // the model says it read.
     const src = await deps.readSource(key);
-    const { kept, rejected } = validateCandidates(
-      candidates,
+    const { kept, rejected: raw } = validateCandidates(
+      fillScopes(candidates, { issueKey: key, projectKey: src.projectKey }),
       src.parts,
       { issueKey: key, projectKey: src.projectKey, labels: src.labels },
       deps.now(),
     );
+    const rejected = raw.map((r) => ({ ...r, message: REASON_TEXT[r.reason] }));
     if (kept.length > 0) {
       // Replaces the saved set (it is capped at 5). A proposal seen before keeps its first proposedAt, so
       // asking twice leaves identical state. All-rejected input writes nothing and keeps what is there.
@@ -229,7 +248,9 @@ export async function runProposeDecisions(payload: unknown, deps: Deps): Promise
       issueKey: key,
       proposed: kept.map(({ id, title, scope, constraints, evidence }) => ({ id, title, scope, constraints, evidence })),
       rejected,
-      quote: `Handoff Guard saved ${kept.length} proposed decisions for ${key} and rejected ${rejected.length}. Proposed decisions do not bind anything until a person confirms them in the Handoff Guard panel.`,
+      quote: `Handoff Guard saved ${kept.length} proposed decisions for ${key} and rejected ${rejected.length}${
+        rejected.length > 0 ? ` (${rejected.map((r) => `#${r.index + 1}: ${r.message}`).join(" ")})` : ""
+      }. Proposed decisions do not bind anything until a person confirms them in the Handoff Guard panel.`,
     };
   } catch (e) {
     return failure(schema, key, e);

@@ -23,6 +23,8 @@ describe("agent manifest", () => {
     for (const phrase of ["word for word", "bind nothing until a person confirms", "never call a proposal a decision"]) {
       expect(manifest).toContain(phrase);
     }
+    expect(manifest).toContain("read each message, fix those candidates and call it once more");
+    expect(manifest).toContain('scope {"kind":"project"}');
     expect(manifest).toContain("Saves up to 5 proposals for a person to review in the panel. Changes no decision and no Jira data.");
   });
 

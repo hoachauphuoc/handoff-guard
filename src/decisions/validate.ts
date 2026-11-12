@@ -19,6 +19,19 @@ export type RejectReason =
   | "over_cap";
 
 export type Rejection = { index: number; reason: RejectReason };
+
+// One plain sentence per reason, so a model reading the rejected list can fix the candidate and retry.
+export const REASON_TEXT: Record<RejectReason, string> = {
+  not_object: "The candidate is not a JSON object.",
+  bad_title: "The title is missing or longer than 120 characters.",
+  bad_scope:
+    'The scope does not fit this work item: use {"kind":"project"}, {"kind":"workItem"}, or {"kind":"label","label":L} where L is a label this work item already has.',
+  bad_constraint: "constraints must hold 1 to 3 entries of kind dueNotAfter (date), labelRequired (label) or componentForbidden (component).",
+  bad_date: "A dueNotAfter date must be a real calendar date written YYYY-MM-DD.",
+  no_evidence: "evidence.quote is missing or not between 12 and 300 characters.",
+  evidence_not_in_source: "evidence.quote was not found word for word in the work item text; copy it exactly from read-decision-source.",
+  over_cap: "Only 5 proposals can be saved at once.",
+};
 export type Context = { issueKey: string; projectKey: string; labels: string[] };
 
 // Chat and editors rewrite quotes and dashes and wrap lines; none of that changes what was written.

@@ -189,9 +189,10 @@ describe("propose-decisions", () => {
     expect(writes[0]?.issueId).toBe("10001");
     if (out.ok) {
       expect(out.proposed).toHaveLength(1);
-      expect(out.rejected).toEqual([{ index: 1, reason: "evidence_not_in_source" }]);
+      expect(out.rejected).toMatchObject([{ index: 1, reason: "evidence_not_in_source" }]);
+      expect(out.rejected[0]?.message).toContain("word for word");
       expect(out.quote).toBe(
-        "Handoff Guard saved 1 proposed decisions for OPS-1 and rejected 1. Proposed decisions do not bind anything until a person confirms them in the Handoff Guard panel.",
+        "Handoff Guard saved 1 proposed decisions for OPS-1 and rejected 1 (#2: evidence.quote was not found word for word in the work item text; copy it exactly from read-decision-source.). Proposed decisions do not bind anything until a person confirms them in the Handoff Guard panel.",
       );
     }
   });
@@ -234,5 +235,57 @@ describe("check-handoff and list-binding stay read-only", () => {
   it("never touch the proposal store (the default deps throw if they do)", async () => {
     expect(await runCheckHandoff({ issueKey: "OPS-1" }, null, deps())).toMatchObject({ ok: true });
     expect(await runListBindingDecisions({ issueKey: "OPS-1" }, deps())).toMatchObject({ ok: true });
+  });
+});
+
+describe("propose-decisions scope filling (MOBL-53 case)", () => {
+  const SRC: DecisionSource = {
+    issueId: "10053",
+    projectKey: "MOBL",
+    labels: [],
+    parts: [{ from: "MOBL-53 description", text: "Decision: all launch work needs the legal-reviewed label." }],
+    truncated: false,
+  };
+  const cand = (scope: unknown) => ({
+    title: "Launch work needs legal review",
+    scope,
+    constraints: [{ kind: "labelRequired", label: "legal-reviewed" }],
+    evidence: { quote: "all launch work needs the legal-reviewed label" },
+  });
+  const run = (scope: unknown) => {
+    const d = deps({
+      readSource: async () => SRC,
+      getProposals: async () => [],
+      putProposals: async () => {},
+    });
+    return runProposeDecisions({ issueKey: "MOBL-53", candidates: JSON.stringify([cand(scope)]) }, d);
+  };
+
+  it("fills a missing projectKey from the item", async () => {
+    const out = await run({ kind: "project" });
+    expect(out.ok && out.proposed[0]?.scope).toEqual({ kind: "project", projectKey: "MOBL" });
+  });
+
+  it("fills a missing workItem key from the item", async () => {
+    const out = await run({ kind: "workItem" });
+    expect(out.ok && out.proposed[0]?.scope).toEqual({ kind: "workItem", key: "MOBL-53" });
+  });
+
+  it("rejects a label the item does not carry, with a readable reason", async () => {
+    const out = await run({ kind: "label", label: "launch" });
+    expect(out.ok).toBe(true);
+    if (out.ok) {
+      expect(out.proposed).toEqual([]);
+      expect(out.rejected[0]).toMatchObject({ index: 0, reason: "bad_scope" });
+      expect(out.rejected[0]?.message).toContain("label this work item already has");
+      expect(out.quote).toContain("rejected 1 (#1:");
+    }
+  });
+
+  it("still rejects another project or another work item", async () => {
+    for (const scope of [{ kind: "project", projectKey: "OPS" }, { kind: "workItem", key: "OPS-1" }]) {
+      const out = await run(scope);
+      expect(out.ok && out.rejected[0]?.reason).toBe("bad_scope");
+    }
   });
 });
