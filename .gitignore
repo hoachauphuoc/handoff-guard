@@ -5,3 +5,4 @@ node_modules/
 .forge/
 dist/
 __pycache__/
+demo/
