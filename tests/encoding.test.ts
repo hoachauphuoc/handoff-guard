@@ -26,6 +26,14 @@ describe("text encoding", () => {
     expect(bad).toEqual([]);
   });
 
+  // A byte that is not valid UTF-8 (for example a Windows-1252 bullet written by a script) is read back as U+FFFD.
+  it("has no replacement characters under src/ or tests/", () => {
+    const bad = Object.entries(files)
+      .filter(([, text]) => text.includes(String.fromCharCode(0xfffd)))
+      .map(([path]) => path);
+    expect(bad).toEqual([]);
+  });
+
   it("detects the known bad ellipsis", () => {
     expect(DOUBLE_ENCODED.test("handoffâ€¦")).toBe(true);
     expect(DOUBLE_ENCODED.test("handoff…")).toBe(false);

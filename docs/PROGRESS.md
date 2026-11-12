@@ -207,3 +207,8 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Panel: "(I-PASS: …)" beside the verdict, Action list, contingency (sender edits, receiver reads), one read-back box for the receiver. Brief: `ipass` sibling of `check` in `gather-handoff-context`; agent rule 19.
 - Drift and read-back: giving the read-back again clears a stale acknowledgement. README: I-PASS section (no figure near the measured ones), Limits section (agent receiver cannot acknowledge). `docs/PRIVACY.md` lists the two typed texts. No change under `src/rules/`, so `npm run measure` was not rerun and no README figure moved.
 - Not seen on the site yet.
+
+### 2026-11-12, two panel defects from the dev-site check
+- A refused read-back is data: `acknowledgeAll` returns `{ reasons }` (all of them, no Forge prefix) and stores nothing; the panel keeps its state and the typed text, and shows the reasons beside the box. A refused per-decision acknowledge and a too-long contingency show `plainError` in place. The "could not check" box is for real failures only.
+- A Windows-1252 bullet (byte 0x95) had been written into `src/frontend/index.tsx` by an edit script that read and wrote the file without `encoding="utf-8"`; it showed as U+FFFD. Fixed, and `tests/encoding.test.ts` now fails on U+FFFD under `src/` and `tests/`. Only that file was affected. Edit scripts must pass `encoding="utf-8"`.
+- The NEJM citation (Starmer et al. 2014;371:1803-1812, 23% and 30%) is still unchecked against the journal page; check it before the README is final.

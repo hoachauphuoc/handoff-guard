@@ -57,3 +57,6 @@ export type PanelState = {
   contingency: { text: string; advisory: string | null } | null;
   proposalImpact: Record<string, { count: number; capped: boolean }> | null;
 };
+
+/** A refused read-back is an answer, not a failure: the reasons come back as data and nothing is stored. */
+export type AcknowledgeAllReply = { state: PanelState; reasons?: never } | { state?: never; reasons: string[] };

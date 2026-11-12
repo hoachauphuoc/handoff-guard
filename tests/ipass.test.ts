@@ -7,6 +7,7 @@ import acknowledgeSource from "../src/handoff/acknowledge?raw";
 import contingencySource from "../src/handoff/contingency?raw";
 import ipassSource from "../src/handoff/ipass?raw";
 import panel from "../src/frontend/index.tsx?raw";
+import resolvers from "../src/resolvers/index?raw";
 import manifest from "../manifest.yml?raw";
 import readme from "../README.md?raw";
 import checkSource from "../src/rules/checkHandoff?raw";
@@ -176,6 +177,19 @@ describe("acknowledging under protocol 1", () => {
   it("refuses while any decision is unaddressed, and says which", () => {
     const out = acknowledgeAll(record(), "b", binding, "I will keep the legal-reviewed label on, thanks a lot", "t1", fp);
     expect(out).toEqual({ ok: false, reason: "read_back", problems: ['Your read-back does not mention "Ship by 31 December" (date 2026-12-31).'] });
+  });
+
+  it("answers a refused read-back with every reason as data and stores nothing", () => {
+    const r = record();
+    const out = acknowledgeAll(r, "b", binding, "I will follow everything that was decided here", "t1", fp);
+    expect(out).toEqual({ ok: false, reason: "read_back", problems: expect.arrayContaining([expect.stringContaining("Launch work"), expect.stringContaining("Ship by")]) });
+    expect("record" in out).toBe(false);
+    expect(r).toEqual(record());
+    // The resolver returns the reasons before it writes, and the panel shows them without the Forge prefix.
+    const handler = resolvers.slice(resolvers.indexOf('resolver.define("acknowledgeAll"'), resolvers.indexOf('resolver.define("saveContingency"'));
+    expect(handler.indexOf("return { reasons")).toBeGreaterThan(-1);
+    expect(handler.indexOf("return { reasons")).toBeLessThan(handler.indexOf("putRecord"));
+    expect(panel).toContain("plainError(e)");
   });
 
   it("refuses anyone but the receiver, a record without the protocol, and nothing to acknowledge", () => {

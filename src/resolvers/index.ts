@@ -13,7 +13,7 @@ import { withContingency } from "../handoff/contingency";
 import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import { driftByDecision, fingerprintOf, staleAcks } from "../handoff/drift";
-import type { HandoffRecord, PanelState } from "../handoff/types";
+import type { AcknowledgeAllReply, HandoffRecord, PanelState } from "../handoff/types";
 import { readPageVersionAsUser } from "../confluence";
 import { openItemsAsUser, readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
@@ -139,9 +139,10 @@ resolver.define("acknowledgeAll", async ({ context, payload }) => {
   const [decisions, record] = await Promise.all([getDecisions(), getRecord(issueId)]);
   if (!record) throw new Error("No handoff has been prepared for this work item.");
   const out = acknowledgeAll(record, ctx.accountId ?? null, bindingDecisions(decisions, item), readBack, new Date().toISOString(), fingerprintOf(item));
-  if (!out.ok) throw new Error(out.reason === "read_back" ? out.problems.join(" ") : `Cannot acknowledge: ${out.reason}.`);
+  if (!out.ok && out.reason === "read_back") return { reasons: out.problems } satisfies AcknowledgeAllReply;
+  if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
   await putRecord(issueId, out.record);
-  return panelState(ctx);
+  return { state: await panelState(ctx) } satisfies AcknowledgeAllReply;
 });
 
 // Only the sender writes it, and only as text typed in the panel: no action or agent reaches this.

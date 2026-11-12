@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, TextArea, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
+import { plainError } from "../errors";
 import type { GatherOutput } from "../actions/schema";
 import type { MarkedState } from "../decisions/marked";
 import type { SourceChecks } from "../decisions/sourcecheck";
 import { constraintText, reachText } from "../decisions/reach";
 import { count } from "../plural";
-import type { PanelState } from "../handoff/types";
+import type { AcknowledgeAllReply, PanelState } from "../handoff/types";
 import { GUIDE_SOURCE, PRACTICE_NONE, PRACTICE_TITLE, guideView, type StepNeed, type StepState } from "../guide/steps";
 import { HINTS } from "../guide/hints";
 import { BEFORE_READ_BACK, CONTINGENCY_MAX, READ_BACK_MAX, READ_BACK_MIN, READ_BACK_NOTE } from "../handoff/ipass";
@@ -43,6 +44,9 @@ const App = () => {
   // null: follow the default (open until a handoff exists); a click on the toggle overrides it.
   const [readBack, setReadBack] = useState("");
   const [contingency, setContingency] = useState<string | null>(null);
+  // Refusals a person can cause are answers, not failures to check: they appear beside their box and the panel stays.
+  const [contingencyNote, setContingencyNote] = useState<string | null>(null);
+  const [ackNotes, setAckNotes] = useState<string[]>([]);
   const [guideOpen, setGuideOpen] = useState<boolean | null>(null);
 
   // Rovo only explains and proposes. Whatever happens here, the verdict shown above stays the rule check's.
@@ -67,6 +71,34 @@ const App = () => {
       .then(
         (s) => setState(s as PanelState),
         (e) => setError(String(e)),
+      )
+      .finally(() => setBusy(false));
+  };
+
+  // For actions a person can get refused: the reason is shown in place and the panel is left as it was.
+  const callInPlace = (name: string, payload: Record<string, unknown>, note: (messages: string[]) => void) => {
+    setBusy(true);
+    note([]);
+    return invoke<PanelState>(name, payload)
+      .then(
+        (s) => setState(s as PanelState),
+        (e) => note([plainError(e)]),
+      )
+      .finally(() => setBusy(false));
+  };
+
+  // A refused read-back comes back as data, with every reason.
+  const acknowledgeAll = () => {
+    setBusy(true);
+    setAckNotes([]);
+    return invoke<AcknowledgeAllReply>("acknowledgeAll", { readBack })
+      .then(
+        (r) => {
+          const reply = r as AcknowledgeAllReply;
+          if (reply.state) setState(reply.state);
+          else setAckNotes(reply.reasons);
+        },
+        (e) => setAckNotes([plainError(e)]),
       )
       .finally(() => setBusy(false));
   };
@@ -181,7 +213,7 @@ const App = () => {
               <Stack space="space.050">
                 {state.actions.map((a, i) => (
                   <Text key={i}>
-                    • {a.owner === "sender" ? "Sender" : a.owner === "receiver" ? "Receiver" : "Decision owner"}
+                    â€¢ {a.owner === "sender" ? "Sender" : a.owner === "receiver" ? "Receiver" : "Decision owner"}
                     {a.ownerId ? <> (<User accountId={a.ownerId} />)</> : ""}: {a.text}
                   </Text>
                 ))}
@@ -204,7 +236,7 @@ const App = () => {
                 defaultValue={state.contingency?.text ?? ""}
                 onChange={(e) => setContingency(e.target.value)}
               />
-              <Button isDisabled={busy || contingency === null} onClick={() => call("saveContingency", { text: contingency })}>
+              <Button isDisabled={busy || contingency === null} onClick={() => void callInPlace("saveContingency", { text: contingency }, (m) => setContingencyNote(m[0] ?? null))}>
                 Save contingency
               </Button>
             </>
@@ -227,7 +259,7 @@ const App = () => {
                 <Text>{`${state.isReceiver ? "Changed since you acknowledged" : "Changed since the receiver acknowledged"}: ${(state.drift[d.id] ?? []).join("; ")}.`}</Text>
               )}
               {!protocol && state.isReceiver && (!record.acknowledged.includes(d.id) || state.stale.includes(d.id)) && (
-                <Button isDisabled={busy} onClick={() => call("acknowledgeDecision", { decisionId: d.id })}>
+                <Button isDisabled={busy} onClick={() => void callInPlace("acknowledgeDecision", { decisionId: d.id }, setAckNotes)}>
                   {state.stale.includes(d.id) ? "Acknowledge again" : "Acknowledge"}
                 </Button>
               )}
@@ -238,6 +270,9 @@ const App = () => {
               )}
             </Stack>
           ))}
+          {ackNotes.map((n, i) => (
+            <Text key={i}>{n}</Text>
+          ))}
           {protocol && record.readBack && <Text>{`Read-back from the receiver: "${record.readBack}"`}</Text>}
           {protocol && state.isReceiver && waiting.length > 0 && (
             <>
@@ -246,7 +281,7 @@ const App = () => {
                 name="readBack"
                 onChange={(e) => setReadBack(e.target.value)}
               />
-              <Button appearance="primary" isDisabled={busy} onClick={() => call("acknowledgeAll", { readBack })}>
+              <Button appearance="primary" isDisabled={busy} onClick={() => void acknowledgeAll()}>
                 {state.stale.length > 0 ? "Acknowledge again with a new read-back" : "Acknowledge all with this read-back"}
               </Button>
             </>
