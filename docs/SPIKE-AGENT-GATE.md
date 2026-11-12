@@ -41,3 +41,28 @@ One Agent session was started on TD-1 by this test. It holds the refusal text ab
 - TD-1: "Handoff Guard rule check for TD-1: Clear. No findings." / "The rule check says Clear, so I may start." / then the heading "Possible conflicts (advisory, not a verdict)" with "The assignee is not the receiver of the prepared handoff."
 - MOBL-53: "Handoff Guard rule check for MOBL-53: Blocked. Findings: No due date is set. …" / "I will not start this work item: the rule check says Blocked." / then the headings "Binding decisions" and "Findings".
 - Replay for 2026-11-12 (today) is accepted and answers "No handoff differs between 2026-11-12 and today, among 50 open work items."
+
+## Assignee route (paper study, 2026-11-12; not run on a site)
+
+Question: can our Forge `rovo:agent` be chosen in the assignee field, and would Handoff Guard then see it?
+
+### What the docs say (web search, not read in full)
+- Atlassian says Rovo agents and third-party agents appear in the assignee dropdown alongside people. Visibility of a Rovo agent there is controlled by the agent's Work items surface in Rovo Studio (Agents, Surfaces, Work items), not by the project's Assignable User permission. A Jira request (ROVO-702) says the surface is on by default for custom agents and shows every active agent in every assignee dropdown, with no per-project filter. Sources: community.atlassian.com "Cannot remove company-wide Rovo Agents from the Assignee", jira.atlassian.com/browse/ROVO-702.
+- The `rovo:agent` manifest reference shows `key`, `name` and `skills`; I found no manifest property for the Work items surface. Unverified whether a Forge agent has the surface on by default or needs a Studio toggle. Our earlier spike saw "Handoff Guard" in the Agents button list without any Studio change; that is a different list from the assignee dropdown.
+- Forge remote agents get an `invocationType` of `ISSUE_ASSIGNMENT` when assigned (developer.atlassian.com, remote agents in Jira). Nothing found says the same holds for a Forge `rovo:agent`.
+- Not found anywhere: the `avi:jira:updated:issue` changelog item for an assignee that is an agent. One bug report says changes made through Rovo agents are logged under the invoking user, which concerns who made a change, not who the assignee is.
+
+### On paper against our code
+- `detectReassignment` takes `from` and `to` as non-empty strings. If an agent is an ordinary Atlassian account id, a handoff is recorded with the agent as receiver. If `to` is anything else, nothing is recorded and no error is thrown (unit tests added for both). The fallback advisory ("The assignee is not the receiver of the prepared handoff." / "... no handoff is prepared") covers a missed event.
+- The validators ignore `assignee` in `modifiedFields` (`applyModifiedFields` applies only due date and labels), so they read the stored record, not the transition's assignee.
+- Consequence to decide: if an agent becomes the recorded receiver, only the receiver can acknowledge in the panel and an agent is not a signed-in viewer, so every binding decision stays "not acknowledged" and the item stays Needs info. That is arguably right for an agent that never read the decisions, but it also means the handoff cannot become Clear without a person changing the receiver. Say so in the video or define an exception; it is a product decision, not decided here.
+
+### Live test, exact clicks (the Desktop session runs these; no Studio or site setting is changed by us)
+1. Open Rovo Studio (Apps, Rovo, Agents) and find "Handoff Guard". Open Surfaces. Write down whether "Work items" is already on. Do not change it yet.
+2. Open TD-1 (a clear item) in Jira. Click the Assignee field. Write down whether "Handoff Guard" is in the dropdown.
+3. If it is not there: turn Work items on in Studio for this agent, reload TD-1, and look again. Note that this changes the agent's visibility for the whole site; turn it off afterwards.
+4. Choose "Handoff Guard" as the assignee. Note: does the field change; what does the item History tab say and who is named as the actor; does an agent session or comment appear.
+5. Open the Handoff Guard panel on TD-1. Expected if detection works: "Detected from a change of assignee on 2026-.." with a Needs info verdict. Note the receiver shown. If there is no handoff, the trigger did not fire or the id was not a string: look at the fallback advisory under "Also worth a look".
+6. In the browser, open `https://one-atlas-hxpc.atlassian.net/rest/api/3/issue/TD-1/changelog` and copy the newest item whose field is "assignee" (the `from` and `to` values, and any other keys). Paste it into this file under this heading; it is the shape the code has to match.
+7. If a workflow validator is attached to a transition on TD-1, move it and note the message.
+8. Put the assignee back to the person it was, and turn the Studio toggle back if you changed it.

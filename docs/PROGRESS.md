@@ -190,3 +190,7 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Records acknowledged before this have no baseline: they are never stale, and the panel says "No baseline was stored, so later changes to the work item are not tracked."
 - Panel: "Changed since you acknowledged: due 2026-12-31 to 2026-12-15." and "Acknowledge again". 239 tests, `check.ps1` PASS, measure unchanged (47/48, 34/48, 12/48).
 - Not observed on the site: acknowledge, change the due date, reload.
+
+### 2026-11-12, execution list 3: item 2, assignee-route spike (docs and tests only)
+- Paper study and live-test clicks are in `docs/SPIKE-AGENT-GATE.md` under "Assignee route". Findings: the assignee dropdown shows a Rovo agent when its Work items surface is on in Studio; no manifest property for it was found; the changelog shape for an agent assignee was not found in any doc. `detectReassignment` and the validators were checked on paper and by three new unit tests (an account-id-shaped agent is recorded; a non-string `to` records nothing and does not throw; `modifiedFields.assignee` is ignored). 242 tests, `check.ps1` PASS. No product code changed.
+- Decision for the owner: an agent recorded as receiver can never acknowledge, so that handoff stays Needs info.
