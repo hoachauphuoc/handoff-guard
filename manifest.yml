@@ -15,11 +15,43 @@ modules:
       projectTypes:
         - company-managed
         - team-managed
+  action:
+    - key: check-handoff
+      name: Check handoff
+      function: check-handoff-fn
+      actionVerb: GET
+      description: Runs the Handoff Guard rule check on a work item and returns the verdict, findings and binding decisions. Reads only.
+      inputs:
+        issueKey:
+          title: Work item key
+          type: string
+          required: false
+          description: Work item key such as OPS-1. Defaults to the work item the chat was opened from.
+        receiverAccountId:
+          title: Receiver account id
+          type: string
+          required: false
+          description: Atlassian account id of the person who would receive the work item.
+    - key: list-binding-decisions
+      name: List binding decisions
+      function: list-binding-fn
+      actionVerb: GET
+      description: Lists the recorded decisions that bind a work item. Reads only.
+      inputs:
+        issueKey:
+          title: Work item key
+          type: string
+          required: false
+          description: Work item key such as OPS-1. Defaults to the work item the chat was opened from.
   function:
     - key: resolver
       handler: index.handler
     - key: validate
       handler: index.validate
+    - key: check-handoff-fn
+      handler: index.checkHandoffAction
+    - key: list-binding-fn
+      handler: index.listBindingDecisionsAction
 resources:
   - key: main
     path: src/frontend/index.tsx

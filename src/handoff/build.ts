@@ -55,3 +55,16 @@ export function validatorResponse(result: HandoffResult): ValidatorResponse {
   if (result.verdict === "clear") return { result: true };
   return { result: false, errorMessage: result.findings.map((f) => f.message).join(" ") };
 }
+
+/**
+ * A what-if handoff for a receiver the caller names. Acknowledgements are dropped on purpose: they were
+ * given by another person, so a preview must not inherit them.
+ */
+export function previewHandoff(
+  item: WorkItem,
+  record: HandoffRecord | null,
+  receiverId: string,
+  callerId: string | null,
+): Handoff {
+  return { item, fromId: record?.fromId ?? callerId, toId: receiverId, acknowledged: [] };
+}
