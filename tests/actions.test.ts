@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runCheckHandoff, runListBindingDecisions, runProposeDecisions, runReadDecisionSource, type Deps } from "../src/actions/core";
+import { callerAccountId, runCheckHandoff, runListBindingDecisions, runProposeDecisions, runReadDecisionSource, type Deps } from "../src/actions/core";
 import type { DecisionSource, Proposal } from "../src/decisions/types";
 import { handoffFrom } from "../src/handoff/build";
 import type { HandoffRecord } from "../src/handoff/types";
@@ -287,5 +287,13 @@ describe("propose-decisions scope filling (MOBL-53 case)", () => {
       const out = await run(scope);
       expect(out.ok && out.rejected[0]?.reason).toBe("bad_scope");
     }
+  });
+});
+
+describe("callerAccountId", () => {
+  it("prefers payload.context.accountId and falls back to the second argument", () => {
+    expect(callerAccountId({ context: { accountId: "a1" } }, { accountId: "a2" })).toBe("a1");
+    expect(callerAccountId({}, { accountId: "a2" })).toBe("a2");
+    expect(callerAccountId(undefined, undefined)).toBeNull();
   });
 });

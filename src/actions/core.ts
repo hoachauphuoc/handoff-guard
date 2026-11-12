@@ -60,6 +60,12 @@ function parse(payload: unknown, wantReceiver: boolean): Parsed {
   return { ok: true, key, receiver };
 }
 
+export function callerAccountId(payload: unknown, context: { accountId?: string } | undefined): string | null {
+  const fromPayload = (payload as { context?: { accountId?: unknown } } | null | undefined)?.context?.accountId;
+  const id = [fromPayload, context?.accountId].find((v) => typeof v === "string" && v.trim() !== "");
+  return typeof id === "string" ? id.trim() : null;
+}
+
 function failure<S extends (typeof SCHEMA_VERSION)[keyof typeof SCHEMA_VERSION]>(
   schema: S,
   issueKey: string | null,
