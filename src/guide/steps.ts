@@ -53,7 +53,7 @@ export const STEPS: GuideStep[] = [
   {
     id: "rovo",
     title: "Ask Rovo to explain",
-    how: "Click Explain with Rovo.",
+    how: "Click Explain with Rovo. Click Find decisions with Rovo to have it propose decisions from this work item's description and comments.",
     needs: "rovo",
     done: () => null,
   },

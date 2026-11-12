@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
+import { reachText } from "../decisions/reach";
 import type { PanelState } from "../handoff/types";
 import { GUIDE_SOURCE, PRACTICE_NONE, PRACTICE_TITLE, guideView, type StepNeed, type StepState } from "../guide/steps";
 import { HINTS } from "../guide/hints";
@@ -29,20 +30,15 @@ const App = () => {
   // null: follow the default (open until a handoff exists); a click on the toggle overrides it.
   const [guideOpen, setGuideOpen] = useState<boolean | null>(null);
 
-  // Rovo only explains. Whatever happens here, the verdict shown above stays the rule check's.
-  const explain = async (issueKey: string) => {
+  // Rovo only explains and proposes. Whatever happens here, the verdict shown above stays the rule check's.
+  const askRovo = async (prompt: string) => {
     setRovoNote(null);
     try {
       if (!(await rovo.isEnabled())) {
-        setRovoNote("Rovo is not available on this site, so there is no explanation. The verdict above comes from the rule check.");
+        setRovoNote("Rovo is not available on this site, so there is no answer from it. The verdict above comes from the rule check.");
         return;
       }
-      await rovo.open({
-        type: "forge",
-        agentKey: "handoff-guard-agent",
-        agentName: "Handoff Guard",
-        prompt: `Explain the Handoff Guard check for ${issueKey}.`,
-      });
+      await rovo.open({ type: "forge", agentKey: "handoff-guard-agent", agentName: "Handoff Guard", prompt });
     } catch (e) {
       setRovoNote(`Rovo could not be opened: ${String(e)}. The verdict above comes from the rule check.`);
     }
@@ -147,14 +143,42 @@ const App = () => {
       ) : (
         <Text>No handoff is prepared for this work item. Pick a receiver above, then click Prepare handoff.</Text>
       )}
+      {state.proposals.length > 0 && (
+        <SectionMessage appearance="information" title="Proposed by Rovo (not binding until you confirm)">
+          <Stack space="space.100">
+            <Text>
+              Confirming adds the decision for everyone who uses Handoff Guard on this site. A handoff that is already prepared will
+              then list it as not acknowledged; that is intended.
+            </Text>
+            {state.proposals.map((p) => (
+              <Stack key={p.id} space="space.050">
+                <Text>{p.title}</Text>
+                <Text>{reachText(p.scope)}</Text>
+                <Text>
+                  Evidence: "{p.evidence.quote}" ({p.evidence.from})
+                </Text>
+                <Button isDisabled={busy} onClick={() => call("confirmProposal", { proposalId: p.id })}>
+                  Confirm
+                </Button>
+                <Button isDisabled={busy} onClick={() => call("dismissProposal", { proposalId: p.id })}>
+                  Dismiss
+                </Button>
+              </Stack>
+            ))}
+          </Stack>
+        </SectionMessage>
+      )}
       {state.decisionCount === 0 && (
         <Button isDisabled={busy} onClick={() => call("loadSampleDecisions")}>
           Load sample decisions (demo)
         </Button>
       )}
-      <Button onClick={() => void explain(state.issueKey)}>Explain with Rovo</Button>
+      <Button onClick={() => void askRovo(`Explain the Handoff Guard check for ${state.issueKey}.`)}>Explain with Rovo</Button>
+      <Button onClick={() => void askRovo(`Propose decisions for ${state.issueKey} from its description and comments.`)}>
+        Find decisions with Rovo
+      </Button>
       {rovoNote && <Text>{rovoNote}</Text>}
-      <Text>Rovo explains; the verdict comes from the rule check.</Text>
+      <Text>Rovo explains and proposes; the verdict comes from the rule check.</Text>
       <Text>Source: rule check, {state.decisionCount} stored decisions.</Text>
     </Stack>
   );

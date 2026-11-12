@@ -23,6 +23,7 @@ const state = (over: Partial<PanelState> = {}): PanelState => ({
   isReceiver: false,
   decisionCount: 0,
   practiceFindings: [],
+  proposals: [],
   ...over,
 });
 const record = { fromId: "me", toId: "you", acknowledged: [] as string[], preparedAt: "t", acknowledgedAt: {} };
