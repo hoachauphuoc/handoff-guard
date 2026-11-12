@@ -4,11 +4,13 @@ Models propose samples; labels come from the rules or the owner, never from a mo
 Standard library only, so the repo gains no dependency for a dev script.
 
   python scripts/gen_samples.py --provider muse --count 30
-  python scripts/gen_samples.py --provider baseten --count 10
-  python scripts/gen_samples.py --provider baseten --list-models
+  python scripts/gen_samples.py --provider modal --count 10
+  python scripts/gen_samples.py --provider modal --list-models
 """
 import argparse
+import concurrent.futures
 import json
+import time
 import pathlib
 import sys
 import urllib.error
@@ -69,7 +71,7 @@ STYLE = {
         "rushed support agent, new joiner. Mix clean handoffs with ones missing a receiver, "
         "a description, a due date, or an acknowledgement, and ones that break a decision."
     ),
-    "baseten": (
+    "modal": (
         "Write adversarial cases: handoffs that look complete at a glance but are not, or "
         "that look wrong but are fine. Examples: a description that is only filler or "
         "whitespace, a due date one day past a dueNotAfter date, a label that differs only "
@@ -79,28 +81,57 @@ STYLE = {
 }
 
 
-def read_key(name: str) -> str:
-    text = (KEY_DIR / name).read_text(encoding="utf-8").strip()
-    # Tolerate "NAME=value" or a labelled line; the key is the last token.
-    return text.split()[-1].split("=")[-1]
+def read_creds(cfg: dict) -> tuple[str, dict]:
+    """Return (base URL, auth headers) without ever printing the file's contents."""
+    text = (KEY_DIR / cfg["keyFile"]).read_text(encoding="utf-8")
+    # Tolerate "NAME=value" lines; only the values matter.
+    tokens = [t.split("=", 1)[-1].strip("\"'") for t in text.split()]
+    url = cfg["baseUrl"] or next((t.rstrip("/") for t in tokens if t.startswith("https://")), "")
+    if not url:
+        sys.exit(f"No base URL: set baseUrl in scripts/models.json or put the https URL in {cfg['keyFile']}.")
+    if not url.endswith("/v1"):
+        url += "/v1"
+    # Modal proxy auth uses a token id/secret pair instead of a bearer key.
+    wk = next((t for t in tokens if t.startswith("wk-")), None)
+    ws = next((t for t in tokens if t.startswith("ws-")), None)
+    if wk and ws:
+        return url, {"Modal-Key": wk, "Modal-Secret": ws}
+    secrets = [t for t in tokens if not t.startswith("https://")]
+    return url, {"Authorization": "Bearer " + secrets[-1]} if secrets else {}
 
 
 def call(cfg: dict, path: str, body: dict | None) -> dict:
+    url, auth = read_creds(cfg)
     req = urllib.request.Request(
-        cfg["baseUrl"] + path,
+        url + path,
         data=json.dumps(body).encode() if body else None,
-        headers={
-            "Authorization": "Bearer " + read_key(cfg["keyFile"]),
-            "Content-Type": "application/json",
-        },
+        headers={**auth, "Content-Type": "application/json"},
         method="POST" if body else "GET",
     )
     try:
-        with urllib.request.urlopen(req, timeout=300) as res:
+        # A scaled-to-zero Modal container can take minutes to cold start.
+        with urllib.request.urlopen(req, timeout=900) as res:
             return json.load(res)
     except urllib.error.HTTPError as e:
-        # The response body is safe to show; the request headers are not.
-        sys.exit(f"HTTP {e.code} from {cfg['baseUrl']}{path}: {e.read().decode(errors='replace')[:500]}")
+        # The response body is safe to show; the URL and headers may carry secrets.
+        raise RuntimeError(f"HTTP {e.code} on {path}: {e.read().decode(errors='replace')[:500]}") from None
+    except urllib.error.URLError as e:
+        raise RuntimeError(f"Network error on {path}: {e.reason}") from None
+
+
+def one_batch(cfg: dict, provider: str, n: int, today: str) -> tuple[list, int, int, int]:
+    """One request for n samples. Returns (valid samples, rejected, tokens in, tokens out)."""
+    res = call(cfg, "/chat/completions", {
+        "model": cfg["model"],
+        "messages": [
+            {"role": "system", "content": COMMON.replace("{n}", str(n))},
+            {"role": "user", "content": STYLE[provider] + f" Today is {today}."},
+        ],
+    })
+    usage = res.get("usage") or {}
+    batch = parse_array(res["choices"][0]["message"]["content"] or "")
+    good = [s for s in batch if valid(s)]
+    return good[:n], len(batch) - len(good), usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)
 
 
 def is_str_list(v) -> bool:
@@ -149,43 +180,52 @@ def parse_array(text: str) -> list:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--provider", required=True, choices=["muse", "baseten"])
+    ap.add_argument("--provider", required=True, choices=["muse", "modal"])
     ap.add_argument("--count", type=int, default=BATCH)
+    ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--list-models", action="store_true")
     args = ap.parse_args()
 
     cfg = json.loads((ROOT / "scripts" / "models.json").read_text(encoding="utf-8"))[args.provider]
 
+    try:
+        models = [m.get("id") for m in call(cfg, "/models", None).get("data", [])] if (
+            args.list_models or not cfg["model"]) else []
+    except RuntimeError as e:
+        sys.exit(str(e))
     if args.list_models:
-        for m in call(cfg, "/models", None).get("data", []):
-            print(m.get("id"))
+        print("\n".join(models))
         return
-
     if not cfg["model"]:
-        sys.exit(f"Set the model for {args.provider} in scripts/models.json (try --list-models).")
+        # A private single-model server needs no configured name.
+        if len(models) != 1:
+            sys.exit(f"Set the model for {args.provider} in scripts/models.json (try --list-models).")
+        cfg["model"] = models[0]
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    samples, rejected, tok_in, tok_out = [], 0, 0, 0
-    while len(samples) < args.count:
-        n = min(BATCH, args.count - len(samples))
-        res = call(cfg, "/chat/completions", {
-            "model": cfg["model"],
-            "messages": [
-                {"role": "system", "content": COMMON.replace("{n}", str(n))},
-                {"role": "user", "content": STYLE[args.provider] + f" Today is {stamp[:4]}-{stamp[4:6]}-{stamp[6:8]}."},
-            ],
-        })
-        usage = res.get("usage", {})
-        tok_in += usage.get("prompt_tokens", 0)
-        tok_out += usage.get("completion_tokens", 0)
-        batch = parse_array(res["choices"][0]["message"]["content"] or "")
-        good = [s for s in batch if valid(s)]
-        rejected += len(batch) - len(good)
-        if not good:
-            # Stop rather than loop on a model that cannot follow the schema and burn credit.
-            print("A batch produced no valid sample; stopping.")
-            break
-        samples += good[:n]
+    today = f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:8]}"
+    sizes = [BATCH] * (args.count // BATCH) + ([args.count % BATCH] if args.count % BATCH else [])
+    samples, rejected, tok_in, tok_out, failed = [], 0, 0, 0, 0
+    started = time.monotonic()
+    # All batches go out at once: an hourly-billed server costs the same idle or busy,
+    # so wall-clock time is the cost. One round only; a shortfall is reported, not retried.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:
+        for fut in concurrent.futures.as_completed(
+            [pool.submit(one_batch, cfg, args.provider, n, today) for n in sizes]
+        ):
+            try:
+                good, rej, ti, to = fut.result()
+            except (RuntimeError, KeyError, IndexError, TypeError) as e:
+                failed += 1
+                print(f"batch failed: {e}")
+                continue
+            samples += good
+            rejected += rej
+            tok_in += ti
+            tok_out += to
+    seconds = round(time.monotonic() - started, 1)
+    if not samples:
+        sys.exit("No valid sample produced.")
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"{args.provider}-{stamp}.json"
@@ -205,10 +245,10 @@ def main() -> None:
         f.write(json.dumps({
             "at": stamp, "provider": args.provider, "model": cfg["model"],
             "samples": len(samples), "rejected": rejected,
-            "tokensIn": tok_in, "tokensOut": tok_out, "usd": cost,
+            "tokensIn": tok_in, "tokensOut": tok_out, "usd": cost, "seconds": seconds,
         }) + "\n")
-    print(f"{len(samples)} samples -> {out.relative_to(ROOT)}; rejected {rejected}; "
-          f"tokens {tok_in}/{tok_out}; usd {cost}")
+    print(f"{len(samples)}/{args.count} samples -> {out.relative_to(ROOT)}; rejected {rejected}; "
+          f"failed batches {failed}; tokens {tok_in}/{tok_out}; usd {cost}; {seconds}s")
 
 
 if __name__ == "__main__":

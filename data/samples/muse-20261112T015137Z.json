@@ -1,0 +1,312 @@
+{
+  "synthetic": true,
+  "labeled": false,
+  "provider": "muse",
+  "model": "muse-spark-1.3-contributor",
+  "generatedAt": "20261112T015137Z",
+  "samples": [
+    {
+      "note": "terse engineer handoff: empty description, null toId, empty ack, due 2026-11-20",
+      "handoff": {
+        "item": {
+          "key": "NBL-47",
+          "projectKey": "NBL",
+          "summary": "fix queue drain stall",
+          "description": "",
+          "labels": [],
+          "components": [
+            "legacy-shim"
+          ],
+          "dueDate": "2026-11-20",
+          "assigneeId": null
+        },
+        "fromId": "u-ren",
+        "toId": null,
+        "acknowledged": []
+      },
+      "decisions": [
+        {
+          "id": "d-nbl-7",
+          "title": "Ingest cutoff Nov 15 with reviewed label and no legacy-shim",
+          "status": "decided",
+          "source": {
+            "kind": "ledger",
+            "ref": "LED-8812"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "NBL"
+          },
+          "constraints": [
+            {
+              "kind": "dueNotAfter",
+              "date": "2026-11-15"
+            },
+            {
+              "kind": "labelRequired",
+              "label": "reviewed"
+            },
+            {
+              "kind": "componentForbidden",
+              "component": "legacy-shim"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "note": "Terse engineer handoff with all fields filled",
+      "handoff": {
+        "item": {
+          "key": "BRM-101",
+          "projectKey": "BRM",
+          "summary": "Fix intake lag.",
+          "description": "Lag 300ms. Retuned valve. Logs clean.",
+          "labels": [
+            "pump-check"
+          ],
+          "components": [
+            "intake-valve"
+          ],
+          "dueDate": "2026-11-18",
+          "assigneeId": "u-bex"
+        },
+        "fromId": "u-ana",
+        "toId": "u-bex",
+        "acknowledged": [
+          "d-brm1"
+        ]
+      },
+      "decisions": [
+        {
+          "id": "d-brm1",
+          "title": "Pump checks need pump-check label and November completion",
+          "status": "decided",
+          "source": {
+            "kind": "ledger",
+            "ref": "LED-4101"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "BRM"
+          },
+          "constraints": [
+            {
+              "kind": "labelRequired",
+              "label": "pump-check"
+            },
+            {
+              "kind": "dueNotAfter",
+              "date": "2026-11-30"
+            }
+          ]
+        },
+        {
+          "id": "d-brm0",
+          "title": "Old pump check process",
+          "status": "superseded",
+          "source": {
+            "kind": "confluence",
+            "ref": "CONF-1009"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "BRM"
+          },
+          "constraints": [
+            {
+              "kind": "componentForbidden",
+              "component": "intake-valve"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "note": "Careful project manager handoff with no receiver listed",
+      "handoff": {
+        "item": {
+          "key": "QZT-44",
+          "projectKey": "QZT",
+          "summary": "Planned transition of calibration task QZT-44 with documentation and timeline attached",
+          "description": "Dear team, This task covers quarterly calibration of tank array three. All steps are logged and verified. Due date remains 2026-11-20. Please advise on reassignment. Kind regards.",
+          "labels": [
+            "calibration"
+          ],
+          "components": [
+            "tank-array"
+          ],
+          "dueDate": "2026-11-20",
+          "assigneeId": null
+        },
+        "fromId": "u-cato",
+        "toId": null,
+        "acknowledged": [
+          "d-qzt1"
+        ]
+      },
+      "decisions": [
+        {
+          "id": "d-qzt1",
+          "title": "Calibration work in QZT requires calibration label",
+          "status": "decided",
+          "source": {
+            "kind": "confluence",
+            "ref": "CONF-2201"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "QZT"
+          },
+          "constraints": [
+            {
+              "kind": "labelRequired",
+              "label": "calibration"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "note": "Rushed support agent handoff with empty description",
+      "handoff": {
+        "item": {
+          "key": "FLX-207",
+          "projectKey": "FLX",
+          "summary": "PLS TAKE THIS NOW cust waiting on filter swap!!!",
+          "description": "",
+          "labels": [
+            "filter-swap"
+          ],
+          "components": [
+            "filter-unit"
+          ],
+          "dueDate": "2026-11-14",
+          "assigneeId": "u-eli"
+        },
+        "fromId": "u-dara",
+        "toId": "u-eli",
+        "acknowledged": [
+          "d-flx1"
+        ]
+      },
+      "decisions": [
+        {
+          "id": "d-flx1",
+          "title": "Filter swaps must carry filter-swap label",
+          "status": "decided",
+          "source": {
+            "kind": "jira",
+            "ref": "FLX-200"
+          },
+          "scope": {
+            "kind": "label",
+            "label": "filter-swap"
+          },
+          "constraints": [
+            {
+              "kind": "labelRequired",
+              "label": "filter-swap"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "note": "New joiner handoff with no due date",
+      "handoff": {
+        "item": {
+          "key": "KVO-33",
+          "projectKey": "KVO",
+          "summary": "Hi um this is the meter reading task I think handing over as told",
+          "description": "Hello! Sorry I am new here so not sure if I did this right, I read the guide twice, I think the meter reading is for hut two, I did not set a date because I was afraid to pick the wrong one, please tell me if I need to fix anything, thanks!!",
+          "labels": [
+            "meter-read"
+          ],
+          "components": [
+            "hut-sensor"
+          ],
+          "dueDate": null,
+          "assigneeId": "u-gala"
+        },
+        "fromId": "u-finn",
+        "toId": "u-gala",
+        "acknowledged": [
+          "d-kvo1"
+        ]
+      },
+      "decisions": [
+        {
+          "id": "d-kvo1",
+          "title": "Meter reads need meter-read label",
+          "status": "decided",
+          "source": {
+            "kind": "ledger",
+            "ref": "LED-7720"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "KVO"
+          },
+          "constraints": [
+            {
+              "kind": "labelRequired",
+              "label": "meter-read"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "note": "Rushed support agent handoff with empty acknowledgement list",
+      "handoff": {
+        "item": {
+          "key": "NPD-89",
+          "projectKey": "NPD",
+          "summary": "NEED takeover ASAP core swap ready!!!",
+          "description": "prep done gotta run used legacy core thx",
+          "labels": [
+            "core-swap"
+          ],
+          "components": [
+            "legacy-core"
+          ],
+          "dueDate": "2026-12-05",
+          "assigneeId": "u-ana"
+        },
+        "fromId": "u-hilo",
+        "toId": "u-ana",
+        "acknowledged": []
+      },
+      "decisions": [
+        {
+          "id": "d-npd1",
+          "title": "Core swaps must avoid legacy core and finish by November",
+          "status": "decided",
+          "source": {
+            "kind": "ledger",
+            "ref": "LED-9902"
+          },
+          "scope": {
+            "kind": "project",
+            "projectKey": "NPD"
+          },
+          "constraints": [
+            {
+              "kind": "componentForbidden",
+              "component": "legacy-core"
+            },
+            {
+              "kind": "dueNotAfter",
+              "date": "2026-11-25"
+            },
+            {
+              "kind": "labelRequired",
+              "label": "core-swap"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
