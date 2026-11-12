@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { runCheckHandoff, runListBindingDecisions, type Deps } from "../src/actions/core";
+import { runCheckHandoff, runListBindingDecisions, runProposeDecisions, runReadDecisionSource, type Deps } from "../src/actions/core";
+import type { DecisionSource, Proposal } from "../src/decisions/types";
 import { handoffFrom } from "../src/handoff/build";
 import type { HandoffRecord } from "../src/handoff/types";
 import { JiraReadError } from "../src/jira-error";
@@ -34,6 +35,11 @@ const deps = (over: Partial<Deps> & { rec?: HandoffRecord | null; decisions?: De
   readItem: over.readItem ?? (async () => ({ item: over.it ?? item, issueId: "10001" })),
   getDecisions: over.getDecisions ?? (async () => over.decisions ?? [decision]),
   getRecord: over.getRecord ?? (async () => (over.rec === undefined ? record : over.rec)),
+  // Defaults throw, so the check and list actions fail loudly if they ever touch the proposal store.
+  readSource: over.readSource ?? failing(new Error("must not read the source")),
+  getProposals: over.getProposals ?? failing(new Error("must not read proposals")),
+  putProposals: over.putProposals ?? failing(new Error("must not write proposals")),
+  now: () => "2026-11-12T00:00:00.000Z",
 });
 
 describe("check-handoff", () => {
@@ -123,5 +129,108 @@ describe("list-binding-decisions", () => {
     if (none.ok) expect(none.quote).toBe("No recorded decision binds OPS-1.");
     const bad = await runListBindingDecisions({}, deps());
     expect(bad).toMatchObject({ ok: false, error: { code: "bad_input" } });
+  });
+});
+
+const SOURCE: DecisionSource = {
+  issueId: "10001",
+  projectKey: "OPS",
+  labels: ["launch"],
+  parts: [{ from: "OPS-1 description", text: "Decision: all launch work needs the legal-reviewed label before 2026-12-15." }],
+  truncated: false,
+};
+const good = {
+  title: "Launch work needs legal review",
+  scope: { kind: "label", label: "launch" },
+  constraints: [{ kind: "labelRequired", label: "legal-reviewed" }],
+  evidence: { quote: "all launch work needs the legal-reviewed label" },
+};
+const bad = { ...good, title: "Invented", evidence: { quote: "everything must be approved by the board" } };
+
+// A store that records every write, and throws on the stores propose must never touch.
+function proposeDeps() {
+  const writes: { issueId: string; proposals: Proposal[] }[] = [];
+  let stored: Proposal[] = [];
+  const d = deps({
+    readSource: async () => SOURCE,
+    getProposals: async () => stored,
+    putProposals: async (issueId, proposals) => {
+      stored = proposals;
+      writes.push({ issueId, proposals });
+    },
+    getDecisions: failing(new Error("must not touch decisions")),
+    getRecord: failing(new Error("must not touch records")),
+  });
+  return { d, writes, stored: () => stored };
+}
+
+describe("read-decision-source", () => {
+  it("returns the parts and a quote, and maps errors", async () => {
+    const out = await runReadDecisionSource({ issueKey: "OPS-1" }, deps({ readSource: async () => SOURCE }));
+    expect(out).toMatchObject({ ok: true, source: "rules", issueKey: "OPS-1", truncated: false });
+    if (out.ok) expect(out.parts).toEqual(SOURCE.parts);
+    const consent = await runReadDecisionSource(
+      { issueKey: "OPS-1" },
+      deps({ readSource: failing(new JiraReadError("consent", "Allow access: x")) }),
+    );
+    expect(consent).toMatchObject({ ok: false, error: { code: "consent" } });
+    expect(await runReadDecisionSource({}, deps())).toMatchObject({ ok: false, error: { code: "bad_input" } });
+  });
+});
+
+describe("propose-decisions", () => {
+  it("saves proposals only through putProposals and reports both lists", async () => {
+    const { d, writes } = proposeDeps();
+    const out = await runProposeDecisions({ issueKey: "OPS-1", candidates: JSON.stringify([good, bad]) }, d);
+    expect(out).toMatchObject({ ok: true, source: "rules" });
+    expect(writes).toHaveLength(1);
+    expect(writes[0]?.issueId).toBe("10001");
+    if (out.ok) {
+      expect(out.proposed).toHaveLength(1);
+      expect(out.rejected).toEqual([{ index: 1, reason: "evidence_not_in_source" }]);
+      expect(out.quote).toBe(
+        "Handoff Guard saved 1 proposed decisions for OPS-1 and rejected 1. Proposed decisions do not bind anything until a person confirms them in the Handoff Guard panel.",
+      );
+    }
+  });
+
+  it("leaves identical stored state when run twice", async () => {
+    const { d, stored } = proposeDeps();
+    const input = { issueKey: "OPS-1", candidates: JSON.stringify([good]) };
+    await runProposeDecisions(input, d);
+    const first = JSON.stringify(stored());
+    await runProposeDecisions(input, { ...d, now: () => "2027-01-01T00:00:00.000Z" });
+    expect(JSON.stringify(stored())).toBe(first);
+  });
+
+  it("writes nothing when every candidate is rejected", async () => {
+    const { d, writes } = proposeDeps();
+    const out = await runProposeDecisions({ issueKey: "OPS-1", candidates: JSON.stringify([bad]) }, d);
+    expect(out).toMatchObject({ ok: true });
+    expect(writes).toEqual([]);
+  });
+
+  it("rejects bad JSON, a non-string and over-long input with bad_input and no work", async () => {
+    const { d, writes } = proposeDeps();
+    const boom = { ...d, readSource: failing(new Error("must not read")) };
+    for (const candidates of ["not json", [good], undefined, "[" + " ".repeat(20_000) + "]"]) {
+      const out = await runProposeDecisions({ issueKey: "OPS-1", candidates }, boom);
+      expect(out).toMatchObject({ ok: false, error: { code: "bad_input" } });
+    }
+    expect(writes).toEqual([]);
+  });
+
+  it("never writes decisions or handoff records", async () => {
+    // proposeDeps makes getDecisions/getRecord throw; the Deps type has no write for them at all.
+    const { d } = proposeDeps();
+    const out = await runProposeDecisions({ issueKey: "OPS-1", candidates: JSON.stringify([good]) }, d);
+    expect(out.ok).toBe(true);
+  });
+});
+
+describe("check-handoff and list-binding stay read-only", () => {
+  it("never touch the proposal store (the default deps throw if they do)", async () => {
+    expect(await runCheckHandoff({ issueKey: "OPS-1" }, null, deps())).toMatchObject({ ok: true });
+    expect(await runListBindingDecisions({ issueKey: "OPS-1" }, deps())).toMatchObject({ ok: true });
   });
 });

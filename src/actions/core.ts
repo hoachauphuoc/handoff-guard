@@ -1,3 +1,5 @@
+import type { DecisionSource, Proposal } from "../decisions/types";
+import { validateCandidates } from "../decisions/validate";
 import { handoffFrom, previewHandoff } from "../handoff/build";
 import type { HandoffRecord } from "../handoff/types";
 import { JiraReadError } from "../jira-error";
@@ -10,6 +12,8 @@ import {
   type CheckHandoffSuccess,
   type ErrorCode,
   type ListBindingOutput,
+  type ProposeOutput,
+  type ReadSourceOutput,
 } from "./schema";
 
 // Injected so this file has no Forge imports and tests need no network.
@@ -17,7 +21,15 @@ export type Deps = {
   readItem: (key: string) => Promise<{ item: WorkItem; issueId: string }>;
   getDecisions: () => Promise<Decision[]>;
   getRecord: (issueId: string) => Promise<HandoffRecord | null>;
+  readSource: (key: string) => Promise<DecisionSource>;
+  getProposals: (issueId: string) => Promise<Proposal[]>;
+  putProposals: (issueId: string, proposals: Proposal[]) => Promise<void>;
+  now: () => string;
 };
+
+const MAX_CANDIDATES_CHARS = 20_000;
+const CANDIDATES_SHAPE =
+  'candidates must be a JSON array, given as a string of at most 20,000 characters, of {"title", "scope":{"kind","..."}, "constraints":[{"kind","..."}], "evidence":{"quote"}}.';
 
 const KEY = /^[A-Z][A-Z0-9_]+-\d+$/;
 const VERDICT_TEXT: Record<Verdict, "Clear" | "Needs info" | "Blocked"> = {
@@ -45,7 +57,7 @@ function parse(payload: unknown, wantReceiver: boolean): Parsed {
   return { ok: true, key, receiver };
 }
 
-function failure<S extends typeof SCHEMA_VERSION.check | typeof SCHEMA_VERSION.list>(
+function failure<S extends (typeof SCHEMA_VERSION)[keyof typeof SCHEMA_VERSION]>(
   schema: S,
   issueKey: string | null,
   e: unknown,
@@ -147,6 +159,74 @@ export async function runListBindingDecisions(payload: unknown, deps: Deps): Pro
       storedDecisionCount: all.length,
       decisions: bound.map((d) => ({ id: d.id, title: d.title, source: d.source, constraints: d.constraints })),
       quote,
+    };
+  } catch (e) {
+    return failure(schema, key, e);
+  }
+}
+
+export async function runReadDecisionSource(payload: unknown, deps: Deps): Promise<ReadSourceOutput> {
+  const schema = SCHEMA_VERSION.source;
+  const parsed = parse(payload, false);
+  if (!parsed.ok) return failure(schema, null, null, parsed.message);
+  const { key } = parsed;
+  try {
+    const src = await deps.readSource(key);
+    return {
+      schema,
+      ok: true,
+      source: "rules",
+      issueKey: key,
+      parts: src.parts,
+      truncated: src.truncated,
+      quote: `Handoff Guard read ${src.parts.length} text parts of ${key} (description and comments you can see)${
+        src.truncated ? "; the text was cut at 20,000 characters" : ""
+      }. Quote evidence from these parts only.`,
+    };
+  } catch (e) {
+    return failure(schema, key, e);
+  }
+}
+
+// GET is the verb on purpose: FRGE-1601 makes a non-GET action ask a person to confirm each call. The
+// only write here is a bounded set of proposals in app storage; no decision, handoff record or Jira data.
+export async function runProposeDecisions(payload: unknown, deps: Deps): Promise<ProposeOutput> {
+  const schema = SCHEMA_VERSION.propose;
+  const parsed = parse(payload, false);
+  if (!parsed.ok) return failure(schema, null, null, parsed.message);
+  const { key } = parsed;
+  const raw = (payload as { candidates?: unknown }).candidates;
+  if (typeof raw !== "string" || raw.length > MAX_CANDIDATES_CHARS) return failure(schema, key, null, CANDIDATES_SHAPE);
+  let candidates: unknown;
+  try {
+    candidates = JSON.parse(raw);
+  } catch {
+    return failure(schema, key, null, CANDIDATES_SHAPE);
+  }
+  try {
+    // The source is read again here, as the caller: quotes are checked against Jira, never against what
+    // the model says it read.
+    const src = await deps.readSource(key);
+    const { kept, rejected } = validateCandidates(
+      candidates,
+      src.parts,
+      { issueKey: key, projectKey: src.projectKey, labels: src.labels },
+      deps.now(),
+    );
+    if (kept.length > 0) {
+      // Replaces the saved set (it is capped at 5). A proposal seen before keeps its first proposedAt, so
+      // asking twice leaves identical state. All-rejected input writes nothing and keeps what is there.
+      const before = await deps.getProposals(src.issueId);
+      await deps.putProposals(src.issueId, kept.map((p) => before.find((b) => b.id === p.id) ?? p));
+    }
+    return {
+      schema,
+      ok: true,
+      source: "rules",
+      issueKey: key,
+      proposed: kept.map(({ id, title, scope, constraints, evidence }) => ({ id, title, scope, constraints, evidence })),
+      rejected,
+      quote: `Handoff Guard saved ${kept.length} proposed decisions for ${key} and rejected ${rejected.length}. Proposed decisions do not bind anything until a person confirms them in the Handoff Guard panel.`,
     };
   } catch (e) {
     return failure(schema, key, e);

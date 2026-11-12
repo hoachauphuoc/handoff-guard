@@ -15,3 +15,11 @@ export type Proposal = {
 };
 
 export type SourcePart = { from: string; text: string };
+
+export type DecisionSource = {
+  issueId: string;
+  projectKey: string;
+  labels: string[];
+  parts: SourcePart[];
+  truncated: boolean;
+};

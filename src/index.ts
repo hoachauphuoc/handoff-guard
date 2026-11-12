@@ -1,3 +1,3 @@
 export { handler } from "./resolvers";
 export { validate } from "./validator";
-export { checkHandoffAction, listBindingDecisionsAction } from "./actions";
+export { checkHandoffAction, listBindingDecisionsAction, proposeDecisionsAction, readDecisionSourceAction } from "./actions";

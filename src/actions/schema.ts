@@ -4,6 +4,8 @@
 export const SCHEMA_VERSION = {
   check: "handoff-guard/check-handoff@1",
   list: "handoff-guard/binding-decisions@1",
+  source: "handoff-guard/decision-source@1",
+  propose: "handoff-guard/propose-decisions@1",
 } as const;
 
 export const CheckHandoffInputSchema = {
@@ -25,8 +27,27 @@ export const ListBindingInputSchema = {
   additionalProperties: false,
 } as const;
 
+export const ReadSourceInputSchema = ListBindingInputSchema;
+
+export const ProposeInputSchema = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  type: "object",
+  properties: {
+    issueKey: { type: "string", description: "Work item key such as OPS-1. Defaults to the work item the chat was opened from." },
+    candidates: {
+      type: "string",
+      description:
+        'A JSON array of {title, scope:{kind: project, label or workItem}, constraints:[{kind: dueNotAfter, labelRequired or componentForbidden}], evidence:{quote}}. Each quote is copied word for word from the read-decision-source result.',
+    },
+  },
+  required: ["candidates"],
+  additionalProperties: false,
+} as const;
+
 export type CheckHandoffInput = { issueKey?: string; receiverAccountId?: string };
 export type ListBindingInput = { issueKey?: string };
+export type ReadSourceInput = ListBindingInput;
+export type ProposeInput = { issueKey?: string; candidates: string };
 
 export type ErrorCode = "bad_input" | "consent" | "not_found" | "jira_error" | "internal";
 
@@ -70,3 +91,27 @@ export type ListBindingSuccess = {
 };
 
 export type ListBindingOutput = ListBindingSuccess | ActionError<typeof SCHEMA_VERSION.list>;
+
+export type ReadSourceSuccess = {
+  schema: typeof SCHEMA_VERSION.source;
+  ok: true;
+  source: "rules";
+  issueKey: string;
+  parts: { from: string; text: string }[];
+  truncated: boolean;
+  quote: string;
+};
+
+export type ReadSourceOutput = ReadSourceSuccess | ActionError<typeof SCHEMA_VERSION.source>;
+
+export type ProposeSuccess = {
+  schema: typeof SCHEMA_VERSION.propose;
+  ok: true;
+  source: "rules";
+  issueKey: string;
+  proposed: { id: string; title: string; scope: unknown; constraints: unknown[]; evidence: { quote: string; from: string } }[];
+  rejected: { index: number; reason: string }[];
+  quote: string;
+};
+
+export type ProposeOutput = ProposeSuccess | ActionError<typeof SCHEMA_VERSION.propose>;

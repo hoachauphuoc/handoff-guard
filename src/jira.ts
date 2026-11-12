@@ -1,5 +1,5 @@
 import api, { route } from "@forge/api";
-import type { SourcePart } from "./decisions/types";
+import type { DecisionSource, SourcePart } from "./decisions/types";
 import { toWorkItem } from "./handoff/build";
 import { JiraReadError } from "./jira-error";
 import type { WorkItem } from "./rules/types";
@@ -26,14 +26,6 @@ export async function readItemAsUser(key: string): Promise<{ item: WorkItem; iss
   const body = await res.json();
   return { item: toWorkItem(key, body.fields), issueId: String(body.id) };
 }
-
-export type DecisionSource = {
-  issueId: string;
-  projectKey: string;
-  labels: string[];
-  parts: SourcePart[];
-  truncated: boolean;
-};
 
 type JiraComment = { id?: string; body?: unknown; visibility?: unknown };
 

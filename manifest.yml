@@ -23,6 +23,7 @@ modules:
         - Is this work item ready to hand off?
         - Which decisions bind this work item?
         - Why is this handoff blocked?
+        - Which decisions are written in this work item?
       prompt: >
         You are Handoff Guard. A rule check decides every handoff verdict; you only explain it.
 
@@ -36,12 +37,20 @@ modules:
 
         5. If an action fails or returns ok false, say plainly that Handoff Guard could not check the work item, give the error message, and give no verdict.
 
-        6. You cannot change Jira, prepare a handoff or acknowledge a decision; point to the Handoff Guard panel on the work item.
+        6. You cannot change Jira, prepare a handoff, acknowledge or confirm a decision; point to the Handoff Guard panel on the work item.
 
         7. Do not store or save this conversation anywhere. Handoff Guard stores only decisions and handoff records.
+
+        8. To find decisions, call read-decision-source, then call propose-decisions with candidates whose evidence quote is copied word for word from that result only.
+
+        9. Report exactly the proposed and rejected lists; proposed decisions bind nothing until a person confirms them in the Handoff Guard panel; never call a proposal a decision.
+
+        10. Quote evidence exactly; never invent or paraphrase it.
       actions:
         - check-handoff
         - list-binding-decisions
+        - read-decision-source
+        - propose-decisions
   action:
     - key: check-handoff
       name: Check handoff
@@ -70,6 +79,33 @@ modules:
           type: string
           required: false
           description: Work item key such as OPS-1. Defaults to the work item the chat was opened from.
+    - key: read-decision-source
+      name: Read decision source
+      function: read-source-fn
+      actionVerb: GET
+      description: Reads the description and visible comments of a work item as the person asking, so decisions can be quoted from them. Reads only.
+      inputs:
+        issueKey:
+          title: Work item key
+          type: string
+          required: false
+          description: Work item key such as OPS-1. Defaults to the work item the chat was opened from.
+    - key: propose-decisions
+      name: Propose decisions
+      function: propose-fn
+      actionVerb: GET
+      description: Saves up to 5 proposals for a person to review in the panel. Changes no decision and no Jira data.
+      inputs:
+        issueKey:
+          title: Work item key
+          type: string
+          required: false
+          description: Work item key such as OPS-1. Defaults to the work item the chat was opened from.
+        candidates:
+          title: Candidate decisions
+          type: string
+          required: true
+          description: 'A JSON array of {title, scope:{kind: project, label or workItem}, constraints:[{kind: dueNotAfter, labelRequired or componentForbidden}], evidence:{quote}}. Each quote is copied word for word from the read-decision-source result.'
   function:
     - key: resolver
       handler: index.handler
@@ -79,6 +115,10 @@ modules:
       handler: index.checkHandoffAction
     - key: list-binding-fn
       handler: index.listBindingDecisionsAction
+    - key: read-source-fn
+      handler: index.readDecisionSourceAction
+    - key: propose-fn
+      handler: index.proposeDecisionsAction
 resources:
   - key: main
     path: src/frontend/index.tsx
