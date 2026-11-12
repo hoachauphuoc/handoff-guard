@@ -4,7 +4,7 @@
 1. Owner: register on Devpost, create the Atlassian developer site, run `forge login`.
 2. Register the Forge app and add `manifest.yml` (issue panel hello world); add `forge lint` to `scripts/check.ps1`.
 3. Risk spikes: Rovo agent on the dev site, Teamwork Graph query, `rovo:mcp`, workflow validator.
-4. Baseten: `meta-models/muse-spark-open-1026` returns HTTP 400 "model version is deactivated". Owner activates it or picks another slug; then generate 10 adversarial samples.
+4. Baseten: chat calls return HTTP 403 "please check the api-key you provided" (both `Bearer` and `Api-Key` schemes; `/models` answers without auth, so it proves nothing). Owner checks the key in `.bjt\Baseten.txt` (valid, Model APIs access, billing). Then run `python scripts/gen_samples.py --provider baseten --count 10`. Slug is `meta-models/muse-spark-open`; `-1026` is deactivated.
 5. Owner labels `data/samples/`, then build `scripts/measure`.
 
 ## Log
