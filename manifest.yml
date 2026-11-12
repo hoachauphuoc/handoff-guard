@@ -7,9 +7,19 @@ modules:
       render: native
       title: Handoff Guard
       icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+  jira:workflowValidator:
+    - key: handoff-guard-validator
+      name: Handoff Guard
+      description: Allows the transition only when the handoff is Clear in Handoff Guard.
+      function: validate
+      projectTypes:
+        - company-managed
+        - team-managed
   function:
     - key: resolver
       handler: index.handler
+    - key: validate
+      handler: index.validate
 resources:
   - key: main
     path: src/frontend/index.tsx
