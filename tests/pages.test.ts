@@ -13,7 +13,7 @@ const link = (id: string, type = "com.atlassian.confluence") => ({
 });
 const doc = (...c: unknown[]) => ({ type: "doc", content: c });
 const decided = (t: string) => ({ type: "decisionList", content: [{ type: "decisionItem", attrs: { state: "DECIDED" }, content: [{ type: "text", text: t }] }] });
-const page = (title: string, ...c: unknown[]): PageRead => ({ ok: true, title, body: doc(...c) });
+const page = (title: string, ...c: unknown[]): PageRead => ({ ok: true, title, body: doc(...c), version: 3 });
 
 describe("pagesFromRemoteLinks", () => {
   it("keeps Confluence links once each, from globalId or URL, and ignores other links and junk", () => {
@@ -31,7 +31,7 @@ describe("collectPages", () => {
       "3": page("Empty"),
     };
     const out = await collectPages([{ pageId: "1", url: null }, { pageId: "2", url: null }, { pageId: "3", url: null }], async (id) => reads[id]!);
-    expect(out.parts).toEqual([{ from: "Confluence page Launch plan", text: "Launch work needs the legal-reviewed label", marked: ["Launch work needs the legal-reviewed label"] }]);
+    expect(out.parts).toEqual([{ from: "Confluence page Launch plan", text: "Launch work needs the legal-reviewed label", marked: ["Launch work needs the legal-reviewed label"], page: { pageId: "1", version: 3 } }]);
     expect(out.status).toEqual({ linksRead: true, linked: 3, read: 1, unreadable: 1, notTried: 0 });
   });
 

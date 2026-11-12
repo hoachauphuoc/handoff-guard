@@ -16,7 +16,8 @@ export function capParts(raw: SourcePart[], limit = MAX_SOURCE_CHARS): { parts: 
     const text = p.text.slice(0, left);
     // A marked decision that was cut off is no longer quotable, so it is not offered.
     const marked = p.marked?.filter((m) => text.includes(m));
-    parts.push({ from: p.from, text, ...(marked && marked.length > 0 ? { marked } : {}) });
+    const { marked: _all, ...rest } = p;
+    parts.push({ ...rest, text, ...(marked && marked.length > 0 ? { marked } : {}) });
     left -= p.text.length;
   }
   return { parts, truncated };

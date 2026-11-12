@@ -23,6 +23,9 @@ export type DecisionScope =
   | { kind: "label"; label: string }
   | { kind: "workItem"; key: string };
 
+/** The words a decision came from. `pageId` and `version` are set when they came from a Confluence page. */
+export type Evidence = { quote: string; from: string; pageId?: string; version?: number };
+
 export type Decision = {
   id: string;
   title: string;
@@ -35,7 +38,7 @@ export type Decision = {
   confirmedBy?: string;
   confirmedAt?: string;
   /** The words a proposal was confirmed from, so a marked decision can be told apart from one already recorded. */
-  evidence?: { quote: string; from: string };
+  evidence?: Evidence;
   /** Set when the decision stopped binding: when, and the decision that replaced it (absent if a person retired it). */
   supersededAt?: string;
   supersededBy?: string;

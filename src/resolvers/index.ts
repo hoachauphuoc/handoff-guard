@@ -6,10 +6,12 @@ import { relate, supersede } from "../decisions/supersede";
 import { unrecordedMarked, type MarkedState } from "../decisions/marked";
 import { hypothetical } from "../decisions/hypothetical";
 import { pageStatusText } from "../decisions/pages";
+import { pagesToCheck, sourceNotes, type PageVersion, type SourceChecks } from "../decisions/sourcecheck";
 import { buildDecisionsPage, type DecisionsPageState } from "../decisions/page";
 import { acknowledge } from "../handoff/acknowledge";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import type { HandoffRecord, PanelState } from "../handoff/types";
+import { readPageVersionAsUser } from "../confluence";
 import { openItemsAsUser, readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff, isIsoDate } from "../rules/checkHandoff";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
@@ -17,7 +19,7 @@ import { changeText, suggestFixes } from "../rules/feasible";
 import { impactOf } from "../rules/impact";
 import { replayDiff, type ReplayChange } from "../rules/replay";
 import type { Proposal } from "../decisions/types";
-import type { Finding } from "../rules/types";
+import type { Decision, Finding } from "../rules/types";
 import { mergeDecisions, sampleDecisions } from "../samples/decisions";
 import { readSourceAsUser } from "../source";
 import { getDecisions, getProposals, getRecord, putDecisions, putProposals, putRecord } from "../store";
@@ -183,6 +185,28 @@ resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageSt
     open.capped,
     new Date().toISOString(),
   );
+});
+
+// Reads the version of each page behind the given decisions, as the viewer, and compares it with the version
+// stored when the decision was confirmed. Advisory: it changes nothing and no rule reads it.
+async function checkSources(decisions: Decision[]): Promise<SourceChecks> {
+  const ids = pagesToCheck(decisions);
+  const reads: Record<string, PageVersion> = {};
+  await Promise.all(ids.map(async (id) => void (reads[id] = await readPageVersionAsUser(id))));
+  return sourceNotes(decisions, reads);
+}
+
+// For the panel: the decisions that bind this work item.
+resolver.define("getSourceChecks", async ({ context }): Promise<SourceChecks> => {
+  const { item } = await readItem((context as Ctx).extension.issue.key);
+  return checkSources(bindingDecisions(await getDecisions(), item));
+});
+
+// For the project page: every decision in force that can bind work here.
+resolver.define("getProjectSourceChecks", async ({ context }): Promise<SourceChecks> => {
+  const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key).toLowerCase();
+  const inProject = (d: Decision) => d.scope.kind === "project" ? d.scope.projectKey.toLowerCase() === projectKey : d.scope.kind === "workItem" ? d.scope.key.toLowerCase().startsWith(`${projectKey}-`) : true;
+  return checkSources((await getDecisions()).filter(inProject));
 });
 
 export type ReplayState = { date: string; changes: ReplayChange[]; scanned: number; capped: boolean };

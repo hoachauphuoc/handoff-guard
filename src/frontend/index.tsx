@@ -3,6 +3,7 @@ import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, User, Us
 import { invoke, rovo } from "@forge/bridge";
 import type { GatherOutput } from "../actions/schema";
 import type { MarkedState } from "../decisions/marked";
+import type { SourceChecks } from "../decisions/sourcecheck";
 import { constraintText, reachText } from "../decisions/reach";
 import { count } from "../plural";
 import type { PanelState } from "../handoff/types";
@@ -36,6 +37,8 @@ const App = () => {
   const [rovoNote, setRovoNote] = useState<string | null>(null);
   const [marked, setMarked] = useState<MarkedState | null>(null);
   const [markedError, setMarkedError] = useState<string | null>(null);
+  const [sources, setSources] = useState<SourceChecks | null>(null);
+  const [sourcesError, setSourcesError] = useState<string | null>(null);
   // null: follow the default (open until a handoff exists); a click on the toggle overrides it.
   const [guideOpen, setGuideOpen] = useState<boolean | null>(null);
 
@@ -88,7 +91,13 @@ const App = () => {
     );
 
   useEffect(() => {
-    void call("getPanel").then(() => void readMarked());
+    void call("getPanel").then(() => {
+      void readMarked();
+      void invoke<SourceChecks>("getSourceChecks").then(
+        (s) => setSources(s as SourceChecks),
+        (e) => setSourcesError(String(e)),
+      );
+    });
   }, []);
 
   if (error) {
@@ -238,6 +247,17 @@ const App = () => {
                 <Text>Rovo may propose it again later.</Text>
               </Stack>
             ))}
+          </Stack>
+        </SectionMessage>
+      )}
+      {sourcesError !== null && <Text>{`The source pages of the decisions could not be checked: ${sourcesError}`}</Text>}
+      {sources !== null && (sources.notes.length > 0 || sources.notChecked > 0) && (
+        <SectionMessage appearance="information" title="Source pages (advisory, not part of the verdict)">
+          <Stack space="space.050">
+            {sources.notes.map((n, i) => (
+              <Text key={i}>{`• ${n.message}`}</Text>
+            ))}
+            {sources.notChecked > 0 && <Text>{`${count(sources.notChecked, "decision")} not checked: only the first 5 source pages are read.`}</Text>}
           </Stack>
         </SectionMessage>
       )}

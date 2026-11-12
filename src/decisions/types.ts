@@ -1,4 +1,4 @@
-import type { Constraint, DecisionScope } from "../rules/types";
+import type { Constraint, DecisionScope, Evidence } from "../rules/types";
 import type { PageStatus } from "./pages";
 
 /**
@@ -11,12 +11,12 @@ export type Proposal = {
   scope: DecisionScope;
   constraints: Constraint[];
   /** The words that justify it, copied from `from` (for example "OPS-1 description"). */
-  evidence: { quote: string; from: string };
+  evidence: Evidence;
   proposedAt: string;
 };
 
 /** `marked`: decisions a person marked with Jira's decision node inside `text`, as written. */
-export type SourcePart = { from: string; text: string; marked?: string[] };
+export type SourcePart = { from: string; text: string; marked?: string[]; page?: { pageId: string; version: number } };
 
 export type DecisionSource = {
   issueId: string;

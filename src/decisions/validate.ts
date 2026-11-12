@@ -112,7 +112,7 @@ function check(raw: unknown, parts: SourcePart[], ctx: Context, nowIso: string):
   if (!part) return "evidence_not_in_source";
   if (relate(ctx.stored ?? [], scope, constraints)?.kind === "already_decided") return "already_decided";
   const id = "p-" + fnv1a([part.from, title, JSON.stringify(scope), JSON.stringify(constraints)].join("|"));
-  return { id, title, scope, constraints, evidence: { quote, from: part.from }, proposedAt: nowIso };
+  return { id, title, scope, constraints, evidence: { quote, from: part.from, ...(part.page ? { pageId: part.page.pageId, version: part.page.version } : {}) }, proposedAt: nowIso };
 }
 
 /**

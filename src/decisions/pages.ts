@@ -31,7 +31,7 @@ export function pagesFromRemoteLinks(json: unknown): LinkedPage[] {
   return out;
 }
 
-export type PageRead = { ok: true; title: string; body: unknown } | { ok: false };
+export type PageRead = { ok: true; title: string; body: unknown; version: number | null } | { ok: false };
 
 /** What happened to the pages, so a reader is told when a source was not read instead of left to assume. */
 export type PageStatus = {
@@ -70,7 +70,7 @@ export async function collectPages(
     if (text.trim() === "") continue;
     const marked = markedDecisions(page.body);
     const from = `Confluence page ${page.title}`;
-    parts.push(marked.length > 0 ? { from, text, marked } : { from, text });
+    parts.push({ from, text, ...(marked.length > 0 ? { marked } : {}), ...(page.version !== null ? { page: { pageId: l.pageId, version: page.version } } : {}) });
   }
   return { parts, status: { linksRead: true, linked: links.length, read: parts.length, unreadable, notTried: links.length - tried } };
 }

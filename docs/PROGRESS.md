@@ -167,3 +167,8 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Decisions page: a date control (`replayOn` resolver; the clock is read in the resolver and a future date is refused) and the changed handoffs. The page says only decisions and acknowledgements are replayed and work item fields are read as they are now, because Jira history is not read.
 - 215 tests, `check.ps1` PASS. No scope added. `npm run measure` was not affected (replay is not imported by the rule check or the validator; a test pins that).
 - Not observed on the site: the date control and a real flip on MOBL.
+
+### 2026-11-12, slice E: changed-source check (development 7.6.0)
+- A decision confirmed from a Confluence page now keeps `evidence.pageId` and `evidence.version` (set when the page is read for `read-decision-source`, carried by the proposal). `src/decisions/sourcecheck.ts` (pure): `pagesToCheck` (distinct pages, at most 5) and `sourceNotes` compare the stored version with the version read now (`readPageVersionAsUser`, title and version only, as the viewer). Output is advisory: "The Confluence page ... changed since ... was confirmed (version 3 then, version 5 now). The decision still applies until a person supersedes it."; a page that cannot be read is named; pages beyond the cap are counted. Shown in the panel (`getSourceChecks`, decisions that bind the item) and on the Decisions page (`getProjectSourceChecks`). Never a finding, never read by the rule check or the validator (test pins it). No trigger, no new scope.
+- Decisions confirmed before this have no stored version and are not checked.
+- 221 tests, `check.ps1` PASS. Not observed on the site: editing the test page 3473409 and seeing the note.
