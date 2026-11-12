@@ -13,6 +13,7 @@
 - Fixed: a malformed due date is reported (`invalid_due_date`) instead of compared; labels, components and person ids match ignoring case and outer spaces; a missing sender is reported (`no_sender`, info_needed).
 - Kept as is: filler descriptions such as "tbd" pass; a binding decision with no constraints still needs acknowledgement; a superseded decision is not shown.
 - Fixed later (2026-11-12, S1): a malformed `dueNotAfter` date in a decision is reported (`invalid_constraint`); project and work-item keys match ignoring case and spaces.
+- Duplicates (2026-11-12, 6.6.0): two decisions are the same when scope and constraints match; the title is ignored because Rovo words the same sentence differently each time. Matching ignores case and outer spaces, as the rules do; a superseded decision does not count. `propose-decisions` rejects such a candidate (`already_decided`, message says "Do not retry", agent rule 11 says the same); Confirm of a twin already in the proposal list removes it and stores nothing new. Tests: `tests/actions.test.ts`, `tests/confirm.test.ts`.
 
 ## Log
 ### 2026-11-12, Day 1
