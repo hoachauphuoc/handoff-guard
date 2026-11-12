@@ -138,3 +138,9 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Not observed on the site: the trigger firing, marked decisions with real decision nodes, the new constraint kinds via Rovo. Slice 5 (Confluence spike) not started.
 
 - Test fixture for slice 5 on the dev site (2026-11-12): Confluence page 3473409 "Spring campaign decisions (legal sync)" in space LEGAL, two Decided nodes (label brand-reviewed required; component legacy-sms forbidden) plus one undecided open question; linked to MOBL-53 as a remote link (id 10133, type com.atlassian.confluence, globalId appId=a95bc766-01b2-3f5c-b9ab-385acc4c857c&pageId=3473409). Remove both when the test is done.
+
+### 2026-11-12, slice 5: Confluence pages as a decision source (commit a444f77, development 7.1.0 only)
+- Owner approved re-adding `app.compatibility` (Jira required, Confluence optional) for development only, knowing the cost: one site, Marketplace paid-only, locked while installations exist. Production is untouched (2.0.0, Jira-only).
+- Spike result: Forge accepted the manifest (`--approve MAJOR_VERSION_RULE`, development only), `forge install --upgrade` for Jira and `forge install -p Confluence` on `one-atlas-hxpc` both completed. The live `requestConfluence` call is not yet observed: it needs a linked page and a panel click.
+- Code: `src/decisions/pages.ts` (remote links to page ids, `collectPages` capped at 3 pages and 6 attempts, `pageStatusText`), `src/confluence.ts` (asUser reads, atlas_doc_format), parts carry `from: "Confluence page <title>"` and `marked`; `DecisionSource.pages` status shown in the panel and in the `read-decision-source` quote; agent rule 17; PRIVACY and README scope table updated.
+- Not observed: a linked page read, the unreadable-page sentence, Confluence-sourced Confirm.
