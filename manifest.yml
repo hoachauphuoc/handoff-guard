@@ -136,5 +136,8 @@ app:
 permissions:
   scopes:
     - read:jira-work
+    - read:graph:issue:jira
+    - read:graph:page:confluence
+    - read:graph:user:atlassian
     - read:page:confluence
     - storage:app

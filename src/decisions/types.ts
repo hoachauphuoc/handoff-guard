@@ -33,4 +33,6 @@ export type DecisionSource = {
   truncated: boolean;
   /** Linked Confluence pages that were skipped because the caller cannot open them (401/403/404). */
   unreadablePages: number;
+  /** Teamwork Graph gave no page. Says nothing about whether pages are linked: a scope may be missing. */
+  graphNothing: boolean;
 };

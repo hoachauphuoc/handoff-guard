@@ -1,4 +1,5 @@
-import { readItemAsUser, readSourceAsUser } from "../jira";
+import { readItemAsUser } from "../jira";
+import { readSourceAsUser } from "../source";
 import { getDecisions, getProposals, getRecord, putProposals } from "../store";
 import { runCheckHandoff, runListBindingDecisions, runProposeDecisions, runReadDecisionSource, type Deps } from "./core";
 
@@ -8,13 +9,17 @@ const deps: Deps = {
   readItem: readItemAsUser,
   getDecisions,
   getRecord,
-  readSource: readSourceAsUser,
+  readSource: (key) => readSourceAsUser(key, null),
   getProposals,
   putProposals,
   now: () => new Date().toISOString(),
 };
 
-type Ctx = { accountId?: string };
+type Ctx = { accountId?: string; cloudId?: string };
+
+// The site id builds the work item ARI for Teamwork Graph. Whether Rovo actions carry cloudId is unconfirmed
+// (logShape below shows it); without it Teamwork Graph is skipped and the result says it returned nothing.
+const withCloud = (context: Ctx): Deps => ({ ...deps, readSource: (key) => readSourceAsUser(key, context?.cloudId ?? null) });
 
 // TEMPORARY (see docs/PROGRESS.md): logs key names only, never values, to show where accountId and the
 // Jira context sit on a real Rovo call. Remove after the owner confirms.
@@ -43,10 +48,10 @@ export async function listBindingDecisionsAction(payload: unknown, context: Ctx)
 
 export async function readDecisionSourceAction(payload: unknown, context: Ctx) {
   logShape(payload, context);
-  return runReadDecisionSource(payload, deps);
+  return runReadDecisionSource(payload, withCloud(context));
 }
 
 export async function proposeDecisionsAction(payload: unknown, context: Ctx) {
   logShape(payload, context);
-  return runProposeDecisions(payload, deps);
+  return runProposeDecisions(payload, withCloud(context));
 }
