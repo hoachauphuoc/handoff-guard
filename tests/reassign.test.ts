@@ -23,6 +23,7 @@ describe("detectReassignment", () => {
       preparedAt: NOW,
       acknowledgedAt: {},
       origin: "reassignment",
+      protocol: 1,
     });
   });
 

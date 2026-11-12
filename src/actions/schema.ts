@@ -3,6 +3,7 @@
 
 import type { Advisory } from "../rules/advisories";
 import type { PageStatus } from "../decisions/pages";
+import type { Action } from "../handoff/ipass";
 import type { Constraint } from "../rules/types";
 
 export const SCHEMA_VERSION = {
@@ -173,6 +174,8 @@ export type GatherSuccess = {
   people: People;
   /** Sibling of `check`, never part of it: facts to look at, not findings. Empty when there is no handoff basis. */
   advisories: Advisory[];
+  /** Sibling of `check`: the I-PASS name for the verdict, one action per finding with its owner, and the sender's contingency. Empty without a stored handoff. */
+  ipass: { severity: string | null; actions: Action[]; contingency: string | null; contingencyAdvisory: string | null };
   quote: string;
 };
 

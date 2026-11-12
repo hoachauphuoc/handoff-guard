@@ -2,6 +2,7 @@ import type { DecisionSource, Proposal } from "../decisions/types";
 import { pageStatusText } from "../decisions/pages";
 import { REASON_TEXT, validateCandidates } from "../decisions/validate";
 import { handoffFrom, previewHandoff } from "../handoff/build";
+import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass";
 import type { HandoffRecord } from "../handoff/types";
 import { JiraReadError } from "../jira-error";
 import { count } from "../plural";
@@ -341,6 +342,9 @@ export async function runGatherHandoffContext(payload: unknown, accountId: strin
     const [{ item, issueId }, src, decisions] = await Promise.all([deps.readItem(key), deps.readSource(key), deps.getDecisions()]);
     const record = await deps.getRecord(issueId);
     const people = await readPeople(issueId, deps);
+    // Only for a stored handoff: a preview has no record, so no sender's contingency and no owners to name.
+    const stored = check.basis === "stored" && record !== null;
+    const result = stored ? checkHandoff(handoffFrom(item, record, decisions), decisions) : null;
     const comments = src.parts
       .filter((p) => p.from.startsWith(`${key} comment `))
       .slice(0, MAX_BRIEF_COMMENTS)
@@ -365,6 +369,12 @@ export async function runGatherHandoffContext(payload: unknown, accountId: strin
       check,
       binding: check.binding.map((b) => ({ ...b, constraints: decisions.find((d) => d.id === b.id)?.constraints ?? [] })),
       people,
+      ipass: {
+        severity: result ? severityText(result.verdict) : null,
+        actions: stored && result ? actionList(result, record, suggestFixes(item, decisions).changes) : [],
+        contingency: stored ? (record.contingency ?? null) : null,
+        contingencyAdvisory: stored && record.contingency ? contingencyAdvisory(record.contingency) : null,
+      },
       advisories: [
         ...(check.basis === "none" ? [] : watchConflicts(item, bindingDecisions(decisions, item))),
         ...watchAssignee(item, record, bindingDecisions(decisions, item)),

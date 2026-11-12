@@ -8,7 +8,9 @@ import { hypothetical } from "../decisions/hypothetical";
 import { pageStatusText } from "../decisions/pages";
 import { pagesToCheck, sourceNotes, type PageVersion, type SourceChecks } from "../decisions/sourcecheck";
 import { buildDecisionsPage, type DecisionsPageState } from "../decisions/page";
-import { acknowledge } from "../handoff/acknowledge";
+import { acknowledge, acknowledgeAll } from "../handoff/acknowledge";
+import { withContingency } from "../handoff/contingency";
+import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import { driftByDecision, fingerprintOf, staleAcks } from "../handoff/drift";
 import type { HandoffRecord, PanelState } from "../handoff/types";
@@ -56,6 +58,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
   const { item, issueId } = await readItem(ctx.extension.issue.key);
   const [decisions, record, proposals] = await Promise.all([getDecisions(), getRecord(issueId), getProposals(issueId)]);
   const viewerId = ctx.accountId ?? null;
+  const result = record ? checkHandoff(handoffFrom(item, record, decisions), decisions) : null;
   const practice = checkHandoff(
     walkthroughHandoff(item, viewerId, bindingDecisions(decisions, item).map((d) => d.id)),
     decisions,
@@ -63,7 +66,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
   return {
     issueKey: ctx.extension.issue.key,
     record,
-    result: record ? checkHandoff(handoffFrom(item, record, decisions), decisions) : null,
+    result,
     viewerId,
     isReceiver: record !== null && viewerId !== null && viewerId === record.toId,
     decisionCount: decisions.length,
@@ -78,6 +81,9 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     stale: record ? Object.keys(staleAcks(record.acknowledged, record.acknowledgedWith, item, bindingDecisions(decisions, item))) : [],
     drift: record ? driftByDecision(record.acknowledged, record.acknowledgedWith, item) : {},
     untracked: record ? record.acknowledged.filter((id) => record.acknowledgedWith?.[id] === undefined) : [],
+    severity: result ? severityText(result.verdict) : null,
+    actions: record && result ? actionList(result, record, suggestFixes(item, decisions).changes) : [],
+    contingency: record?.contingency ? { text: record.contingency, advisory: contingencyAdvisory(record.contingency) } : null,
     proposalImpact: await impactFor(item.projectKey, proposals),
     supersedes: Object.fromEntries(
       proposals.map((p) => {
@@ -103,6 +109,7 @@ resolver.define("prepareHandoff", async ({ context, payload }) => {
     preparedAt: new Date().toISOString(),
     acknowledgedAt: {},
     origin: "manual",
+    protocol: 1,
   };
   await putRecord(issueId, record);
   return panelState(ctx);
@@ -119,6 +126,32 @@ resolver.define("acknowledgeDecision", async ({ context, payload }) => {
   const stale = decisionId in staleAcks(record.acknowledged, record.acknowledgedWith, item, bindingDecisions(decisions, item));
   const out = acknowledge(record, ctx.accountId ?? null, decisionId, binding, new Date().toISOString(), fingerprintOf(item), stale);
   if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
+  await putRecord(issueId, out.record);
+  return panelState(ctx);
+});
+
+// One read-back acknowledges every binding decision of a record prepared under the I-PASS design. The checks
+// run here, on the server; the panel only shows the same reasons.
+resolver.define("acknowledgeAll", async ({ context, payload }) => {
+  const ctx = context as Ctx;
+  const readBack = String((payload as { readBack?: string }).readBack ?? "");
+  const { item, issueId } = await readItem(ctx.extension.issue.key);
+  const [decisions, record] = await Promise.all([getDecisions(), getRecord(issueId)]);
+  if (!record) throw new Error("No handoff has been prepared for this work item.");
+  const out = acknowledgeAll(record, ctx.accountId ?? null, bindingDecisions(decisions, item), readBack, new Date().toISOString(), fingerprintOf(item));
+  if (!out.ok) throw new Error(out.reason === "read_back" ? out.problems.join(" ") : `Cannot acknowledge: ${out.reason}.`);
+  await putRecord(issueId, out.record);
+  return panelState(ctx);
+});
+
+// Only the sender writes it, and only as text typed in the panel: no action or agent reaches this.
+resolver.define("saveContingency", async ({ context, payload }) => {
+  const ctx = context as Ctx;
+  const { issueId } = await readItem(ctx.extension.issue.key);
+  const record = await getRecord(issueId);
+  if (!record) throw new Error("No handoff has been prepared for this work item.");
+  const out = withContingency(record, ctx.accountId ?? null, String((payload as { text?: string }).text ?? ""));
+  if (!out.ok) throw new Error(out.reason === "too_long" ? "Write at most 300 characters." : "Only the sender can write the contingency.");
   await putRecord(issueId, out.record);
   return panelState(ctx);
 });

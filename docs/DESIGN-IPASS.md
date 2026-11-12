@@ -1,6 +1,6 @@
 # Design: I-PASS handoff (idea 11). Design only, no code
 
-Status: for review. No rule semantics change until this is reviewed. Written 2026-11-12 against the code at HEAD of that day.
+Status: approved by the owner on 2026-11-12 with five decisions (section 10); built. Written 2026-11-12 against the code at HEAD of that day.
 
 I-PASS has five parts: illness severity, patient summary, action list, situation awareness and contingency, synthesis by receiver (AHRQ TeamSTEPPS). The mapping below keeps every part as plain code over the handoff record. Rovo may help word things; a person decides.
 
@@ -67,7 +67,7 @@ Stored records without them behave exactly as today: no read-back is demanded of
 
 ## 7. What the README may and may not claim
 
-May: Handoff Guard follows the structure of the I-PASS handoff protocol (severity, summary, action list, contingency, receiver synthesis) over Jira work items. May cite, with the source, that I-PASS in hospitals was linked to fewer medical errors and preventable adverse events (NEJM 2014, 23% and 30%; a 32-hospital follow-up, 47% fewer handoff-related adverse events). May say the read-back checks coverage, not understanding.
+May: Handoff Guard follows the structure of the I-PASS handoff protocol (severity, summary, action list, contingency, receiver synthesis) over Jira work items. May cite, with the source, that I-PASS in hospitals was linked to fewer medical errors and preventable adverse events (Starmer et al., N Engl J Med 2014: 23% and 30% fewer). A figure for a multi-hospital follow-up was in an earlier draft of this note from memory; it is not in the README until a source is checked. May say the read-back checks coverage, not understanding.
 
 May not: say or imply this app reduces errors, harm or bug reassignments; reuse the percentages as a result of this app; call the app clinically validated or an I-PASS implementation endorsed by the I-PASS Institute; put any I-PASS figure beside the agreement-with-Muse-labels figure. The percentages are from clinical studies in hospitals. The software-engineering evidence we have (about half of bugs are reassigned, bug-tracker studies) is about the problem, not about this app.
 
@@ -94,3 +94,12 @@ Result of the exercise: on these two items the severity chip would equal the ver
 3. Read-back rule: constraint value or title mentioned; is that strict enough, too strict (a paraphrase of "no legacy email" without the component name would fail)?
 4. Whether read-back is required for every binding decision or only the ones with constraints.
 5. The README sentence in section 7, word for word.
+
+## 10. Decisions and how they were built
+1. Severity is a computed label of the verdict only: `severityOf`, shown as "(I-PASS: Unstable)" beside the verdict.
+2. Contingency is option B: an optional text the sender writes in the panel (at most 300 characters, enforced where it is stored), shown to the receiver and in the brief; if it is not "if … then …" the panel says so as advice.
+3. Read-back addresses a decision when it contains the decision's title or one of its constraint values as a whole word, compared the way the rules compare (trim, lower case). The whole-word rule is an addition to this design: without it the label "ui" would be found inside "build".
+4. Differs from section 4: one read-back for the whole handoff, 20 to 600 characters (room for about seven decisions at roughly 80 characters each). Under `protocol: 1` the per-decision Acknowledge buttons are gone; `acknowledgeAll` refuses while any binding decision is unaddressed and names each one. Records without `protocol` keep per-decision acknowledgement.
+   With Handoff Drift: a stale acknowledgement is cleared only by giving the read-back again. The new read-back must address every binding decision (not only the stale or new ones), replaces the old text, and re-baselines every acknowledgement. A binding decision that appears later is unacknowledged until a new read-back addresses it too.
+5. README says only what section 7 allows.
+Records created by reassignment detection are also prepared under `protocol: 1`.

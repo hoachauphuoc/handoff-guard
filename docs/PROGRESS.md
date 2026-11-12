@@ -200,3 +200,10 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 
 ### 2026-11-12, Handoff Drift narrowed
 - Seen on MOBL-53: an unrelated label made the acknowledgement of a "label legal-reviewed required" decision stale. `touches(decision, change)` replaces `inputsOf`: a due-date constraint reads any due-date change; a label or component constraint reads only the value it names; a label scope only its own label. The panel's "Changed since you acknowledged" still lists every change. Tests for the unrelated-label case.
+
+### 2026-11-12, I-PASS built (owner approved the design with five decisions)
+- `src/handoff/ipass.ts` (pure): `severityOf` and `severityText`, `actionList` (one action per finding, blocking first, owner by rule), `contingencyAdvisory`, `unaddressed` and `readBackProblems` (whole-word match of a decision's title or constraint value; read-back 20 to 600 characters), the panel sentences. `src/handoff/contingency.ts`: `withContingency` (sender only, 300 characters). `acknowledgeAll` in `src/handoff/acknowledge.ts`: one read-back acknowledges every binding decision, refused with a reason per unaddressed decision; `acknowledge` refuses under `protocol: 1`.
+- `HandoffRecord` gained optional `protocol`, `contingency`, `readBack`. `prepareHandoff` and reassignment detection set `protocol: 1`; older records behave as before and the panel says no read-back was checked.
+- Panel: "(I-PASS: …)" beside the verdict, Action list, contingency (sender edits, receiver reads), one read-back box for the receiver. Brief: `ipass` sibling of `check` in `gather-handoff-context`; agent rule 19.
+- Drift and read-back: giving the read-back again clears a stale acknowledgement. README: I-PASS section (no figure near the measured ones), Limits section (agent receiver cannot acknowledge). `docs/PRIVACY.md` lists the two typed texts. No change under `src/rules/`, so `npm run measure` was not rerun and no README figure moved.
+- Not seen on the site yet.

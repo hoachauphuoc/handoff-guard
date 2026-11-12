@@ -1,5 +1,6 @@
 import type { Advisory } from "../rules/advisories";
 import type { Fingerprint } from "./drift";
+import type { Action } from "./ipass";
 import type { Proposal } from "../decisions/types";
 import type { Finding, HandoffResult } from "../rules/types";
 
@@ -15,6 +16,12 @@ export type HandoffRecord = {
   origin?: "manual" | "reassignment";
   /** What the work item looked like when each decision was acknowledged. Absent on older acknowledgements. */
   acknowledgedWith?: Record<string, Fingerprint>;
+  /** 1 on a record prepared under the I-PASS design: one read-back acknowledges every binding decision. Absent on older records. */
+  protocol?: 1;
+  /** Written by the sender: what could go wrong and what to do then. At most 300 characters. */
+  contingency?: string;
+  /** Written by the receiver when acknowledging under protocol 1; replaced each time. At most 600 characters. */
+  readBack?: string;
 };
 
 export type ValidatorResponse = { result: boolean; errorMessage?: string };
@@ -43,5 +50,10 @@ export type PanelState = {
   drift: Record<string, string[]>;
   /** Acknowledged decisions with no stored baseline, so changes since then cannot be told. */
   untracked: string[];
+  /** The I-PASS name for the verdict, and one action per finding with its owner. Both are read from the rule check. */
+  severity: string | null;
+  actions: Action[];
+  /** The sender's contingency, and the advice when it is not written as if-then. */
+  contingency: { text: string; advisory: string | null } | null;
   proposalImpact: Record<string, { count: number; capped: boolean }> | null;
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, User, UserPicker } from "@forge/react";
+import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, TextArea, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
 import type { GatherOutput } from "../actions/schema";
 import type { MarkedState } from "../decisions/marked";
@@ -9,6 +9,7 @@ import { count } from "../plural";
 import type { PanelState } from "../handoff/types";
 import { GUIDE_SOURCE, PRACTICE_NONE, PRACTICE_TITLE, guideView, type StepNeed, type StepState } from "../guide/steps";
 import { HINTS } from "../guide/hints";
+import { BEFORE_READ_BACK, CONTINGENCY_MAX, READ_BACK_MAX, READ_BACK_MIN, READ_BACK_NOTE } from "../handoff/ipass";
 import type { Verdict } from "../rules/types";
 
 const LOOK: Record<Verdict, { text: string; appearance: "success" | "moved" | "removed" }> = {
@@ -40,6 +41,8 @@ const App = () => {
   const [sources, setSources] = useState<SourceChecks | null>(null);
   const [sourcesError, setSourcesError] = useState<string | null>(null);
   // null: follow the default (open until a handoff exists); a click on the toggle overrides it.
+  const [readBack, setReadBack] = useState("");
+  const [contingency, setContingency] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState<boolean | null>(null);
 
   // Rovo only explains and proposes. Whatever happens here, the verdict shown above stays the rule check's.
@@ -115,6 +118,9 @@ const App = () => {
   const { record, result } = state;
   const guide = guideView(state);
   const open = guideOpen ?? record === null;
+  const protocol = record?.protocol === 1;
+  const isSender = record !== null && state.viewerId === record.fromId;
+  const waiting = record && result ? result.binding.filter((d) => !record.acknowledged.includes(d.id) || state.stale.includes(d.id)) : [];
   return (
     <Stack space="space.100">
       <Text>
@@ -161,14 +167,48 @@ const App = () => {
         <>
           <Text>
             Handoff <User accountId={record.fromId} /> to <User accountId={record.toId} />:{" "}
-            <Lozenge appearance={LOOK[result.verdict].appearance}>{LOOK[result.verdict].text}</Lozenge>
+            <Lozenge appearance={LOOK[result.verdict].appearance}>{LOOK[result.verdict].text}</Lozenge> ({state.severity})
           </Text>
+          {!protocol && <Text>{BEFORE_READ_BACK}</Text>}
           {record.origin === "reassignment" && (
             <Text>{`Detected from a change of assignee on ${record.preparedAt.slice(0, 10)}. Prepare the handoff again to name a different receiver.`}</Text>
           )}
           {result.findings.map((f, i) => (
             <Text key={i}>â€¢ {f.message}</Text>
           ))}
+          {state.actions.length > 0 && (
+            <SectionMessage appearance="information" title="Action list (one action per finding, worked out by the rule check)">
+              <Stack space="space.050">
+                {state.actions.map((a, i) => (
+                  <Text key={i}>
+                    • {a.owner === "sender" ? "Sender" : a.owner === "receiver" ? "Receiver" : "Decision owner"}
+                    {a.ownerId ? <> (<User accountId={a.ownerId} />)</> : ""}: {a.text}
+                  </Text>
+                ))}
+              </Stack>
+            </SectionMessage>
+          )}
+          {state.contingency !== null ? (
+            <>
+              <Text>{`Contingency from the sender: "${state.contingency.text}"`}</Text>
+              {state.contingency.advisory && <Text>{`${state.contingency.advisory} (advisory, not part of the verdict)`}</Text>}
+            </>
+          ) : (
+            <Text>The sender has not written a contingency.</Text>
+          )}
+          {isSender && (
+            <>
+              <Text>{`Contingency: if something goes wrong, then what (up to ${CONTINGENCY_MAX} characters).`}</Text>
+              <TextArea
+                name="contingency"
+                defaultValue={state.contingency?.text ?? ""}
+                onChange={(e) => setContingency(e.target.value)}
+              />
+              <Button isDisabled={busy || contingency === null} onClick={() => call("saveContingency", { text: contingency })}>
+                Save contingency
+              </Button>
+            </>
+          )}
           {state.advisories.length > 0 && (
             <SectionMessage appearance="information" title="Also worth a look (advisory, not part of the verdict)">
               <Stack space="space.050">
@@ -186,7 +226,7 @@ const App = () => {
               {(state.drift[d.id] ?? []).length > 0 && (
                 <Text>{`${state.isReceiver ? "Changed since you acknowledged" : "Changed since the receiver acknowledged"}: ${(state.drift[d.id] ?? []).join("; ")}.`}</Text>
               )}
-              {state.isReceiver && (!record.acknowledged.includes(d.id) || state.stale.includes(d.id)) && (
+              {!protocol && state.isReceiver && (!record.acknowledged.includes(d.id) || state.stale.includes(d.id)) && (
                 <Button isDisabled={busy} onClick={() => call("acknowledgeDecision", { decisionId: d.id })}>
                   {state.stale.includes(d.id) ? "Acknowledge again" : "Acknowledge"}
                 </Button>
@@ -198,6 +238,20 @@ const App = () => {
               )}
             </Stack>
           ))}
+          {protocol && record.readBack && <Text>{`Read-back from the receiver: "${record.readBack}"`}</Text>}
+          {protocol && state.isReceiver && waiting.length > 0 && (
+            <>
+              <Text>{`Write a read-back (${READ_BACK_MIN} to ${READ_BACK_MAX} characters) that mentions each decision above by its title or by what it sets: a date, a label or a component.`}</Text>
+              <TextArea
+                name="readBack"
+                onChange={(e) => setReadBack(e.target.value)}
+              />
+              <Button appearance="primary" isDisabled={busy} onClick={() => call("acknowledgeAll", { readBack })}>
+                {state.stale.length > 0 ? "Acknowledge again with a new read-back" : "Acknowledge all with this read-back"}
+              </Button>
+            </>
+          )}
+          {protocol && <Text>{READ_BACK_NOTE}</Text>}
         </>
       ) : (
         <Text>No handoff is prepared for this work item. Pick a receiver above, then click Prepare handoff.</Text>

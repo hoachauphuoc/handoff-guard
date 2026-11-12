@@ -20,5 +20,5 @@ export function detectReassignment(items: unknown, existing: HandoffRecord | nul
   const to = id(last.to);
   if (from === null || to === null || norm(from) === norm(to)) return null;
   if (existing !== null && norm(existing.toId) === norm(to)) return null;
-  return { fromId: from, toId: to, acknowledged: [], preparedAt: nowIso, acknowledgedAt: {}, origin: "reassignment" };
+  return { fromId: from, toId: to, acknowledged: [], preparedAt: nowIso, acknowledgedAt: {}, origin: "reassignment", protocol: 1 };
 }

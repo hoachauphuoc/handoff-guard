@@ -24,6 +24,22 @@ Every scope in `manifest.yml` and why it is there. A test fails if this table an
 
 The app has one `rovo:mcp` module ("Handoff Guard") that exposes the same five actions the Rovo agent uses: `check-handoff`, `list-binding-decisions`, `read-decision-source`, `propose-decisions`, `gather-handoff-context`. External access is off by default. A site admin turns it on per installation in Atlassian Administration (Apps, Sites, the site, Connected apps, this app, Tools). The endpoint is `https://mcp.atlassian.com/forge/<app UUID>`. Tools run with the calling user's permissions. Over MCP there is no work item context, so pass `issueKey` such as `OPS-1`. `propose-decisions` only saves proposals; a person confirms them in the panel.
 
+## I-PASS structure
+
+Handoff Guard follows the structure of the I-PASS handoff protocol (illness severity, patient summary, action list, situation awareness and contingency, synthesis by receiver) over Jira work items. The rule check stays the only thing that decides; each part is plain code over it.
+
+| I-PASS part | In Handoff Guard |
+|---|---|
+| Illness severity | The verdict with its I-PASS name beside it: Clear is Stable, Needs info is Watcher, Blocked is Unstable. It is a label for the verdict, not a second scale. |
+| Patient summary | The handoff brief: the work item, the decisions that bind it and the findings. |
+| Action list | One action per finding with its owner (sender, receiver or decision owner), read from the findings. No findings, no actions. |
+| Situation awareness and contingency | An optional "if … then …" written by the sender and shown to the receiver. If it is not in that form the panel says so; that is advice, not a finding. |
+| Synthesis by receiver | One read-back for the whole handoff. It must mention each binding decision by its title or by a date, label or component it sets. |
+
+The read-back checks that each decision is addressed, not that it was understood.
+
+In hospitals, I-PASS was linked to fewer medical errors and preventable adverse events (Starmer et al., N Engl J Med 2014;371:1803-1812: 23% and 30% fewer). Those are clinical results from a hospital study. They are not a result of this app, which does not measure errors, harm or reassignments.
+
 ## Honesty notes
 
 - The samples used to measure the rules are synthetic.
@@ -41,6 +57,12 @@ The app has one `rovo:mcp` module ("Handoff Guard") that exposes the same five a
 | No check (every handoff passes) | 12 of 48 (25.0%) |
 
 The one disagreement: a description that is only filler ("tbd see above"). Muse wants more information; the rules pass it, because filler is a choice the rules leave to people (see "Rule decisions" in `docs/PROGRESS.md`).
+
+## Limits
+
+- An agent can be the receiver of a handoff, by assigning it in the Assignee field, but it cannot acknowledge, so that handoff stays Needs info until a person changes the receiver.
+- The read-back checks that each decision is addressed, not that it was understood.
+- A handoff prepared before read-back existed keeps one acknowledgement per decision, and the panel says that no read-back was checked.
 
 ## Privacy and security
 

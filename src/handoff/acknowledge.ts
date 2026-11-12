@@ -1,14 +1,17 @@
+import type { Decision } from "../rules/types";
 import type { Fingerprint } from "./drift";
+import { readBackProblems } from "./ipass";
 import type { HandoffRecord } from "./types";
 
 export type AckResult =
   | { ok: true; record: HandoffRecord }
-  | { ok: false; reason: "not_receiver" | "not_binding" | "already_acknowledged" };
+  | { ok: false; reason: "not_receiver" | "not_binding" | "already_acknowledged" | "needs_read_back" };
 
 /**
  * Only the receiver acknowledges, and only a decision that binds this item; the caller passes the time. A
  * decision already acknowledged can be acknowledged again only when that acknowledgement went stale, and the
  * new one replaces the old time and baseline. `fingerprint` is the work item as the receiver sees it now.
+ * A record under the I-PASS protocol is acknowledged only through `acknowledgeAll`, with a read-back.
  */
 export function acknowledge(
   record: HandoffRecord,
@@ -20,6 +23,7 @@ export function acknowledge(
   stale: boolean,
 ): AckResult {
   if (accountId === null || accountId !== record.toId) return { ok: false, reason: "not_receiver" };
+  if (record.protocol === 1) return { ok: false, reason: "needs_read_back" };
   if (!bindingIds.includes(decisionId)) return { ok: false, reason: "not_binding" };
   if (record.acknowledged.includes(decisionId) && !stale) return { ok: false, reason: "already_acknowledged" };
   return {
@@ -29,6 +33,42 @@ export function acknowledge(
       acknowledged: record.acknowledged.includes(decisionId) ? record.acknowledged : [...record.acknowledged, decisionId],
       acknowledgedAt: { ...record.acknowledgedAt, [decisionId]: nowIso },
       acknowledgedWith: { ...record.acknowledgedWith, [decisionId]: fingerprint },
+    },
+  };
+}
+
+export type AckAllResult =
+  | { ok: true; record: HandoffRecord }
+  | { ok: false; reason: "not_receiver" | "no_protocol" | "nothing_to_acknowledge" }
+  | { ok: false; reason: "read_back"; problems: string[] };
+
+/**
+ * One read-back acknowledges every binding decision. It must address all of them, not only the ones that are
+ * new or stale: it replaces the earlier read-back, and each acknowledgement takes a new time and baseline, so
+ * a stale acknowledgement is cleared by giving the read-back again.
+ */
+export function acknowledgeAll(
+  record: HandoffRecord,
+  accountId: string | null,
+  binding: Decision[],
+  readBack: string,
+  nowIso: string,
+  fingerprint: Fingerprint,
+): AckAllResult {
+  if (accountId === null || accountId !== record.toId) return { ok: false, reason: "not_receiver" };
+  if (record.protocol !== 1) return { ok: false, reason: "no_protocol" };
+  if (binding.length === 0) return { ok: false, reason: "nothing_to_acknowledge" };
+  const problems = readBackProblems(readBack, binding);
+  if (problems.length > 0) return { ok: false, reason: "read_back", problems };
+  const ids = binding.map((d) => d.id);
+  return {
+    ok: true,
+    record: {
+      ...record,
+      acknowledged: [...new Set([...record.acknowledged, ...ids])],
+      acknowledgedAt: { ...record.acknowledgedAt, ...Object.fromEntries(ids.map((id) => [id, nowIso])) },
+      acknowledgedWith: { ...record.acknowledgedWith, ...Object.fromEntries(ids.map((id) => [id, fingerprint])) },
+      readBack: readBack.trim(),
     },
   };
 }
