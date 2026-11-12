@@ -1,6 +1,6 @@
 # Devpost submission draft
 
-Owner submits. Category: Apps for Software Teams. Bonus prizes: Best Agents (rovo:agent and four actions), Best app with MCP (rovo:mcp), Best apps with Teamwork Graph integration.
+Owner submits. Category: Apps for Software Teams. Bonus prizes: Best Agents (rovo:agent and five actions), Best app with MCP (rovo:mcp), Best apps with Teamwork Graph integration.
 
 ## Tagline
 
@@ -17,11 +17,11 @@ When a work item changes hands, the decisions that bind it (a deadline, a requir
 - **Rovo agent.** Explains the verdict, quoting the rule check's sentence exactly. It finds decisions written in the description and comments and proposes them with a word-for-word quote as evidence. A proposal binds nothing until a person confirms it in the panel. A repeat of a confirmed decision is rejected.
 - **Handoff brief.** Pulls what the receiver needs, including people connected to the item from Teamwork Graph (shared with, mentioned). Advisory; no rule reads it.
 - **Workflow validator.** A transition with the validator only goes through when the handoff is Clear.
-- **Rovo MCP server.** The same four actions are exposed through the `rovo:mcp` module for external agents.
+- **Rovo MCP server.** The same five actions are exposed through the `rovo:mcp` module for external agents.
 
 ## How we built it
 
-Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Forge imports, `rovo:agent` with four actions, `rovo:mcp`, `jira:workflowValidator`, and two saved Teamwork Graph Cypher queries called with `asUser()`. 131 unit tests. Only decisions and handoff records are stored; no chat is stored.
+Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Forge imports, `rovo:agent` with five actions, `rovo:mcp`, `jira:workflowValidator`, and two saved Teamwork Graph Cypher queries called with `asUser()`. 130+ unit tests. Only decisions and handoff records are stored; no chat is stored.
 
 ## Measurement
 
