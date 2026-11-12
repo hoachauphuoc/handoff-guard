@@ -115,4 +115,17 @@ Sizes are rough solo days. "Existing" = what we already have.
 
 Timing: the deadline (2026-12-22 12:00 PT) is about six weeks after today (2026-11-12). Any code change needs a new production deploy, and the install link serves only the latest production version (from `docs/PROGRESS.md`).
 
+## (d) Review against the code and the spike (2026-11-12, later the same day)
+
+Checked against `docs/SPIKE-AGENT-GATE.md`, `src/rules/types.ts` and the state after slice 5.
+
+- **Idea 1 is narrower than pitched.** Starting an agent from the Agents button changes no assignee, status or history, so nothing can block it; the video scene "Jira refuses" cannot be filmed. What can be built: the agent's own first step is the rule check (prompt rule), and the same check is offered to other agents as a `rovo:skill`. The gate on a workflow transition already exists (two validators) and covers agents that move the item. The MCP half waits for the owner to enable external access.
+- **Idea 3 needs one field.** A decision has `confirmedAt` and `status: "decided" | "superseded"`, but no time of supersession. Adding `supersededAt` belongs with plan slice 7 (superseding decisions), so the replay comes after it. Handoff records keep `preparedAt`.
+- **Idea 2 is cut.** It needs a second product on the judges' site and a path-glob constraint kind; too much new surface for the remaining weeks.
+- **Idea 4 is reduced to a check without a trigger.** Slice 5 already reads linked Confluence pages. Record the page version when a decision is confirmed from a page, and compare it when the ledger page or panel loads; no Confluence event and no new scope.
+- **Idea 5 folds into plan slice 6** (the Decisions project page) as a second section; no separate page.
+- **Ideas 6 and 7 are not built**: no JSM or deployment data on the dev site, and 7 is a variant of what exists.
+
+Build order: (A) agent prompt rule and `rovo:skill`; (B) Decisions project page with impact and in-flight handoffs; (C) superseding decisions with `supersededAt`; (D) replay on a date; (E) changed-source check.
+
 ## Tavily calls used: 29 of 30
