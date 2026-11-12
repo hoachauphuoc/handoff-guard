@@ -161,6 +161,17 @@ const App = () => {
       ) : (
         <Text>No handoff is prepared for this work item. Pick a receiver above, then click Prepare handoff.</Text>
       )}
+      {state.fixes.length > 0 && (
+        <SectionMessage appearance="warning" title="Suggested fixes">
+          <Stack space="space.050">
+            <Text>These edits would stop this work item contradicting its decisions:</Text>
+            {state.fixes.map((t, i) => (
+              <Text key={i}>• {t}</Text>
+            ))}
+            <Text>Handoff Guard does not edit the work item. Make the changes in Jira, then reload this panel.</Text>
+          </Stack>
+        </SectionMessage>
+      )}
       {state.proposals.length > 0 && (
         <SectionMessage appearance="information" title="Proposed by Rovo (not binding until you confirm)">
           <Stack space="space.100">

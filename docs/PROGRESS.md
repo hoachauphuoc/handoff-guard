@@ -2,7 +2,7 @@
 
 ## Next
 1. Bug: `propose-decisions` re-proposes a decision that is already stored (seen on MOBL-53). Drop a candidate whose scope and constraints match a stored decision, and make Confirm idempotent for it.
-2. Fix Advisor: the pure core `src/rules/feasible.ts` (`suggestFixes`, `changeText`) is committed with tests; nothing calls it yet. Next: show the suggested changes in the panel and to the agent. It suggests only; it never edits the work item.
+2. Fix Advisor: `src/rules/feasible.ts` feeds the panel's "Suggested fixes" section (6.4.0, seen on MOBL-53: set due date on or before 2026-12-31, add label "legal-reviewed"). Not yet given to the Rovo agent. It suggests only; it never edits the work item.
 3. Still unverified on the site: the workflow validator (not attached to any workflow), the receiver's Acknowledge and a `clear` verdict (needs a second account, e.g. Mitch Davis), the Teamwork Graph "mentioned" query (no @mention on MOBL-53), any `rovo:mcp` client call (site admin must enable external access).
 4. Submission: README figures from `npm run measure`, screenshots, video, Devpost entry. Production deploy, Marketplace listing and the Devpost submission are the owner's.
 5. Owner decision: keep or drop the two graph scopes; they now have a live caller (Teamwork Graph people in the handoff brief).

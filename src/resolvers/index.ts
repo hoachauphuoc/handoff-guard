@@ -7,6 +7,7 @@ import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import type { HandoffRecord, PanelState } from "../handoff/types";
 import { readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
+import { changeText, suggestFixes } from "../rules/feasible";
 import type { Finding } from "../rules/types";
 import { mergeDecisions, sampleDecisions } from "../samples/decisions";
 import { getDecisions, getProposals, getRecord, putDecisions, putProposals, putRecord } from "../store";
@@ -42,6 +43,8 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     decisionCount: decisions.length,
     proposals,
     practiceFindings: practice.findings.filter((f) => PRACTICE_RULES.includes(f.rule)),
+    // Computed from confirmed decisions only; proposals never reach it.
+    fixes: suggestFixes(item, decisions).changes.map(changeText),
   };
 }
 

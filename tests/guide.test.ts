@@ -24,6 +24,7 @@ const state = (over: Partial<PanelState> = {}): PanelState => ({
   decisionCount: 0,
   practiceFindings: [],
   proposals: [],
+  fixes: [],
   ...over,
 });
 const record = { fromId: "me", toId: "you", acknowledged: [] as string[], preparedAt: "t", acknowledgedAt: {} };

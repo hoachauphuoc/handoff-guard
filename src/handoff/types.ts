@@ -24,4 +24,6 @@ export type PanelState = {
   practiceFindings: Finding[];
   /** Unconfirmed decisions found by Rovo for this work item. They bind nothing. */
   proposals: Proposal[];
+  /** Plain-text edits that would stop the item contradicting its binding decisions. Advice only. */
+  fixes: string[];
 };
