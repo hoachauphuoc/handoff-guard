@@ -209,7 +209,7 @@ resolver.define("getProjectSourceChecks", async ({ context }): Promise<SourceChe
   return checkSources((await getDecisions()).filter(inProject));
 });
 
-export type ReplayState = { date: string; changes: ReplayChange[]; scanned: number; capped: boolean };
+export type ReplayState = { date: string; changes: ReplayChange[]; leftOut: string[]; assumed: string[]; scanned: number; capped: boolean };
 
 // Replays the project's stored handoffs against the decisions of an earlier date. The clock is read here, at
 // the edge, and passed to the pure functions; nothing is written.
@@ -225,7 +225,7 @@ resolver.define("replayOn", async ({ context, payload }): Promise<ReplayState> =
     const r = records[n];
     return r ? [{ item: i.item, fromId: r.fromId, toId: r.toId, acknowledged: r.acknowledged, acknowledgedAt: r.acknowledgedAt, preparedAt: r.preparedAt }] : [];
   });
-  return { date, changes: replayDiff(inputs, decisions, thenIso, now.toISOString()), scanned: open.items.length, capped: open.capped };
+  return { date, ...replayDiff(inputs, decisions, thenIso, now.toISOString()), scanned: open.items.length, capped: open.capped };
 });
 
 // A person retires a decision from the Decisions page. The rules already ignore anything not "decided".

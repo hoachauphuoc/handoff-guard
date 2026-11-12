@@ -47,12 +47,18 @@ describe("relate", () => {
     expect(r?.kind === "supersedes" && r.old.map((d) => d.id)).toEqual(["d1"]);
   });
 
-  it("offers superseding for a stricter limit or the opposite rule, and calls a looser limit already decided", () => {
+  it("offers superseding when a date limit moves for the same reach, earlier or later, or for the opposite rule", () => {
     const due = decision({ scope: project, constraints: [{ kind: "dueNotAfter", date: "2026-12-15" }] });
-    expect(relate([due], project, [{ kind: "dueNotAfter", date: "2026-12-31" }])?.kind).toBe("already_decided");
+    expect(relate([due], project, [{ kind: "dueNotAfter", date: "2026-12-31" }])?.kind).toBe("supersedes");
+    expect(relate([due], project, [{ kind: "dueNotAfter", date: "2026-12-15" }])?.kind).toBe("already_decided");
+    expect(relate([due], one, [{ kind: "dueNotAfter", date: "2026-12-31" }])?.kind).toBe("already_decided");
     expect(relate([due], project, [{ kind: "dueNotAfter", date: "2026-12-01" }])?.kind).toBe("supersedes");
     const req = decision({ scope: project, constraints: [{ kind: "labelRequired", label: "x" }] });
     expect(relate([req], project, [{ kind: "labelForbidden", label: "X" }])?.kind).toBe("supersedes");
+  });
+
+  it("never lets a decision with no constraints be superseded as redundant", () => {
+    expect(relate([decision({ constraints: [] })], project, [{ kind: "labelRequired", label: "legal" }])).toBeNull();
   });
 
   it("is null for unrelated rules and ignores superseded decisions", () => {

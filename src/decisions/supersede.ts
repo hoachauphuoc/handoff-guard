@@ -32,28 +32,36 @@ const OPPOSITE: Partial<Record<Constraint["kind"], Constraint["kind"]>> = {
   componentForbidden: "componentRequired",
 };
 
-// The opposite answer to the same question. A later or earlier date limit needs no case here: a stricter
-// candidate makes the older limit redundant, and a looser one is already met by it.
+// The opposite answer to the same question for the same work.
 const opposes = (a: Constraint, b: Constraint): boolean => OPPOSITE[a.kind] === b.kind && valueOf(a) === valueOf(b);
+
+// Another date limit for exactly the same reach, earlier or later: "the deadline moved". Under a wider
+// decision a looser date changes nothing, since the wider limit still binds, so this is only for equal reach.
+const movesLimit = (a: Constraint, b: Constraint): boolean => a.kind === "dueNotAfter" && b.kind === "dueNotAfter" && a.date.trim() !== b.date.trim();
 
 export type Relation = { kind: "already_decided"; by: Decision[] } | { kind: "supersedes"; old: Decision[] } | null;
 
 /**
  * How a candidate relates to the confirmed decisions. `already_decided`: every one of its constraints is met
- * by a decision of equal or wider reach, so there is nothing to add. `supersedes`: it would make older
- * decisions redundant (wider or equal reach, at least as strict) or it states the opposite rule for the
- * same work; the person decides whether to retire them. Superseded decisions are ignored.
+ * by a wider decision, or by a decision of the same reach that says exactly the same. `supersedes`: it would
+ * make older decisions redundant (wider or equal reach, at least as strict), states the opposite rule for the
+ * same work, or moves a date limit for exactly the same reach; the person decides whether to retire them.
+ * Superseded decisions are ignored.
  */
 export function relate(decisions: Decision[], scope: DecisionScope, constraints: Constraint[]): Relation {
   const live = decisions.filter((d) => d.status === "decided");
-  const covering = live.filter((d) => reachCovers(d.scope, scope));
-  if (constraints.every((c) => covering.some((d) => d.constraints.some((sc) => implies(sc, c))))) {
-    return { kind: "already_decided", by: covering.filter((d) => d.constraints.some((sc) => constraints.some((c) => implies(sc, c)))) };
+  const same = live.filter((d) => reachKey(d.scope) === reachKey(scope));
+  const wider = live.filter((d) => reachCovers(d.scope, scope) && reachKey(d.scope) !== reachKey(scope));
+  const met = (c: Constraint, d: Decision, sameReach: boolean): boolean =>
+    d.constraints.some((sc) => (sameReach ? sc.kind === c.kind && valueOf(sc) === valueOf(c) : implies(sc, c)));
+  if (constraints.every((c) => wider.some((d) => met(c, d, false)) || same.some((d) => met(c, d, true)))) {
+    return { kind: "already_decided", by: [...wider, ...same].filter((d) => constraints.some((c) => met(c, d, reachKey(d.scope) === reachKey(scope)))) };
   }
   const old = live.filter(
     (d) =>
-      (reachCovers(scope, d.scope) && d.constraints.every((sc) => constraints.some((c) => implies(c, sc)))) ||
-      (reachKey(scope) === reachKey(d.scope) && constraints.some((c) => d.constraints.some((sc) => opposes(c, sc)))),
+      d.constraints.length > 0 &&
+      ((reachCovers(scope, d.scope) && d.constraints.every((sc) => constraints.some((c) => implies(c, sc)))) ||
+        (reachKey(scope) === reachKey(d.scope) && constraints.some((c) => d.constraints.some((sc) => opposes(c, sc) || movesLimit(c, sc))))),
   );
   return old.length > 0 ? { kind: "supersedes", old } : null;
 }

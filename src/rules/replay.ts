@@ -4,16 +4,28 @@ import type { Decision, Handoff, Verdict, WorkItem } from "./types";
 const at = (iso: string): number => Date.parse(iso);
 
 /**
- * The decisions as they stood at `atIso`: confirmed by then and not yet superseded. One with no confirmation
- * time (the demo decisions) has no start to compare, so it counts as always in force; one superseded without a
- * time is treated as still current, since nothing says when it ended. Returned as `decided`: whether it binds
- * is the whole question at that instant. Pure: the instant is passed in.
+ * The decisions as they stood at `atIso`: confirmed by then and not yet superseded. A superseded decision
+ * whose end was never recorded is left out: nothing says when it stopped binding, so showing it as in force
+ * would be a guess; `undatedDecisions` names it. One with no confirmation time (the demo decisions) is kept as
+ * in force throughout, and is named there too. Returned as `decided`: whether it binds is the whole question
+ * at that instant. Pure: the instant is passed in.
  */
 export function decisionsAsOf(decisions: Decision[], atIso: string): Decision[] {
   const t = at(atIso);
   return decisions
-    .filter((d) => (d.confirmedAt === undefined || at(d.confirmedAt) <= t) && !(d.status === "superseded" && d.supersededAt !== undefined && at(d.supersededAt) <= t))
+    .filter((d) => {
+      if (d.status === "superseded") return d.supersededAt !== undefined && at(d.supersededAt) > t && (d.confirmedAt === undefined || at(d.confirmedAt) <= t);
+      return d.confirmedAt === undefined || at(d.confirmedAt) <= t;
+    })
     .map((d) => ({ ...d, status: "decided" as const }));
+}
+
+/** Titles the replay cannot date, to be said next to its result: left out (end unknown) and assumed (start unknown). */
+export function undatedDecisions(decisions: Decision[]): { leftOut: string[]; assumed: string[] } {
+  return {
+    leftOut: decisions.filter((d) => d.status === "superseded" && d.supersededAt === undefined).map((d) => d.title),
+    assumed: decisions.filter((d) => d.status === "decided" && d.confirmedAt === undefined).map((d) => d.title),
+  };
 }
 
 export type ReplayInput = { item: WorkItem; fromId: string; toId: string; acknowledged: string[]; acknowledgedAt: Record<string, string>; preparedAt: string };
@@ -36,14 +48,15 @@ export function replayAt(input: ReplayInput, decisions: Decision[], atIso: strin
   return { verdict, findings };
 }
 
+export type ReplayResult = { changes: ReplayChange[]; leftOut: string[]; assumed: string[] };
 export type ReplayChange = { key: string; summary: string; then: Verdict; now: Verdict; changedBy: string[] };
 
 /**
  * Handoffs whose verdict on `thenIso` differs from `nowIso`, each with the titles of the decisions that
- * explain it: those named by a finding at one instant but not the other. Handoffs not yet prepared on the
+ * explain it: those named by a finding at one instant but not the other. The result also lists the decisions it could not date. Handoffs not yet prepared on the
  * earlier date are left out, because there was no verdict to compare.
  */
-export function replayDiff(inputs: ReplayInput[], decisions: Decision[], thenIso: string, nowIso: string): ReplayChange[] {
+export function replayDiff(inputs: ReplayInput[], decisions: Decision[], thenIso: string, nowIso: string): ReplayResult {
   const out: ReplayChange[] = [];
   const past = decisionsAsOf(decisions, thenIso);
   for (const input of inputs) {
@@ -61,5 +74,5 @@ export function replayDiff(inputs: ReplayInput[], decisions: Decision[], thenIso
       changedBy: changed.map((id) => decisions.find((d) => d.id === id)?.title ?? id),
     });
   }
-  return out.sort((x, y) => x.key.localeCompare(y.key));
+  return { changes: out.sort((x, y) => x.key.localeCompare(y.key)), ...undatedDecisions(decisions) };
 }
