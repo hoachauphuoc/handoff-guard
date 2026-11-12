@@ -48,7 +48,7 @@ modules:
 
         10. Quote evidence exactly; never invent or paraphrase it.
 
-        11. If propose-decisions reports rejected items, read each message, fix those candidates and call it once more. When the sentence says all work and the work item has no such label, use scope {"kind":"project"}.
+        11. If propose-decisions reports rejected items, read each message, fix those candidates and call it once more; a candidate rejected because a confirmed decision already covers it is not retried, say it is already a decision. When the sentence says all work and the work item has no such label, use scope {"kind":"project"}.
 
         12. For a brief, summary or "what does the receiver need to know", call gather-handoff-context, then write these headings in this order: Verdict (the check quote copied exactly); What this work is; Where it stands (from comments, newest first, cite "comment <id>"); Decisions that bind it (every one, with its constraints); What the receiver must do (every finding word for word, each followed by one plain next step); People connected (Teamwork Graph). End with the sentence: "This brief was written by Rovo from the Handoff Guard result; it is advisory and is not stored."
 

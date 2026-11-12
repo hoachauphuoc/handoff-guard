@@ -260,11 +260,11 @@ export async function runProposeDecisions(payload: unknown, deps: Deps): Promise
   try {
     // The source is read again here, as the caller: quotes are checked against Jira, never against what
     // the model says it read.
-    const src = await deps.readSource(key);
+    const [src, stored] = await Promise.all([deps.readSource(key), deps.getDecisions()]);
     const { kept, rejected: raw } = validateCandidates(
       fillScopes(candidates, { issueKey: key, projectKey: src.projectKey }),
       src.parts,
-      { issueKey: key, projectKey: src.projectKey, labels: src.labels },
+      { issueKey: key, projectKey: src.projectKey, labels: src.labels, stored },
       deps.now(),
     );
     const rejected = raw.map((r) => ({ ...r, message: REASON_TEXT[r.reason] }));

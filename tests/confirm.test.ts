@@ -70,6 +70,14 @@ describe("confirm and dismiss", () => {
     expect(first.ok && confirmProposal(first.proposals, first.decisions, proposal.id, "me", NOW)).toEqual({ ok: false, reason: "not_found" });
   });
 
+  it("a reworded twin of a confirmed decision is removed without storing a second one", () => {
+    const first = confirmProposal([proposal], [other], proposal.id, "me", NOW);
+    if (!first.ok) throw new Error("first confirm failed");
+    const twin: Proposal = { ...proposal, id: "p-twin", title: "Legal review for launch work", scope: { kind: "label", label: "Launch " } };
+    const out = confirmProposal([twin], first.decisions, twin.id, "me", NOW);
+    expect(out).toEqual({ ok: true, proposals: [], decisions: first.decisions });
+  });
+
   it("reports an unknown proposal", () => {
     expect(confirmProposal([proposal], [], "p-nope", "me", NOW)).toEqual({ ok: false, reason: "not_found" });
   });

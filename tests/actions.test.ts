@@ -172,17 +172,18 @@ const good = {
 const bad = { ...good, title: "Invented", evidence: { quote: "everything must be approved by the board" } };
 
 // A store that records every write, and throws on the stores propose must never touch.
-function proposeDeps() {
+// Decisions are read (to skip repeats) but Deps has no way to write them.
+function proposeDeps(decisions: Decision[] = []) {
   const writes: { issueId: string; proposals: Proposal[] }[] = [];
   let stored: Proposal[] = [];
   const d = deps({
+    decisions,
     readSource: async () => SOURCE,
     getProposals: async () => stored,
     putProposals: async (issueId, proposals) => {
       stored = proposals;
       writes.push({ issueId, proposals });
     },
-    getDecisions: failing(new Error("must not touch decisions")),
     getRecord: failing(new Error("must not touch records")),
   });
   return { d, writes, stored: () => stored };
@@ -246,10 +247,28 @@ describe("propose-decisions", () => {
   });
 
   it("never writes decisions or handoff records", async () => {
-    // proposeDeps makes getDecisions/getRecord throw; the Deps type has no write for them at all.
+    // proposeDeps makes getRecord throw; the Deps type has no write for decisions or records at all.
     const { d } = proposeDeps();
     const out = await runProposeDecisions({ issueKey: "OPS-1", candidates: JSON.stringify([good]) }, d);
     expect(out.ok).toBe(true);
+  });
+
+  it("rejects a candidate that repeats a confirmed decision, whatever its title", async () => {
+    const confirmed: Decision = {
+      id: "d-x",
+      title: "Legal review for launches",
+      status: "decided",
+      source: { kind: "jira", ref: "OPS-1" },
+      scope: { kind: "label", label: "Launch" },
+      constraints: [{ kind: "labelRequired", label: "Legal-Reviewed" }],
+    };
+    const { d, writes } = proposeDeps([confirmed]);
+    const out = await runProposeDecisions({ issueKey: "OPS-1", candidates: JSON.stringify([good]) }, d);
+    expect(out).toMatchObject({ ok: true, proposed: [], rejected: [{ index: 0, reason: "already_decided" }] });
+    expect(writes).toEqual([]);
+    // A superseded decision no longer binds, so proposing the rule again is allowed.
+    const old = proposeDeps([{ ...confirmed, status: "superseded" }]);
+    expect(await runProposeDecisions({ issueKey: "OPS-1", candidates: JSON.stringify([good]) }, old.d)).toMatchObject({ proposed: [{ title: good.title }] });
   });
 });
 

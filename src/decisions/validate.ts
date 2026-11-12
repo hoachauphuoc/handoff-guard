@@ -1,5 +1,6 @@
 import { isIsoDate } from "../rules/checkHandoff";
-import type { Constraint, DecisionScope } from "../rules/types";
+import type { Constraint, Decision, DecisionScope } from "../rules/types";
+import { sameDecision } from "./confirm";
 import { fnv1a } from "./hash";
 import type { Proposal, SourcePart } from "./types";
 
@@ -16,6 +17,7 @@ export type RejectReason =
   | "bad_date"
   | "no_evidence"
   | "evidence_not_in_source"
+  | "already_decided"
   | "over_cap";
 
 export type Rejection = { index: number; reason: RejectReason };
@@ -30,9 +32,12 @@ export const REASON_TEXT: Record<RejectReason, string> = {
   bad_date: "A dueNotAfter date must be a real calendar date written YYYY-MM-DD.",
   no_evidence: "evidence.quote is missing or not between 12 and 300 characters.",
   evidence_not_in_source: "evidence.quote was not found word for word in the work item text; copy it exactly from read-decision-source.",
+  already_decided:
+    "A confirmed decision already has this scope and these constraints, so there is nothing to propose. Do not retry this candidate.",
   over_cap: "Only 5 proposals can be saved at once.",
 };
-export type Context = { issueKey: string; projectKey: string; labels: string[] };
+/** `stored`: confirmed decisions; a candidate that repeats one of them is rejected. */
+export type Context = { issueKey: string; projectKey: string; labels: string[]; stored?: Decision[] };
 
 // Chat and editors rewrite quotes and dashes and wrap lines; none of that changes what was written.
 // Case and every other character still have to match, so a paraphrase cannot pass.
@@ -104,6 +109,7 @@ function check(raw: unknown, parts: SourcePart[], ctx: Context, nowIso: string):
   if (wanted.length < MIN_QUOTE || wanted.length > MAX_QUOTE) return "no_evidence";
   const part = parts.find((p) => normalise(p.text).includes(wanted));
   if (!part) return "evidence_not_in_source";
+  if (sameDecision(ctx.stored ?? [], scope, constraints)) return "already_decided";
   const id = "p-" + fnv1a([part.from, title, JSON.stringify(scope), JSON.stringify(constraints)].join("|"));
   return { id, title, scope, constraints, evidence: { quote, from: part.from }, proposedAt: nowIso };
 }
