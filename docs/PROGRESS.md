@@ -1,8 +1,9 @@
 # Progress
 
 ## Next
-1. Owner: register on Devpost.
-2. After any scope change: `forge install --upgrade -e development --site hoachauphuoc.atlassian.net --product jira`.
+1. Owner: register on Devpost. Ask the Developer Community (tag `codegeist-2026`) about billing: "Forge App Hosting - Handoff Guard" asks for a payment method before 2026-12-01, which is before the submission date.
+2. Dev site is now the Codegeist demo site `one-atlas-hxpc.atlassian.net` (expires 2027-02-10). After any scope change: `forge install --upgrade -e development --demo-site --product jira`.
+3. The demo site showed no work items right after provisioning. Check again for seeded data; if still empty, create a space and a work item, then verify the panel there.
 3. Risk spikes: Rovo agent on the dev site, Teamwork Graph query, `rovo:mcp`, workflow validator.
 4. Owner (optional): spot-check a few Muse labels in `data/labels.json`; to override one, change `verdict` and delete its `by` field.
 5. Panel semantics: the preview hands the item "from the viewer to the current assignee", so a self-assigned item reads "same person". Next product slice: pick the receiver in the panel, and store decisions so the panel has something to bind.
@@ -28,4 +29,5 @@
 - Dev site set up with the owner's approval: team-managed Kanban space "Ops Demo" (key `OPS`) and work item `OPS-1` "Launch the spring campaign". Panel verified on `OPS-1` (unassigned, no description, no due date): verdict Blocked with "no receiver", "description is empty", "no due date", and the source line. End to end works: Jira -> resolver -> `checkHandoff()` -> UI.
 - `OPS-1` then got an assignee (the owner) and a description: panel changed to Blocked with "same person" and "no due date". After the due date was set to 2026-12-10 the panel shows only "same person" (Blocked). A Clear verdict has not been seen on the site: it needs a receiver other than the viewer, and the site has one user.
 - `scripts/measure.ts` (`npm run measure`, runs on Node 24 directly, no new dependency) and `data/labels.json` with 48 unlabeled entries. Labels are never prefilled from rule output.
+- `hoachauphuoc.atlassian.net` turned out to be an ordinary Standard trial, not the Codegeist site. Owner ran `forge site provision`; the development build is installed in Jira on `one-atlas-hxpc.atlassian.net` (panel not yet checked there: no work items). On the old site, Service Collection is on Free and Confluence is scheduled to go Free on 2026-12-12; Jira's downgrade is the owner's to confirm.
 - Owner chose Muse as the labeler. `scripts/label_samples.py` labeled all 48 ($0.015) from a plain-words policy, without seeing rule output. `npm run measure`: rules agree with Muse on 47 of 48 (0.979). The one difference is `sonnet-adversarial.json#1`, the "tbd - see above" description: Muse says needs_info, rules say clear, which is the behaviour the owner chose to keep. Caveats: 38 of the 48 samples were written by the same model that labeled them, and this is agreement with a model, not accuracy.
