@@ -111,3 +111,12 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Gate 0 closed: `accountId` is `payload.context.accountId`; the action payload also has `issueKey`, `candidates`, `orgId`, `contextToken`, and `context.jira` has `issueKey`, `issueId`, `projectKey`, `projectId`, `url`. `logShape()` removed.
 - Hint: the Mobile Dev space has no Due date field, so the `no_due_date` and `invalid_due_date` hints no longer name a Jira menu path.
 - Open decision (owner): the two graph scopes `read:graph:issue:jira` and `read:graph:user:atlassian` still have no live caller (`twgPeople` is unused). Keep them for a people step, or drop them before submission.
+
+### 2026-11-12, on-site session (Opus, browser): Dismiss, Teamwork Graph live
+- Dismiss verified on MOBL-53: the proposal disappeared, stored decisions stayed at 5.
+- Bug: the agent re-proposed "Launch work needs legal review", a decision already confirmed from the same sentence. `propose-decisions` should drop a candidate that matches a stored decision (same scope and constraints), or a second Confirm can store a duplicate. Not yet tried: confirming it twice.
+- Outgoing mail enabled on `one-atlas-hxpc` (it was disabled on 2026-11-08; Share needs it). MOBL-53 shared with Mitch Davis.
+- Saved queries registered (POST `/gateway/api/twg/cypher-queries` from the owner's signed-in browser session; `paramsSchema` is an array `[{name:"issueAri", type:"ARI", required:true}]`, `appId` is the full ARI): shared `204ecb5f-25bc-4b8f-9895-35f89a9c08f1`, mentioned `f4777eb8-ef10-48cd-bdd7-8160fa5dba16` (both 201, active; the mentioned relation name is therefore valid). Set as `TWG_SHARED_QUERY_KEY` and `TWG_MENTIONED_QUERY_KEY` in development. A browser call to `customQuery` returns `MISSING_TARGET_AUDIENCE`: only the app can run them.
+- Deployed 6.3.0 to development from a clean checkout of `70a47e4` (the uncommitted `checkHandoff.ts` / `feasible.ts` work was not included). Observed live: panel "Gather handoff context" on MOBL-53 shows "People connected (Teamwork Graph) - Shared with: Mitch Davis". The mentioned query is not observed (no @mention on MOBL-53).
+- Site ids: cloudId `10047494-96a6-4058-af3b-cdaae10ba319`, MOBL-53 issueId `66331`.
+- The next CLI deploy replaces 6.3.0; the two variables persist.
