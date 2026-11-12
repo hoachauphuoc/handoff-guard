@@ -20,10 +20,11 @@ Handoff Guard: a Forge app for Atlassian Codegeist 2026. When a Jira work item i
 | Claude Opus | Rule and measure design, risk spikes, review before commit, final pass on README and video script | Bulk generation |
 | Claude Sonnet | Day-to-day implementation: Forge UI, resolvers, tests, `scripts/`. Also the second voice: adversarial samples and critique of the rules, README and video script | Changing rule semantics without an Opus-level review; labels |
 | Claude Haiku | Mechanical work: search, lint fixes, running `check.ps1`, progress notes | Design, labels |
-| Muse (`muse-spark-1.3-contributor` only) | Bulk sample generation, first critic of README and video script | Labels |
+| Muse (`muse-spark-1.3-contributor` only) | Bulk sample generation, sample labels, first critic of README and video script | Deciding the product's verdict |
 | Tavily | Fresh Forge/Rovo docs on demand | Anything else |
 
-- Ground-truth labels come only from the rules or the owner. No model grades the product. Model-generated data is marked synthetic in the README.
+- Labels: Muse labels the samples (owner's decision, 2026-11-12; `scripts/label_samples.py`, each entry marked `by`). An owner label always overrides and is never overwritten. Claude does not write labels.
+- README must say the samples are synthetic and the labels are model-written, and must call the figure "agreement with Muse labels", not accuracy.
 - Endpoints and model IDs: `scripts/models.json`. Generator: `scripts/gen_samples.py`.
 - Keys live outside the repo in `C:\Users\phuochoa\.bjt\` (`Muse.txt`, `tavily_api_key.txt`; Baseten and Modal are not used), read by `scripts/` only. Claude never opens, prints or copies these files. Never put key values in CLAUDE.md or any tracked file.
 

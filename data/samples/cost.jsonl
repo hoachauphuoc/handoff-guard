@@ -1,3 +1,4 @@
 {"at": "20261112T013558Z", "provider": "muse", "model": "muse-spark-1.3-contributor", "samples": 2, "rejected": 0, "tokensIn": 462, "tokensOut": 2974, "usd": 0.000641}
 {"at": "20261112T013950Z", "provider": "muse", "model": "muse-spark-1.3-contributor", "samples": 30, "rejected": 0, "tokensIn": 2772, "tokensOut": 34774, "usd": 0.007232}
 {"at": "20261112T015137Z", "provider": "muse", "model": "muse-spark-1.3-contributor", "samples": 6, "rejected": 0, "tokensIn": 924, "tokensOut": 9325, "usd": 0.001957, "seconds": 78.0}
+{"at": "20261112T030821Z", "task": "label", "model": "muse-spark-1.3-contributor", "labeled": 48, "failed": 0, "tokensIn": 20319, "tokensOut": 64144, "usd": 0.014861}

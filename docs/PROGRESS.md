@@ -4,7 +4,7 @@
 1. Owner: register on Devpost.
 2. After any scope change: `forge install --upgrade -e development --site hoachauphuoc.atlassian.net --product jira`.
 3. Risk spikes: Rovo agent on the dev site, Teamwork Graph query, `rovo:mcp`, workflow validator.
-4. Owner fills `"verdict"` (`clear`, `needs_info` or `blocked`) for the 48 entries in `data/labels.json`, then `npm run measure`. Each disagreement is either a rule bug or a label to reconsider.
+4. Owner (optional): spot-check a few Muse labels in `data/labels.json`; to override one, change `verdict` and delete its `by` field.
 5. Panel semantics: the preview hands the item "from the viewer to the current assignee", so a self-assigned item reads "same person". Next product slice: pick the receiver in the panel, and store decisions so the panel has something to bind.
 
 ## Rule decisions (owner, 2026-11-12, after the Sonnet critique)
@@ -28,3 +28,4 @@
 - Dev site set up with the owner's approval: team-managed Kanban space "Ops Demo" (key `OPS`) and work item `OPS-1` "Launch the spring campaign". Panel verified on `OPS-1` (unassigned, no description, no due date): verdict Blocked with "no receiver", "description is empty", "no due date", and the source line. End to end works: Jira -> resolver -> `checkHandoff()` -> UI.
 - `OPS-1` then got an assignee (the owner) and a description: panel changed to Blocked with "same person" and "no due date". After the due date was set to 2026-12-10 the panel shows only "same person" (Blocked). A Clear verdict has not been seen on the site: it needs a receiver other than the viewer, and the site has one user.
 - `scripts/measure.ts` (`npm run measure`, runs on Node 24 directly, no new dependency) and `data/labels.json` with 48 unlabeled entries. Labels are never prefilled from rule output.
+- Owner chose Muse as the labeler. `scripts/label_samples.py` labeled all 48 ($0.015) from a plain-words policy, without seeing rule output. `npm run measure`: rules agree with Muse on 47 of 48 (0.979). The one difference is `sonnet-adversarial.json#1`, the "tbd - see above" description: Muse says needs_info, rules say clear, which is the behaviour the owner chose to keep. Caveats: 38 of the 48 samples were written by the same model that labeled them, and this is agreement with a model, not accuracy.

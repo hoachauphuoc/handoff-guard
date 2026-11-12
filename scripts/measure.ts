@@ -1,4 +1,4 @@
-// Compares checkHandoff() with the owner's labels. The only source of README figures.
+// Compares checkHandoff() with the labels in data/labels.json. The only source of README figures.
 // Run with Node 24+, which executes TypeScript directly:
 //   node scripts/measure.ts --init   add unlabeled entries to data/labels.json (keeps existing labels)
 //   node scripts/measure.ts          report agreement on the labeled entries
@@ -8,7 +8,8 @@ import { checkHandoff } from "../src/rules/checkHandoff.ts";
 import type { Decision, Handoff, Verdict } from "../src/rules/types.ts";
 
 type Sample = { note: string; handoff: Handoff; decisions: Decision[] };
-type Label = { id: string; note: string; case: string; verdict: Verdict | null };
+// `by` names the model that wrote the label; absent means the owner wrote it.
+type Label = { id: string; note: string; case: string; verdict: Verdict | null; by?: string };
 
 const ROOT = join(import.meta.dirname, "..");
 const SAMPLES = join(ROOT, "data", "samples");
@@ -63,14 +64,24 @@ if (process.argv.includes("--init")) {
   const disagreements = labeled
     .map((l) => {
       const s = samples.get(l.id)!;
-      return { id: l.id, note: l.note, owner: l.verdict, rules: checkHandoff(s.handoff, s.decisions).verdict };
+      return {
+        id: l.id,
+        note: l.note,
+        label: l.verdict,
+        labeledBy: l.by ?? "owner",
+        rules: checkHandoff(s.handoff, s.decisions).verdict,
+      };
     })
-    .filter((r) => r.owner !== r.rules);
+    .filter((r) => r.label !== r.rules);
+  const labeledBy: Record<string, number> = {};
+  for (const l of labeled) labeledBy[l.by ?? "owner"] = (labeledBy[l.by ?? "owner"] ?? 0) + 1;
   console.log(
     JSON.stringify(
       {
         samples: samples.size,
         labeled: labeled.length,
+        // Agreement with model labels is consistency with that model, not accuracy against ground truth.
+        labeledBy,
         agree: labeled.length - disagreements.length,
         agreement: labeled.length === 0 ? null : Number(((labeled.length - disagreements.length) / labeled.length).toFixed(3)),
         disagreements,
