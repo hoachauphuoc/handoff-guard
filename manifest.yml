@@ -1,0 +1,22 @@
+modules:
+  jira:issuePanel:
+    - key: handoff-guard-panel
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: Handoff Guard
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: src/frontend/index.tsx
+app:
+  id: ari:cloud:ecosystem::app/to-be-registered
+  runtime:
+    name: nodejs22.x
+permissions:
+  scopes:
+    - read:jira-work
