@@ -10,6 +10,8 @@ export type HandoffRecord = {
   preparedAt: string;
   /** Decision id -> ISO time the receiver acknowledged it. */
   acknowledgedAt: Record<string, string>;
+  /** How the record came about. Absent on records saved before reassignment detection: those were manual. */
+  origin?: "manual" | "reassignment";
 };
 
 export type ValidatorResponse = { result: boolean; errorMessage?: string };
@@ -27,6 +29,6 @@ export type PanelState = {
   proposals: Proposal[];
   /** Plain-text edits that would stop the item contradicting its binding decisions. Advice only. */
   fixes: string[];
-  /** Facts beside the verdict, never inside it. Empty without a prepared handoff. */
+  /** Facts beside the verdict, never inside it. */
   advisories: Advisory[];
 };

@@ -22,6 +22,11 @@ modules:
       projectTypes:
         - company-managed
         - team-managed
+  trigger:
+    - key: handoff-guard-reassigned
+      function: reassigned
+      events:
+        - avi:jira:updated:issue
   rovo:agent:
     - key: handoff-guard-agent
       name: Handoff Guard
@@ -152,6 +157,8 @@ modules:
       handler: index.handler
     - key: validate
       handler: index.validate
+    - key: reassigned
+      handler: index.issueUpdated
     - key: validate-decisions
       handler: index.validateDecisions
     - key: check-handoff-fn

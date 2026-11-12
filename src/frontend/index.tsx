@@ -141,6 +141,9 @@ const App = () => {
             Handoff <User accountId={record.fromId} /> to <User accountId={record.toId} />:{" "}
             <Lozenge appearance={LOOK[result.verdict].appearance}>{LOOK[result.verdict].text}</Lozenge>
           </Text>
+          {record.origin === "reassignment" && (
+            <Text>{`Detected from a change of assignee on ${record.preparedAt.slice(0, 10)}. Prepare the handoff again to name a different receiver.`}</Text>
+          )}
           {result.findings.map((f, i) => (
             <Text key={i}>• {f.message}</Text>
           ))}

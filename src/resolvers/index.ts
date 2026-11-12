@@ -7,7 +7,7 @@ import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import type { HandoffRecord, PanelState } from "../handoff/types";
 import { readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
-import { watchConflicts } from "../rules/advisories";
+import { watchAssignee, watchConflicts } from "../rules/advisories";
 import { changeText, suggestFixes } from "../rules/feasible";
 import type { Finding } from "../rules/types";
 import { mergeDecisions, sampleDecisions } from "../samples/decisions";
@@ -45,7 +45,10 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     proposals,
     practiceFindings: practice.findings.filter((f) => PRACTICE_RULES.includes(f.rule)),
     // Computed from confirmed decisions only; proposals never reach it.
-    advisories: record ? watchConflicts(item, bindingDecisions(decisions, item)) : [],
+    advisories: [
+      ...(record ? watchConflicts(item, bindingDecisions(decisions, item)) : []),
+      ...watchAssignee(item, record, bindingDecisions(decisions, item)),
+    ],
     fixes: suggestFixes(item, decisions).changes.map(changeText),
   };
 }
@@ -64,6 +67,7 @@ resolver.define("prepareHandoff", async ({ context, payload }) => {
     acknowledged: [],
     preparedAt: new Date().toISOString(),
     acknowledgedAt: {},
+    origin: "manual",
   };
   await putRecord(issueId, record);
   return panelState(ctx);

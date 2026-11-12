@@ -139,7 +139,7 @@ describe("watching never touches the verdict", () => {
 });
 
 describe("advisories are a sibling field", () => {
-  const near = item({ description: "launch 2027-01-01" });
+  const near = item({ description: "launch 2027-01-01", assigneeId: "t" });
   const dec = [decision()];
   const record = { fromId: "f", toId: "t", acknowledged: ["d1"], preparedAt: "t", acknowledgedAt: {} };
   const deps = (): Deps => ({
@@ -173,9 +173,9 @@ describe("advisories are a sibling field", () => {
     expect(out.quote).not.toContain("description mentions");
   });
 
-  it("gather has none without a handoff basis", async () => {
+  it("gather has only the assignee fact without a handoff basis", async () => {
     const out = await runGatherHandoffContext({ issueKey: "OPS-1" }, null, { ...deps(), getRecord: async () => null });
-    expect(out.ok && out.advisories).toEqual([]);
+    expect(out.ok && out.advisories.map((a) => a.kind)).toEqual(["assignee_without_handoff"]);
   });
 });
 

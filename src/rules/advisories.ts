@@ -3,7 +3,7 @@ import type { Decision, WorkItem } from "./types";
 import { count } from "../plural";
 
 export type Advisory = {
-  kind: "due_before_limit" | "description_date_after_due" | "different_limits" | "decisions_disagree";
+  kind: "due_before_limit" | "description_date_after_due" | "different_limits" | "decisions_disagree" | "assignee_differs_from_handoff" | "assignee_without_handoff";
   message: string;
   decisionIds: string[];
 };
@@ -76,4 +76,26 @@ export function watchConflicts(item: WorkItem, binding: Decision[]): Advisory[] 
     }
   }
   return out;
+}
+
+/**
+ * The fallback for a reassignment the trigger did not catch, and for work handed over without anyone
+ * preparing a handoff. States what the data shows; names no one, since account ids mean nothing in text.
+ */
+export function watchAssignee(item: WorkItem, record: { toId: string } | null, binding: Decision[]): Advisory[] {
+  if (item.assigneeId === null) return [];
+  if (record !== null) {
+    return norm(record.toId) === norm(item.assigneeId)
+      ? []
+      : [{ kind: "assignee_differs_from_handoff", message: "The assignee is not the receiver of the prepared handoff.", decisionIds: [] }];
+  }
+  return binding.length === 0
+    ? []
+    : [
+        {
+          kind: "assignee_without_handoff",
+          message: `This work item has an assignee and ${count(binding.length, "decision")} in force, but no handoff is prepared.`,
+          decisionIds: binding.map((d) => d.id),
+        },
+      ];
 }
