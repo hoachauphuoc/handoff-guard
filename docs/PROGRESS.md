@@ -4,14 +4,14 @@
 1. Owner: register on Devpost. Ask the Developer Community (tag `codegeist-2026`) about billing: "Forge App Hosting - Handoff Guard" asks for a payment method before 2026-12-01, which is before the submission date.
 2. Dev site is now the Codegeist demo site `one-atlas-hxpc.atlassian.net` (expires 2027-02-10). After any scope change: `forge install --upgrade -e development --demo-site --product jira`.
 3. The demo site showed no work items right after provisioning. Check again for seeded data; if still empty, create a space and a work item, then verify the panel there.
-3. Risk spikes: Rovo agent on the dev site, Teamwork Graph query, `rovo:mcp`, workflow validator.
+3. Risk spikes: Rovo agent on the dev site, Teamwork Graph query, `rovo:mcp`.
 4. Owner (optional): spot-check a few Muse labels in `data/labels.json`; to override one, change `verdict` and delete its `by` field.
 5. Panel semantics: the preview hands the item "from the viewer to the current assignee", so a self-assigned item reads "same person". Next product slice: pick the receiver in the panel, and store decisions so the panel has something to bind.
 
 ## Rule decisions (owner, 2026-11-12, after the Sonnet critique)
 - Fixed: a malformed due date is reported (`invalid_due_date`) instead of compared; labels, components and person ids match ignoring case and outer spaces; a missing sender is reported (`no_sender`, info_needed).
 - Kept as is: filler descriptions such as "tbd" pass; a binding decision with no constraints still needs acknowledgement; a superseded decision is not shown.
-- Not covered yet: a malformed date inside a decision's `dueNotAfter` constraint; project keys and work-item keys still match exactly.
+- Fixed later (2026-11-12, S1): a malformed `dueNotAfter` date in a decision is reported (`invalid_constraint`); project and work-item keys match ignoring case and spaces.
 
 ## Log
 ### 2026-11-12, Day 1
@@ -31,3 +31,12 @@
 - `scripts/measure.ts` (`npm run measure`, runs on Node 24 directly, no new dependency) and `data/labels.json` with 48 unlabeled entries. Labels are never prefilled from rule output.
 - `hoachauphuoc.atlassian.net` turned out to be an ordinary Standard trial, not the Codegeist site. Owner ran `forge site provision`; the development build is installed in Jira on `one-atlas-hxpc.atlassian.net` (panel not yet checked there: no work items). On the old site, Service Collection is on Free and Confluence is scheduled to go Free on 2026-12-12; Jira's downgrade is the owner's to confirm.
 - Owner chose Muse as the labeler. `scripts/label_samples.py` labeled all 48 ($0.015) from a plain-words policy, without seeing rule output. `npm run measure`: rules agree with Muse on 47 of 48 (0.979). The one difference is `sonnet-adversarial.json#1`, the "tbd - see above" description: Muse says needs_info, rules say clear, which is the behaviour the owner chose to keep. Caveats: 38 of the 48 samples were written by the same model that labeled them, and this is agreement with a model, not accuracy.
+
+### 2026-11-12, slices S1-S5 (decisions, handoffs, validator)
+- S1 rules: `invalid_constraint` finding; project and work-item keys matched with `norm()`. Agreement with Muse labels unchanged at 47/48 (0.979); no sample has such a date.
+- S2 measure baselines: a gate that passes everything agrees on 12/48 (0.25) and misses 36 labeled blocked/needs_info; rules without decisions agree on 34/48 (0.708).
+- S3 `src/handoff/build.ts` shared by panel and validator; panel now reads the work item with `asUser()`.
+- S4 `@forge/kvs` (scope `storage:app`), stored decisions and per-issue handoff record, receiver-only acknowledgement checked in the resolver, demo sample decisions. Deployed to development and upgraded on `one-atlas-hxpc.atlassian.net`; the deploy needed `--approve MAJOR_VERSION_RULE` (scope change).
+- S5 `jira:workflowValidator` (`validate`), fails closed, blocks without a prepared record. Deployed to development. Not added to any workflow yet; `forge lint` did not ask for a resolver.
+- Not observed on the live site yet: the panel UI (UserPicker, Prepare, Acknowledge, sample button) and the validator in a workflow.
+- README must note: the validator reads as the app; `modifiedFields` ignores description and components.
