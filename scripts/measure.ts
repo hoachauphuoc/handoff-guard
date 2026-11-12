@@ -73,6 +73,21 @@ if (process.argv.includes("--init")) {
       };
     })
     .filter((r) => r.label !== r.rules);
+  // Baselines show what the rules add: a gate that passes everything, and the rules without recorded decisions.
+  const agreeing = (verdictOf: (s: Sample) => Verdict) =>
+    labeled.filter((l) => verdictOf(samples.get(l.id)!) === l.verdict).length;
+  const rate = (n: number) => (labeled.length === 0 ? null : Number((n / labeled.length).toFixed(3)));
+  const noCheckAgree = agreeing(() => "clear");
+  const noDecisionsAgree = agreeing((s) => checkHandoff(s.handoff, []).verdict);
+  const baselines = {
+    noCheck: {
+      agree: noCheckAgree,
+      agreement: rate(noCheckAgree),
+      // Handoffs labeled blocked or needs_info that a gate with no check would let through.
+      missed: labeled.filter((l) => l.verdict !== "clear").length,
+    },
+    rulesWithoutDecisions: { agree: noDecisionsAgree, agreement: rate(noDecisionsAgree) },
+  };
   const labeledBy: Record<string, number> = {};
   for (const l of labeled) labeledBy[l.by ?? "owner"] = (labeledBy[l.by ?? "owner"] ?? 0) + 1;
   console.log(
@@ -84,6 +99,7 @@ if (process.argv.includes("--init")) {
         labeledBy,
         agree: labeled.length - disagreements.length,
         agreement: labeled.length === 0 ? null : Number(((labeled.length - disagreements.length) / labeled.length).toFixed(3)),
+        baselines,
         disagreements,
       },
       null,
