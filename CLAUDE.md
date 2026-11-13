@@ -17,10 +17,12 @@ Handoff Guard: a Forge app for Atlassian Codegeist 2026. When a Jira work item i
 
 | Runner | Role | Does not do |
 |---|---|---|
+| Claude Fable | Splits work between the runners, writes their briefs, reviews every diff, commits, deploys to development | Bulk generation, labels |
 | Claude Opus | Rule and measure design, risk spikes, review before commit, final pass on README and video script | Bulk generation |
 | Claude Sonnet | Day-to-day implementation: Forge UI, resolvers, tests, `scripts/`. Also the second voice: adversarial samples and critique of the rules, README and video script | Changing rule semantics without an Opus-level review; labels |
 | Claude Haiku | Mechanical work: search, lint fixes, running `check.ps1`, progress notes | Design, labels |
-| Muse (`muse-spark-1.3-contributor` only) | Bulk sample generation, sample labels, first critic of README and video script | Deciding the product's verdict |
+| Muse Spark (`muse-spark-1.3-contributor`) | Bulk sample generation, sample labels | Deciding the product's verdict; critique that needs judgement |
+| Muse Wonder (`muse-wonder-1.0`, owner's decision 2026-11-13) | First critic of README, Devpost text and video script; research with Tavily | Deciding the product's verdict; labels; anything in `src/` |
 | Tavily | Fresh Forge/Rovo docs on demand | Anything else |
 
 - Labels: Muse labels the samples (owner's decision, 2026-11-12; `scripts/label_samples.py`, each entry marked `by`). An owner label always overrides and is never overwritten. Claude does not write labels.

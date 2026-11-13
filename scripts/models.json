@@ -5,5 +5,10 @@
     "keyFile": "Muse.txt",
     "usdPerMTokIn": 0.10,
     "usdPerMTokOut": 0.20
+  },
+  "wonder": {
+    "baseUrl": "https://api.meta.ai/v1",
+    "model": "muse-wonder-1.0",
+    "keyFile": "Muse.txt"
   }
 }
