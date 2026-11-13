@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { contextStatus, NO_HANDOFF } from "../src/handoff/context";
 import type { Finding, HandoffResult } from "../src/rules/types";
+import contextFn from "../src/context-fn.ts?raw";
 
 const finding = { rule: "no_due_date", message: "No due date." } as Finding;
 const result = (verdict: HandoffResult["verdict"], findings: Finding[]): HandoffResult => ({ verdict, findings, binding: [] });
@@ -17,5 +18,11 @@ describe("contextStatus", () => {
 
   it("never gives a clear verdict a count", () => {
     expect(contextStatus(result("clear", [])).status.value).toEqual({ label: "Clear", type: "success" });
+  });
+});
+
+describe("contextProperties logging", () => {
+  it("logs the error name, never its message, so work item text cannot reach the logs", () => {
+    expect(contextFn).not.toMatch(/\.message/);
   });
 });

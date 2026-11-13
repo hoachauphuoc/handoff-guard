@@ -14,7 +14,8 @@ export async function contextProperties(payload: ContextPayload): Promise<Contex
     const [decisions, record] = await Promise.all([getDecisions(), getRecord(issueId)]);
     return contextStatus(record ? checkHandoff(handoffFrom(item, record, decisions), decisions) : null);
   } catch (e) {
-    console.log(`contextProperties: ${e instanceof Error ? e.message : String(e)}`);
+    // The error's name only: a message could one day carry work item text, which must not reach the logs.
+    console.log(`contextProperties failed: ${e instanceof Error ? e.name : typeof e}`);
     return NOT_CHECKED;
   }
 }

@@ -294,4 +294,9 @@ Each lead was checked against `src/` before it went in here. Two leads were drop
 3. **Idea 12 via the Automation "Use agent" action** before a JQL function. It is cheaper and reuses the agent.
 4. **Idea 15** only if the build is done by about 2026-12-10.
 
+### Candidate rule: the receiver must be the assignee (from the third-party review, 2026-11-13)
+
+- **What:** a finding when the prepared handoff's receiver is not the work item's current assignee, so the validator refuses the transition.
+- **Why not now:** a handoff is normally prepared before the reassignment, so the finding would fire on the ordinary path and change the measured figures. Today the mismatch is an advisory (`watchAssignee`). Any change here alters rule semantics and needs an Opus-level review first.
+
 ## Tavily calls used: 112 (29 in round one under the 30-call limit; 17 in round two, 36 in round three and 30 in round four, after the owner asked to continue)

@@ -7,3 +7,5 @@
 - The workflow validator fails closed: it blocks the transition when the check cannot run.
 - Rovo MCP access is off until a site admin enables it; tools then act within the calling user's permissions.
 - Not covered: the validator can read a work item the person making the transition may not be able to open, and reads decisions as the app (storage is app-wide); the validator's `modifiedFields` ignores description and components.
+- Not covered: the validator checks that the prepared handoff is Clear, not that its receiver is the current assignee. A reassignment to a different person starts a new handoff record through the trigger, but a transition is not refused on that ground alone.
+- Not covered: there is no project-admin check. Anyone signed in who can open a work item can prepare or re-prepare its handoff (which clears earlier acknowledgements) and can confirm a proposal into a project-wide decision. Superseding is limited to the person who confirmed the decision; a decision with no recorded confirmer, such as a sample, can be superseded by anyone signed in.

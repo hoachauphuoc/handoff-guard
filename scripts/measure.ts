@@ -2,6 +2,7 @@
 // Run with Node 24+, which executes TypeScript directly:
 //   node scripts/measure.ts --init   add unlabeled entries to data/labels.json (keeps existing labels)
 //   node scripts/measure.ts          report agreement on the labeled entries
+//   node scripts/measure.ts --check-readme   fail when the README measurement table differs (run by check.ps1)
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { checkHandoff } from "../src/rules/checkHandoff.ts";
@@ -88,6 +89,23 @@ if (process.argv.includes("--init")) {
     },
     rulesWithoutDecisions: { agree: noDecisionsAgree, agreement: rate(noDecisionsAgree) },
   };
+  // Principle 5: README figures come only from this script, so check.ps1 fails when the table drifts from it.
+  if (process.argv.includes("--check-readme")) {
+    const readme = readFileSync(join(ROOT, "README.md"), "utf8");
+    const cell = (n: number) => `${n} of ${labeled.length} (${((n / labeled.length) * 100).toFixed(1)}%)`;
+    const rows: [string, number][] = [
+      ["Handoff Guard rules with recorded decisions", labeled.length - disagreements.length],
+      ["The same rules without decisions", noDecisionsAgree],
+      ["No check (every handoff passes)", noCheckAgree],
+    ];
+    const wrong = rows.filter(([name, n]) => !readme.includes(`| ${name} | ${cell(n)} |`)).map(([name, n]) => `${name}: ${cell(n)}`);
+    if (wrong.length > 0) {
+      console.error(`README measurement table differs from measure: ${wrong.join("; ")}`);
+      process.exit(1);
+    }
+    console.log("README measurement table matches measure.");
+    process.exit(0);
+  }
   const labeledBy: Record<string, number> = {};
   for (const l of labeled) labeledBy[l.by ?? "owner"] = (labeledBy[l.by ?? "owner"] ?? 0) + 1;
   console.log(

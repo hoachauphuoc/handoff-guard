@@ -62,7 +62,9 @@ The one disagreement: a description that is only filler ("tbd see above"). Muse 
 
 ## Limits
 
-- All decisions are stored under one storage key, so two people confirming or superseding at the same moment can lose one of the two changes.
+- All decisions are stored under one storage key, so two people confirming or superseding at the same moment can lose one of the two changes. That stored value also has a size limit, so a very large number of decisions would fail to save.
+- The workflow validator checks that the prepared handoff is Clear, not that its receiver is the current assignee; the panel shows a mismatch as advice.
+- There is no project-admin check: anyone signed in who can open a work item can prepare its handoff again (clearing earlier acknowledgements) and can confirm a proposed decision for the whole project.
 - An agent can be the receiver of a handoff, by assigning it in the Assignee field, but it cannot acknowledge, so that handoff stays Needs info until a person changes the receiver.
 - The read-back checks that each decision is addressed, not that it was understood.
 - Teach-back catches only a fixed list of patterns: late dates, negation or "optional" wording around a required label or component, and adding wording before a forbidden one. It can miss other contradictions, and can misread a nearby negation about something else (the receiver then rewrites the read-back). A full date anywhere in the read-back is read as the delivery date; a month alone ("Jan 2027") or a numeric date ("01/10/2027") is read only right after by, in, on, until, before, after or to. Loose dates ("early January") and indirect wording are among what it misses.
