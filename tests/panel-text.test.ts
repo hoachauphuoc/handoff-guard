@@ -1,7 +1,8 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from "vitest";
 import panel from "../src/frontend/index.tsx?raw";
-import { STEPS } from "../src/guide/steps";
+import stepsRaw from "../src/guide/steps.ts?raw";
+import { PATH_NAMES, STEPS } from "../src/guide/steps";
 
 describe("panel first-use text", () => {
   it("says the first check can take several seconds", () => {
@@ -24,5 +25,16 @@ describe("rovo guide step", () => {
     expect(s.how).toContain("without Rovo");
     expect(s.how).toContain("the verdict still comes from the rule check");
     expect(s.done({} as never)).toBeNull();
+  });
+});
+
+describe("guide paths in the panel", () => {
+  it("lists each path name in the guide source", () => {
+    for (const name of Object.values(PATH_NAMES)) expect(stepsRaw).toContain(name);
+  });
+
+  it("imports the path names for the switch", () => {
+    expect(panel).toMatch(/from\s+"\.\.\/guide\/steps"/);
+    expect(panel).toContain("PATH_NAMES");
   });
 });

@@ -7,7 +7,7 @@ import type { MarkedState } from "../decisions/marked";
 import { constraintText, reachText } from "../decisions/reach";
 import { count } from "../plural";
 import type { AcknowledgeAllReply, PanelState } from "../handoff/types";
-import { GUIDE_SOURCE, PRACTICE_NONE, PRACTICE_TITLE, guideView, type StepNeed, type StepState } from "../guide/steps";
+import { GUIDE_SOURCE, PATH_NAMES, PRACTICE_NONE, PRACTICE_TITLE, guideView, type GuidePath, type StepNeed, type StepState } from "../guide/steps";
 import { HINTS } from "../guide/hints";
 import { BEFORE_READ_BACK, CONTINGENCY_MAX, READ_BACK_MAX, READ_BACK_MIN, READ_BACK_NOTE } from "../handoff/ipass";
 import { explanationNote, type Explanation } from "../handoff/explain";
@@ -53,6 +53,7 @@ const App = () => {
   const [ackNotes, setAckNotes] = useState<string[]>([]);
   const [explanation, setExplanation] = useState<Explanation | null>(null);
   const [guideOpen, setGuideOpen] = useState<boolean | null>(null);
+  const [path, setPath] = useState<GuidePath>("handover");
 
   // Rovo only explains and proposes. Whatever happens here, the verdict shown above stays the rule check's.
   const askRovo = async (prompt: string) => {
@@ -153,7 +154,7 @@ const App = () => {
   if (!state) return <Text>{LOADING_TEXT}</Text>;
 
   const { record, result } = state;
-  const guide = guideView(state);
+  const guide = guideView(state, path);
   const open = guideOpen ?? record === null;
   const protocol = record?.protocol === 1;
   const isSender = record !== null && state.viewerId === record.fromId;
@@ -161,8 +162,13 @@ const App = () => {
   return (
     <Stack space="space.100">
       <Text>
-        Getting started: {guide.doneCount} of {guide.total} steps done.
+        {PATH_NAMES[path]}: {guide.doneCount} of {guide.total} steps done.
       </Text>
+      {(Object.keys(PATH_NAMES) as GuidePath[]).map((p) => (
+        <Button key={p} appearance={p === path ? "primary" : undefined} onClick={() => setPath(p)}>
+          {PATH_NAMES[p]}
+        </Button>
+      ))}
       <Button onClick={() => setGuideOpen(!open)}>{open ? "Hide steps" : "Show steps"}</Button>
       {open &&
         guide.steps.map((step) => (

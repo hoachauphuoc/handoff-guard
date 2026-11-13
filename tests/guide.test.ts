@@ -5,7 +5,7 @@ import actionsIndex from "../src/actions/index?raw";
 import measure from "../scripts/measure.ts?raw";
 import validator from "../src/validator?raw";
 import { HINTS } from "../src/guide/hints";
-import { GUIDE_SOURCE, PRACTICE_NONE, PRACTICE_TITLE, STEPS, guideView } from "../src/guide/steps";
+import { GUIDE_SOURCE, JOIN_STEPS, LEAVE_STEPS, PATH_NAMES, PATHS, PRACTICE_NONE, PRACTICE_TITLE, STEPS, guideView } from "../src/guide/steps";
 import type { PanelState } from "../src/handoff/types";
 import { walkthroughHandoff, WALKTHROUGH_RECEIVER } from "../src/handoff/build";
 import { bindingDecisions, checkHandoff } from "../src/rules/checkHandoff";
@@ -152,5 +152,60 @@ describe("practice handoff", () => {
       expect(src).not.toContain("walkthroughHandoff");
       expect(src).not.toContain("WALKTHROUGH_RECEIVER");
     }
+  });
+});
+
+describe("guide paths", () => {
+  it("names each path in plain words", () => {
+    expect(PATH_NAMES).toEqual({
+      join: "New to this project",
+      handover: "Handing over this work",
+      leave: "Leaving the project",
+    });
+    expect(PATHS.join).toBe(JOIN_STEPS);
+    expect(PATHS.handover).toBe(STEPS);
+    expect(PATHS.leave).toBe(LEAVE_STEPS);
+  });
+
+  it("defaults to the handover path", () => {
+    expect(guideView(state())).toEqual(guideView(state(), "handover"));
+    expect(guideView(state({ decisionCount: 2, record }), "handover").nextId).toBe(
+      guideView(state({ decisionCount: 2, record })).nextId,
+    );
+  });
+
+  it("ticks and orders the join path by its done logic", () => {
+    expect(JOIN_STEPS.map((s) => s.id)).toEqual(["join_decisions", "join_binding", "join_brief", "join_page"]);
+    const empty = guideView(state(), "join");
+    expect(empty.nextId).toBe("join_decisions");
+    expect(empty.doneCount).toBe(0);
+    expect(empty.total).toBe(4);
+    expect(empty.steps.map((s) => s.state)).toEqual(["next", "manual", "manual", "manual"]);
+    const loaded = guideView(state({ decisionCount: 1 }), "join");
+    expect(loaded.nextId).toBeNull();
+    expect(loaded.doneCount).toBe(1);
+    expect(loaded.steps[0]?.state).toBe("done");
+  });
+
+  it("ticks and orders the leave path by its done logic", () => {
+    expect(LEAVE_STEPS.map((s) => s.id)).toEqual(["leave_view", "leave_this", "leave_decisions"]);
+    const none = guideView(state(), "leave");
+    expect(none.nextId).toBe("leave_this");
+    expect(none.doneCount).toBe(0);
+    expect(none.steps.map((s) => s.state)).toEqual(["manual", "next", "manual"]);
+    const handed = guideView(state({ record: { ...record, fromId: "me", toId: "you" }, viewerId: "me" }), "leave");
+    expect(handed.nextId).toBeNull();
+    expect(handed.doneCount).toBe(1);
+    expect(handed.steps[1]?.state).toBe("done");
+  });
+
+  it("leaves leave_this unticked when the viewer is the receiver", () => {
+    const by = (id: string) => LEAVE_STEPS.find((s) => s.id === id)!;
+    expect(by("leave_this").done(state({ record: { ...record, fromId: "you", toId: "me" }, viewerId: "me" }))).toBe(false);
+    expect(by("leave_this").done(state({ record: { ...record, fromId: "me", toId: "me" }, viewerId: "me" }))).toBe(false);
+    expect(by("leave_this").done(state({ record, viewerId: null }))).toBe(false);
+    const v = guideView(state({ record: { ...record, fromId: "you", toId: "me" }, viewerId: "me" }), "leave");
+    expect(v.nextId).toBe("leave_this");
+    expect(v.steps[1]?.state).toBe("next");
   });
 });

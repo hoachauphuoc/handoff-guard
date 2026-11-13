@@ -1,7 +1,28 @@
 import type { PanelState } from "../handoff/types";
 
-export type GuideStepId = "load_samples" | "item_ready" | "prepare" | "acknowledge" | "real_clear" | "rovo" | "validator";
+export type GuideStepId =
+  | "load_samples"
+  | "item_ready"
+  | "prepare"
+  | "acknowledge"
+  | "real_clear"
+  | "rovo"
+  | "validator"
+  | "join_decisions"
+  | "join_binding"
+  | "join_brief"
+  | "join_page"
+  | "leave_view"
+  | "leave_this"
+  | "leave_decisions";
 export type StepNeed = "teammate" | "rovo" | "admin";
+export type GuidePath = "join" | "handover" | "leave";
+
+export const PATH_NAMES: Record<GuidePath, string> = {
+  join: "New to this project",
+  handover: "Handing over this work",
+  leave: "Leaving the project",
+};
 
 export type GuideStep = {
   id: GuideStepId;
@@ -66,6 +87,61 @@ export const STEPS: GuideStep[] = [
   },
 ];
 
+export const JOIN_STEPS: GuideStep[] = [
+  {
+    id: "join_decisions",
+    title: "Decisions are loaded",
+    how: "If none are stored yet, click Load sample decisions (demo).",
+    done: (s) => s.decisionCount > 0,
+  },
+  {
+    id: "join_binding",
+    title: "Read the decisions that bind this work item",
+    how: "They are listed under the handoff, each with its source.",
+    done: () => null,
+  },
+  {
+    id: "join_brief",
+    title: "Ask Rovo for the handoff brief",
+    how: "Click Gather handoff context, then ask the Handoff Guard agent for a brief.",
+    needs: "rovo",
+    done: () => null,
+  },
+  {
+    id: "join_page",
+    title: "See every decision in the project",
+    how: "Open the project's Decisions page from the project sidebar.",
+    done: () => null,
+  },
+];
+
+export const LEAVE_STEPS: GuideStep[] = [
+  {
+    id: "leave_view",
+    title: "See what you hold",
+    how: "Open the project's Decisions page and use Leaving the project with your name.",
+    done: () => null,
+  },
+  {
+    id: "leave_this",
+    title: "This work item is handed over",
+    how: "Pick a receiver who is not you, then click Prepare handoff.",
+    done: (s) => s.record !== null && s.viewerId !== null && s.record.fromId === s.viewerId && s.record.toId !== s.viewerId,
+  },
+  {
+    id: "leave_decisions",
+    title: "Your decisions are superseded or passed on",
+    how: "Only the person who confirmed a decision can supersede it. Do it on the Decisions page before you leave, or ask a teammate to record a replacement.",
+    done: () => null,
+  },
+];
+
+export const PATHS: Record<GuidePath, GuideStep[]> = {
+  join: JOIN_STEPS,
+  handover: STEPS,
+  leave: LEAVE_STEPS,
+};
+
 export type StepState = "done" | "next" | "todo" | "manual";
 export type GuideView = {
   steps: { id: GuideStepId; title: string; how: string; needs?: StepNeed; state: StepState }[];
@@ -74,10 +150,11 @@ export type GuideView = {
   nextId: GuideStepId | null;
 };
 
-export function guideView(s: PanelState): GuideView {
-  const flags = STEPS.map((step) => step.done(s));
+export function guideView(s: PanelState, path: GuidePath = "handover"): GuideView {
+  const list = PATHS[path];
+  const flags = list.map((step) => step.done(s));
   const nextIndex = flags.findIndex((f) => f === false);
-  const steps = STEPS.map((step, i) => {
+  const steps = list.map((step, i) => {
     const f = flags[i];
     const state: StepState = f === null ? "manual" : f ? "done" : i === nextIndex ? "next" : "todo";
     return { id: step.id, title: step.title, how: step.how, ...(step.needs ? { needs: step.needs } : {}), state };
@@ -86,6 +163,6 @@ export function guideView(s: PanelState): GuideView {
     steps,
     doneCount: steps.filter((x) => x.state === "done").length,
     total: steps.length,
-    nextId: nextIndex === -1 ? null : (STEPS[nextIndex]?.id ?? null),
+    nextId: nextIndex === -1 ? null : (list[nextIndex]?.id ?? null),
   };
 }
