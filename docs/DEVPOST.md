@@ -43,6 +43,7 @@ Core:
 
 Also:
 
+- **Joining and leaving.** The panel's checklist has three paths: new to the project, handing over, leaving. On the Decisions page, "Leaving the project" lists what one person still holds: their open work items with the state of each handoff, handoffs they have not acknowledged, and decisions only they can supersede. Read-only, from the same rule check.
 - **Suggested fixes.** The smallest edits that would stop the item contradicting its decisions (a due date, a label to add, a component to remove). Advice only; the app never edits the work item.
 - **Rovo agent.** Explains the verdict, quoting the rule check's sentence exactly. It finds decisions written in the description and comments and proposes them with a word-for-word quote as evidence. A proposal binds nothing until a person confirms it in the panel. A repeat of a confirmed decision is rejected.
 - **Handoff brief.** Pulls what the receiver needs, including people connected to the item from Teamwork Graph (shared with, mentioned). Advisory; no rule reads it.

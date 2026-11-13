@@ -278,6 +278,7 @@ Each lead was checked against `src/` before it went in here. Two leads were drop
 
 ### 15. Knowledge at risk: decisions and handoffs held by someone who left
 
+- **Status (2026-11-14):** built in a smaller form as "Leaving the project" on the Decisions page: a person is picked by name, nothing reads whether an account is deactivated (that would need a user scope and a major version).
 - **Pitch:** a project page section lists in-flight handoffs whose sender has left, plus decisions whose only confirmer has left. A deactivated account and an unanswered acknowledgement count as "left". It is Rigby's "abandoned file" idea applied to decisions.
 - **Pain:** turnover-induced knowledge loss (Rigby et al., ICSE 2016). Handover documents "often go unread" when people leave ([Sensay press release](https://finance.yahoo.com/news/sensay-launches-world-first-ai-110000219.html), a vendor claim). Out-of-office reassignment apps move the assignee but carry no briefing ([Out of Office Automation for Jira](https://marketplace.atlassian.com/apps/1218305/out-of-office-automation-for-jira-outlook-google-tempo)).
 - **Why nobody does it:** offboarding tools in Jira are checklists and templates ([Atlassian Community](https://community.atlassian.com/forums/discussion/3316580/employee-offboarding-in-jira-how-to-build-a-secure-cross-team-process-with-or-without-jsm)). None of them points at the decisions a person held.

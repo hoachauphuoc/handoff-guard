@@ -339,3 +339,6 @@ The owner wants to spend fewer Claude tokens. Two executors were tried on one re
 
 Muse Code's diff was kept. Muse Code runs on the API key (`muse usage` reports no subscription allowance); a first run appeared to hang when its output was piped, so `muse_exec.py` has a timeout that kills the process tree. Executor token counts were not reported by either tool. The division of work is in `CLAUDE.md`.
 
+## 2026-11-14: three guided paths and "Leaving the project"
+
+The owner chose to build this despite the feature freeze, to be done by 2026-12-04. Muse Code with `muse-spark-1.3-contributor` wrote both parts test-first from two briefs of about 13 lines, each in its own worktree (293 s and 361 s, no rework round). Part A: the panel checklist has three paths (new to the project, handing over, leaving); the handover path is the old seven steps unchanged. Part B: a read-only "Leaving the project" section on the Decisions page lists a person's open work items with each handoff's state, handoffs they have not acknowledged, and decisions only they can supersede. Claude read both diffs and changed two things directly: a handoff that made the person the receiver is not counted as handing the work over, and the row shows how many decisions wait. No new scope or module; `src/rules/` untouched; 328 tests, measure unchanged. Not yet seen on a site.

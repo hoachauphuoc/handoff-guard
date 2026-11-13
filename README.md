@@ -5,8 +5,12 @@ A Forge app for Jira. When a work item is handed to someone else, rules check wh
 ## Install (for judges)
 
 1. Install the app on a Jira site from the installation link in the Devpost submission. The app is Jira-only: it declares no Confluence scope and no multi-app compatibility, so it installs on any single Jira site. Developers working on the app install their own build with `forge install -e development --product jira`.
-2. Open a work item, click the apps icon under the summary (tooltip "View app actions") and choose **Handoff Guard**. The panel shows a getting-started checklist. A step-by-step path of about 10 minutes, with the exact read-backs to type, is in `docs/DEVPOST.md` ("Testing instructions"). One account is enough to see a refusal and an accepted read-back; reaching Clear needs a second user as receiver.
+2. Open a work item, click the apps icon under the summary (tooltip "View app actions") and choose **Handoff Guard**. The panel shows a short checklist with three paths to choose from: "New to this project", "Handing over this work" (the default) and "Leaving the project". A step-by-step path of about 10 minutes, with the exact read-backs to type, is in `docs/DEVPOST.md` ("Testing instructions"). One account is enough to see a refusal and an accepted read-back; reaching Clear needs a second user as receiver.
 3. Teamwork Graph needs no setup from you. If it returns nothing, or was not asked, the app says so, and no rule depends on it.
+
+## Joining, handing over, leaving
+
+The panel's checklist has one path for each moment. "New to this project" points a newcomer at the decisions that bind the work item, the handoff brief and the project's Decisions page. "Handing over this work" is the handoff itself. "Leaving the project" leads to a section of the same name on the Decisions page: pick a person and it lists their open work items with the state of each handoff, the handoffs they have not acknowledged, and the decisions only they can supersede. That section is read-only and uses the same rule check.
 
 ## Scopes
 
@@ -62,6 +66,7 @@ The one disagreement: a description that is only filler ("tbd see above"). Muse 
 
 ## Limits
 
+- "Leaving the project" covers only the open work items of that project that you can see, up to the page's limit, and it does not know whether a person has left: someone picks the name.
 - All decisions are stored under one storage key, so two people confirming or superseding at the same moment can lose one of the two changes. That stored value also has a size limit, so a very large number of decisions would fail to save.
 - The workflow validator checks that the prepared handoff is Clear, not that its receiver is the current assignee; the panel shows a mismatch as advice.
 - There is no project-admin check: anyone signed in who can open a work item can prepare its handoff again (clearing earlier acknowledgements) and can confirm a proposed decision for the whole project.
