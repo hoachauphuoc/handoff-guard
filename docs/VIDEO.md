@@ -1,4 +1,4 @@
-# Demo video script (about 3 minutes, production 3.0.x)
+# Demo video script (about 3 minutes, production 3.3.0)
 
 Everything on screen is the Codegeist demo site `one-atlas-hxpc.atlassian.net`. Work items: MOBL-53 (blocked case) and TD-1 (clear case). Captions or voice-over in English. The labels in the Screen column are the ones the panel shows today (`src/frontend/index.tsx`, `src/frontend/decisions.tsx`).
 

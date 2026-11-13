@@ -14,14 +14,14 @@ For each case, choose exactly one answer:
 
 Rules for deciding:
 
-- A decision applies only when it is in force (status "decided", not superseded) and its scope matches the work item (same project, or the item carries the scoped label or component).
+- A decision applies only when it is in force (status "decided", not superseded) and its scope matches the work item (the same project, the item carries the scoped label, or the decision names this exact work item).
 - Ignore differences in letter case and surrounding spaces in ids, labels and components.
 - Dates must be real dates in YYYY-MM-DD form.
 - If both "blocked" and "needs_info" reasons are present, answer **blocked**.
 
 Quality requirements:
 
-- 3 independent annotators per case (144 judgements in total); we report the agreement between annotators.
+- 2 independent annotators per case (96 judgements in total; reduced from 3 by the owner to keep the cost down); we report the agreement between annotators, and a case where the two disagree is reported as unresolved.
 - Annotators should read English and be comfortable with ticket trackers (Jira or similar).
 - Please include a few control cases with known answers to filter careless work; we can supply them.
 - Output: one row per judgement with case id, annotator id (anonymous) and answer.
