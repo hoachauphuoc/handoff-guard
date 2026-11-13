@@ -1,0 +1,193 @@
+[
+  {
+    "id": "control-1",
+    "handoff": {
+      "item": {
+        "key": "CTL-1",
+        "projectKey": "CTL",
+        "summary": "Move the weekly report job to the new scheduler",
+        "description": "The old cron host is retired on Friday. Steps, config and rollback notes are in the linked runbook section 2.",
+        "labels": [
+          "ops"
+        ],
+        "components": [
+          "scheduler"
+        ],
+        "dueDate": "2026-11-20",
+        "assigneeId": "u-ana"
+      },
+      "fromId": "u-ana",
+      "toId": null,
+      "acknowledged": []
+    },
+    "decisions": [],
+    "answer": "blocked",
+    "by": "claude-opus-5-5"
+  },
+  {
+    "id": "control-2",
+    "handoff": {
+      "item": {
+        "key": "CTL-2",
+        "projectKey": "CTL",
+        "summary": "Finish the export screen copy review",
+        "description": "Copy review is done for 9 of 12 strings. The last three are marked in the design file with open questions for legal.",
+        "labels": [
+          "ux"
+        ],
+        "components": [
+          "export-ui"
+        ],
+        "dueDate": "2026-11-21",
+        "assigneeId": "u-bo"
+      },
+      "fromId": "u-bo",
+      "toId": "u-cy",
+      "acknowledged": [
+        "d-ctl-ux"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-ctl-ux",
+        "title": "UX items need the ux label",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "ledger-0001"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "CTL"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "ux"
+          }
+        ]
+      }
+    ],
+    "answer": "clear",
+    "by": "claude-opus-5-5"
+  },
+  {
+    "id": "control-3",
+    "handoff": {
+      "item": {
+        "key": "CTL-3",
+        "projectKey": "CTL",
+        "summary": "Pick up the invoice rounding bug",
+        "description": "",
+        "labels": [
+          "billing"
+        ],
+        "components": [
+          "invoices"
+        ],
+        "dueDate": "2026-11-22",
+        "assigneeId": "u-dee"
+      },
+      "fromId": "u-dee",
+      "toId": "u-eli",
+      "acknowledged": []
+    },
+    "decisions": [],
+    "answer": "needs_info",
+    "by": "claude-opus-5-5"
+  },
+  {
+    "id": "control-4",
+    "handoff": {
+      "item": {
+        "key": "CTL-4",
+        "projectKey": "CTL",
+        "summary": "Route new partner sync through the old bridge",
+        "description": "Partner sync is coded against the legacy bridge API. Tests pass locally; deployment notes are in the item history.",
+        "labels": [
+          "partners"
+        ],
+        "components": [
+          "legacy-bridge"
+        ],
+        "dueDate": "2026-11-23",
+        "assigneeId": "u-fay"
+      },
+      "fromId": "u-fay",
+      "toId": "u-gus",
+      "acknowledged": [
+        "d-ctl-bridge"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-ctl-bridge",
+        "title": "No new work on the legacy bridge",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "ledger-0002"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "CTL"
+        },
+        "constraints": [
+          {
+            "kind": "componentForbidden",
+            "component": "legacy-bridge"
+          }
+        ]
+      }
+    ],
+    "answer": "blocked",
+    "by": "claude-opus-5-5"
+  },
+  {
+    "id": "control-5",
+    "handoff": {
+      "item": {
+        "key": "CTL-5",
+        "projectKey": "CTL",
+        "summary": "Close out the data retention audit",
+        "description": "Audit evidence is collected for all four stores. The summary memo needs a final read and sign-off.",
+        "labels": [
+          "audit"
+        ],
+        "components": [
+          "records"
+        ],
+        "dueDate": "2026-12-15",
+        "assigneeId": "u-hal"
+      },
+      "fromId": "u-hal",
+      "toId": "u-ivy",
+      "acknowledged": [
+        "d-ctl-audit"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-ctl-audit",
+        "title": "Audit items close by end of November",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "ledger-0003"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "CTL"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-30"
+          }
+        ]
+      }
+    ],
+    "answer": "blocked",
+    "by": "claude-opus-5-5"
+  }
+]

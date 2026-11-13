@@ -26,7 +26,7 @@ Handoff Guard: a Forge app for Atlassian Codegeist 2026. When a Jira work item i
 | Tavily | Fresh Forge/Rovo docs on demand | Anything else |
 
 - Labels: Muse labels the samples (owner's decision, 2026-11-12; `scripts/label_samples.py`, each entry marked `by`). An owner label always overrides and is never overwritten. Claude does not write labels.
-- Human labels (owner's decision, 2026-11-13): a Toloka pilot, 3 annotators per case, budget cap USD 30, adds to the Muse labels as a second source; it does not replace them. Brief: `docs/toloka-brief.md`, upload: `data/toloka/cases.json`. The owner runs the Toloka account and approves every spend.
+- Human labels (owner's decision, 2026-11-13): a Toloka pilot, 3 annotators per case, budget cap USD 30, adds to the Muse labels as a second source; it does not replace them. Brief: `docs/toloka-brief.md`, upload: `data/toloka/cases.json`. The owner runs the Toloka account and approves every spend. One exception to "Claude does not write labels": the 5 Exam control answers in `data/toloka/controls.json` were filled by Claude on the owner's request (marked `by`); they gate annotators and are never used as measurement labels.
 - README must say the samples are synthetic and the labels are model-written, and must call the figure "agreement with Muse labels", not accuracy.
 - Endpoints and model IDs: `scripts/models.json`. Generator: `scripts/gen_samples.py`.
 - Keys live outside the repo in `C:\Users\phuochoa\.bjt\` (`Muse.txt`, `tavily_api_key.txt`; Baseten and Modal are not used), read by `scripts/` only. Claude never opens, prints or copies these files. Never put key values in CLAUDE.md or any tracked file.
