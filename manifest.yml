@@ -7,6 +7,21 @@ modules:
       render: native
       title: Handoff Guard
       icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+  jira:issueContext:
+    - key: handoff-guard-context
+      resource: context
+      resolver:
+        function: resolver
+      render: native
+      title: Handoff Guard
+      label: Handoff Guard
+      status:
+        type: lozenge
+        value:
+          label: Not checked
+          type: default
+      dynamicProperties:
+        function: context-props
   jira:projectPage:
     - key: handoff-guard-decisions
       resource: decisions
@@ -189,6 +204,8 @@ modules:
       handler: index.proposeDecisionsAction
     - key: gather-fn
       handler: index.gatherHandoffContextAction
+    - key: context-props
+      handler: index.contextProperties
   # Forge LLMs writes the sentence beside a teach-back refusal; the refusal itself is plain code.
   llm:
     - key: llm-app
@@ -199,6 +216,8 @@ resources:
     path: src/frontend/index.tsx
   - key: decisions
     path: src/frontend/decisions.tsx
+  - key: context
+    path: src/frontend/context.tsx
 app:
   id: ari:cloud:ecosystem::app/8d2f4029-5c7f-49b4-a2b7-701a0ca1c1d2
   runtime:

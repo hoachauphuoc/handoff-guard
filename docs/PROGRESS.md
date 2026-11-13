@@ -309,3 +309,7 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 ## 2026-11-13: production 3.3.0
 
 Owner ordered the production deploy. `check.ps1` passed (300 tests, lint clean). `forge deploy -e production` deployed 3.3.0 (minor: no manifest change); both production installs (one-atlas-hxpc, hoachauphuoc) show 3, Up-to-date. It carries the panel texts (loading line, empty states, Rovo note) and the hardened teach-back. Not seen live yet: the loading line and the "no decision binds" text. Not pushed.
+
+## 2026-11-13: issueContext spike (Opus), development only
+
+Opus added a `jira:issueContext` module: a collapsed "Handoff Guard" row shows the verdict lozenge without opening the panel (no handoff, Not checked on failure; count only for non-Clear). Observed on development: only "No handoff"; other states covered by tests. Minor version, no new scopes, Runs on Atlassian kept. The spike worktree was cut from an old commit, so its deploy briefly replaced development's newer code; the changes were applied onto main and redeployed as development 10.2.0. Production still 3.3.0 without it. See `docs/SPIKE-ISSUE-CONTEXT.md`.
