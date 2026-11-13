@@ -66,14 +66,14 @@ Watch more sources for decisions, and let teams share decisions across projects.
 
 ## Testing instructions (for judges)
 
-About 10 minutes. You need a Jira site where you are a site admin and a second user on that site (the read-back must come from the receiver, who cannot be the sender).
+About 10 minutes on a Jira site where you are a site admin. One account is enough for steps 1 to 6: pick yourself as receiver. The handoff then stays Blocked with "Sender and receiver are the same person", which is the rule working; reaching Clear needs a second user as receiver.
 
 1. Open the installation link below, choose your site, select Jira and click Install. The app asks for four permissions and nothing for Confluence.
-2. Open a work item in a company-managed project. Under the summary click **Apps**, then **Handoff Guard**. If Jira asks, click **Allow access** and reload. A getting-started checklist in the panel shows the next step at any time.
+2. Open a work item in a company-managed project. Under the summary click the apps icon (its tooltip is "View app actions"), then **Handoff Guard**; the panel opens below the description. If Jira asks, click **Allow access** and reload. A getting-started checklist in the panel shows the next step at any time.
 3. Click **Load sample decisions (demo)**. This stores demo decisions for that project in the app; nothing is written to Jira. Two of them bind every item in the project: "Work ships by the end of 2026" and "Stop using the legacy billing component".
-4. Give the work item a description and a due date in 2026. Pick the second user as receiver and click **Prepare handoff**. The verdict is Needs info: the receiver has not acknowledged the decisions.
-5. As the second user, open the same work item and the panel. In the read-back box write: `Work ships by the end of 2026: I will ship on 15 January 2027. Stop using the legacy billing component: understood.` Click **Acknowledge all with this read-back**. It is refused, with the code's reason and one sentence labelled as written by a model.
-6. Replace the read-back with: `Work ships by the end of 2026: I will ship by 15 December 2026. Stop using the legacy billing component: understood.` It is accepted and the verdict becomes Clear.
+4. Give the work item a description and a due date in 2026. Pick a receiver (a second user, or yourself) and click **Prepare handoff**. The findings say the receiver has not acknowledged the two decisions.
+5. As the receiver, open the same work item and the panel. In the read-back box write: `Work ships by the end of 2026: I will ship on 15 January 2027. Stop using the legacy billing component: understood.` Click **Acknowledge all with this read-back**. It is refused, with the code's reason and one sentence labelled as written by a model.
+6. Replace the read-back with: `Work ships by the end of 2026: I will ship by 15 December 2026. Stop using the legacy billing component: understood.` It is accepted and both decisions read "Acknowledged." With a second user as receiver the verdict becomes Clear.
 7. Drift: change the due date of the work item and reload the panel. The acknowledgement is stale and the receiver is asked to read back again.
 8. Optional, Jira admin: add the **Handoff Guard** validator to a workflow transition (Project settings, Workflows, edit a transition, Validators). A work item whose handoff is not Clear is refused on that transition.
 9. Optional, Rovo: click **Explain with Rovo** in the panel, or open the Handoff Guard agent in Rovo Chat and ask "Is this work item ready to hand off?".

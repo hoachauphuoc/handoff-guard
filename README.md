@@ -5,7 +5,7 @@ A Forge app for Jira. When a work item is handed to someone else, rules check wh
 ## Install (for judges)
 
 1. Install the app on a Jira site from the installation link in the Devpost submission. The app is Jira-only: it declares no Confluence scope and no multi-app compatibility, so it installs on any single Jira site. Developers working on the app install their own build with `forge install -e development --product jira`.
-2. Open a work item, click **Apps** under the summary and choose **Handoff Guard**. The panel shows a getting-started checklist. A step-by-step path of about 10 minutes, with the exact read-backs to type, is in `docs/DEVPOST.md` ("Testing instructions"). It needs a second user on the site, because the read-back must come from the receiver.
+2. Open a work item, click the apps icon under the summary (tooltip "View app actions") and choose **Handoff Guard**. The panel shows a getting-started checklist. A step-by-step path of about 10 minutes, with the exact read-backs to type, is in `docs/DEVPOST.md` ("Testing instructions"). One account is enough to see a refusal and an accepted read-back; reaching Clear needs a second user as receiver.
 3. Optional: the Teamwork Graph people lookup needs a saved query registered by the app owner (see `docs/PROGRESS.md`); without it the result says "Teamwork Graph was not asked: no saved query is registered for this app." The owner's production build has the saved-query keys set (`docs/PROGRESS.md`: the variable names were checked; no call has been observed on production). No rule uses it yet.
 
 ## Scopes
