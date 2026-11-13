@@ -85,6 +85,13 @@ describe("guide steps", () => {
     expect(all.total).toBe(7);
   });
 
+  it("describes acknowledging as one read-back, not a button under each decision", () => {
+    expect(STEPS.find((s) => s.id === "acknowledge")!.how).toBe(
+      "The receiver opens this work item, writes one read-back that mentions each decision, then clicks Acknowledge all with this read-back.",
+    );
+    for (const t of [...STEPS.map((s) => s.how), ...Object.values(HINTS)]) expect(t).not.toContain("Acknowledge under");
+  });
+
   it("keeps verdict words out of the practice texts and has no template leftovers", () => {
     // The mandated title says "not a verdict"; it is the only place the word may appear.
     const practice = [PRACTICE_NONE, ...Object.values(HINTS)];

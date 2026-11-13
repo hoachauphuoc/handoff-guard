@@ -40,7 +40,7 @@ export const STEPS: GuideStep[] = [
   {
     id: "acknowledge",
     title: "The receiver has acknowledged the decisions",
-    how: "The receiver opens this work item and clicks Acknowledge under each decision.",
+    how: "The receiver opens this work item, writes one read-back that mentions each decision, then clicks Acknowledge all with this read-back.",
     needs: "teammate",
     done: (s) => s.record !== null && s.record.acknowledged.length > 0,
   },
