@@ -1,0 +1,2338 @@
+[
+  {
+    "id": "muse-20261112T013558Z.json#0",
+    "handoff": {
+      "item": {
+        "key": "BRM-42",
+        "projectKey": "BRM",
+        "summary": "North depot inventory audit transition completed with checklist verified",
+        "description": "Hello team, I have completed the inventory checklist for the north depot and attached verification steps in sections 1 to 3. Please review at your convenience and confirm next ownership. Thank you very much for your careful attention.",
+        "labels": [
+          "audit-ready"
+        ],
+        "components": [
+          "field-ops"
+        ],
+        "dueDate": "2026-11-20",
+        "assigneeId": "u-kiri"
+      },
+      "fromId": "u-kiri",
+      "toId": "u-bren",
+      "acknowledged": [
+        "d-north-1"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-north-1",
+        "title": "North depot audit items need audit-ready label before month end",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "ledger-8891"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "BRM"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "audit-ready"
+          },
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-30"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013558Z.json#1",
+    "handoff": {
+      "item": {
+        "key": "SPT-77",
+        "projectKey": "SPT",
+        "summary": "URGENT pls take this!! customer waiting sry no time!!!",
+        "description": "",
+        "labels": [],
+        "components": [
+          "legacy-bridge"
+        ],
+        "dueDate": null,
+        "assigneeId": null
+      },
+      "fromId": "u-tess",
+      "toId": null,
+      "acknowledged": []
+    },
+    "decisions": [
+      {
+        "id": "d-queue-7",
+        "title": "Queue tickets must carry hotfix-queue label and avoid legacy-bridge",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "ledger-4520"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "SPT"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "hotfix-queue"
+          },
+          {
+            "kind": "componentForbidden",
+            "component": "legacy-bridge"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#0",
+    "handoff": {
+      "item": {
+        "key": "OPS-12",
+        "projectKey": "OPS",
+        "summary": "fix relay lag",
+        "description": "p95 up. raised timeout to 800ms. logs in thread.",
+        "labels": [
+          "backend"
+        ],
+        "components": [
+          "relay-core"
+        ],
+        "dueDate": "2026-11-15",
+        "assigneeId": "u-kiri"
+      },
+      "fromId": "u-kiri",
+      "toId": "u-tove",
+      "acknowledged": [
+        "d-ops-1",
+        "d-ops-2"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-ops-1",
+        "title": "relay timeout ceiling",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "lg-101"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "OPS"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-20"
+          }
+        ]
+      },
+      {
+        "id": "d-ops-2",
+        "title": "backend tag rule",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "cf-88"
+        },
+        "scope": {
+          "kind": "label",
+          "label": "backend"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "backend"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#1",
+    "handoff": {
+      "item": {
+        "key": "NRP-34",
+        "projectKey": "NRP",
+        "summary": "Coordinated transfer of north region pilot checklist ownership and next steps",
+        "description": "Hello team, This handoff documents current status, open risks, owners and next steps for the pilot checklist. Please review sections A to C before accepting. Contact me with questions. Thank you.",
+        "labels": [
+          "pilot",
+          "checklist"
+        ],
+        "components": [
+          "coordination"
+        ],
+        "dueDate": "2026-11-25",
+        "assigneeId": null
+      },
+      "fromId": "u-sana",
+      "toId": null,
+      "acknowledged": [
+        "d-nrp-7"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-nrp-7",
+        "title": "pilot checklist timeline",
+        "status": "decided",
+        "source": {
+          "kind": "jira",
+          "ref": "NRP-30"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "NRP"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-12-01"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#2",
+    "handoff": {
+      "item": {
+        "key": "KDF-9",
+        "projectKey": "KDF",
+        "summary": "PLZ take this cust waiting urgent callback!!",
+        "description": "",
+        "labels": [
+          "support"
+        ],
+        "components": [
+          "intake-ui"
+        ],
+        "dueDate": "2026-11-13",
+        "assigneeId": "u-pax"
+      },
+      "fromId": "u-pax",
+      "toId": "u-rik",
+      "acknowledged": [
+        "d-kdf-3"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-kdf-3",
+        "title": "urgent callback tagging",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "lg-209"
+        },
+        "scope": {
+          "kind": "label",
+          "label": "support"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "callback-urgent"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#3",
+    "handoff": {
+      "item": {
+        "key": "MNR-21",
+        "projectKey": "MNR",
+        "summary": "Hi this is my first handoff, hope I filled this right for review?",
+        "description": "Hi! Sorry if format is off, I tried to follow the guide. This is about sorting the feedback notes from yesterday. Let me know if I missed anything! Thanks so much!",
+        "labels": [
+          "feedback"
+        ],
+        "components": [
+          "review-queue"
+        ],
+        "dueDate": null,
+        "assigneeId": "u-joss"
+      },
+      "fromId": "u-joss",
+      "toId": "u-mira",
+      "acknowledged": [
+        "d-mnr-4"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-mnr-4",
+        "title": "feedback sorting tag",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "cf-312"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "MNR"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "feedback"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#4",
+    "handoff": {
+      "item": {
+        "key": "ZQT-5",
+        "projectKey": "ZQT",
+        "summary": "taking over outage queue - need owner NOW",
+        "description": "cust impact high, taking calls, need someone to own queue, details in thread, gotta go",
+        "labels": [
+          "outage"
+        ],
+        "components": [
+          "legacy-bridge"
+        ],
+        "dueDate": "2026-11-18",
+        "assigneeId": "u-rik"
+      },
+      "fromId": "u-rik",
+      "toId": "u-sana",
+      "acknowledged": []
+    },
+    "decisions": [
+      {
+        "id": "d-zqt-2",
+        "title": "outage bridge restriction",
+        "status": "decided",
+        "source": {
+          "kind": "jira",
+          "ref": "ZQT-1"
+        },
+        "scope": {
+          "kind": "workItem",
+          "key": "ZQT-5"
+        },
+        "constraints": [
+          {
+            "kind": "componentForbidden",
+            "component": "legacy-bridge"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#5",
+    "handoff": {
+      "item": {
+        "key": "KITE-101",
+        "projectKey": "KITE",
+        "summary": "fix valve leak",
+        "description": "replaced seal. torque 40nm. tested ok.",
+        "labels": [
+          "safety-check"
+        ],
+        "components": [
+          "pump-unit"
+        ],
+        "dueDate": "2026-11-18",
+        "assigneeId": "u-ana"
+      },
+      "fromId": "u-ana",
+      "toId": "u-bex",
+      "acknowledged": [
+        "d-k1"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-k1",
+        "title": "Close KITE work by 20 Nov with safety-check tag",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "CONF-771"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "KITE"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "safety-check"
+          },
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-20"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#6",
+    "handoff": {
+      "item": {
+        "key": "FERN-44",
+        "projectKey": "FERN",
+        "summary": "Coordinated handoff for greenhouse sensor calibration phase 2",
+        "description": "Dear team, Please note the calibration steps are listed in sections 1 to 3. Risks, owners, and rollback plan are in the attached checklist. Kindly confirm receipt once a receiver is assigned. Thank you.",
+        "labels": [
+          "release-42",
+          "calibrated"
+        ],
+        "components": [
+          "sensor-array"
+        ],
+        "dueDate": "2026-11-19",
+        "assigneeId": "u-cleo"
+      },
+      "fromId": "u-cleo",
+      "toId": null,
+      "acknowledged": [
+        "d-f1"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-f1",
+        "title": "Release 42 items keep release-42 label and avoid legacy-hub",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LEDG-310"
+        },
+        "scope": {
+          "kind": "label",
+          "label": "release-42"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "release-42"
+          },
+          {
+            "kind": "componentForbidden",
+            "component": "legacy-hub"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#7",
+    "handoff": {
+      "item": {
+        "key": "QUAR-77",
+        "projectKey": "QUAR",
+        "summary": "cust 9921 NEED callback ASAP plz handle!!!",
+        "description": "",
+        "labels": [
+          "urgent-callback"
+        ],
+        "components": [
+          "inbox"
+        ],
+        "dueDate": "2026-11-13",
+        "assigneeId": "u-dex"
+      },
+      "fromId": "u-dex",
+      "toId": "u-emi",
+      "acknowledged": [
+        "d-q1"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-q1",
+        "title": "Urgent callbacks keep urgent-callback label",
+        "status": "decided",
+        "source": {
+          "kind": "jira",
+          "ref": "REC-8801"
+        },
+        "scope": {
+          "kind": "label",
+          "label": "urgent-callback"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "urgent-callback"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#8",
+    "handoff": {
+      "item": {
+        "key": "WOB-23",
+        "projectKey": "WOB",
+        "summary": "My first task - updating onboarding checklist - please review??",
+        "description": "Hi everyone!! I am new here so sorry if this is wrong! I tried to follow the guide and I put my notes here. Could someone please check if the checklist-forms part looks okay? Thank you so much!!!",
+        "labels": [
+          "onboarding"
+        ],
+        "components": [
+          "checklist-forms"
+        ],
+        "dueDate": null,
+        "assigneeId": "u-finn"
+      },
+      "fromId": "u-finn",
+      "toId": "u-gala",
+      "acknowledged": [
+        "d-w1"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-w1",
+        "title": "Onboarding checklist work keeps onboarding label",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "CONF-552"
+        },
+        "scope": {
+          "kind": "workItem",
+          "key": "WOB-23"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "onboarding"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#9",
+    "handoff": {
+      "item": {
+        "key": "LUMO-90",
+        "projectKey": "LUMO",
+        "summary": "swap filter",
+        "description": "old filter out. new in.",
+        "labels": [
+          "winter-freeze"
+        ],
+        "components": [
+          "legacy-hub"
+        ],
+        "dueDate": "2026-12-05",
+        "assigneeId": "u-hugo"
+      },
+      "fromId": "u-hugo",
+      "toId": "u-iris",
+      "acknowledged": []
+    },
+    "decisions": [
+      {
+        "id": "d-l1",
+        "title": "LUMO winter work due by 25 Nov without legacy-hub",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LEDG-914"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "LUMO"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-25"
+          },
+          {
+            "kind": "componentForbidden",
+            "component": "legacy-hub"
+          },
+          {
+            "kind": "labelRequired",
+            "label": "winter-freeze"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#10",
+    "handoff": {
+      "item": {
+        "key": "NWL-101",
+        "projectKey": "NWL",
+        "summary": "fix queue drain lag",
+        "description": "",
+        "labels": [
+          "backend"
+        ],
+        "components": [
+          "ingest"
+        ],
+        "dueDate": "2026-11-20",
+        "assigneeId": "u-bex"
+      },
+      "fromId": "u-ana",
+      "toId": "u-bex",
+      "acknowledged": [
+        "d-nwl-1"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-nwl-1",
+        "title": "Drain jobs keep backend label",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-881"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "NWL"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "backend"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#11",
+    "handoff": {
+      "item": {
+        "key": "QZT-22",
+        "projectKey": "QZT",
+        "summary": "North depot vendor audit pack handover rev 3",
+        "description": "Purpose: transfer audit pack ownership. Scope: open risks listed in order. Request: please review record LED-310 and confirm receipt before the standup. Due date set per team plan.",
+        "labels": [
+          "audit-ready"
+        ],
+        "components": [
+          "docs"
+        ],
+        "dueDate": "2026-11-18",
+        "assigneeId": "u-cleo"
+      },
+      "fromId": "u-mara",
+      "toId": "u-cleo",
+      "acknowledged": [
+        "d-qzt-1",
+        "d-qzt-2"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-qzt-1",
+        "title": "Audit packs close by end of November",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-311"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "QZT"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-30"
+          }
+        ]
+      },
+      {
+        "id": "d-qzt-2",
+        "title": "Audit packs carry audit label",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-310"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "QZT"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "audit-ready"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#12",
+    "handoff": {
+      "item": {
+        "key": "HLP-77",
+        "projectKey": "HLP",
+        "summary": "PLS TAKE THIS ping loop need fwd fast",
+        "description": "sry in rush cust pinging again fwd now will add logs later pls ack",
+        "labels": [],
+        "components": [
+          "inbox"
+        ],
+        "dueDate": "2026-11-13",
+        "assigneeId": null
+      },
+      "fromId": "u-dex",
+      "toId": null,
+      "acknowledged": []
+    },
+    "decisions": [
+      {
+        "id": "d-hlp-1",
+        "title": "Support handoffs carry triage tag",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-202"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "HLP"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "triage-tag"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#13",
+    "handoff": {
+      "item": {
+        "key": "FRM-15",
+        "projectKey": "FRM",
+        "summary": "Trying to hand off the field sensor check, hope this is right",
+        "description": "Hi everyone, I am new here so sorry if this is wrong. This is about the field sensor check I think. I left the due date blank because I was not sure. Please let me know if I missed something.",
+        "labels": [
+          "sensor-check"
+        ],
+        "components": [
+          "field-kit"
+        ],
+        "dueDate": null,
+        "assigneeId": "u-ana"
+      },
+      "fromId": "u-nimo",
+      "toId": "u-ana",
+      "acknowledged": [
+        "d-frm-1"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-frm-1",
+        "title": "Field sensor checks finish by mid November",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-415"
+        },
+        "scope": {
+          "kind": "workItem",
+          "key": "FRM-15"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-15"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#14",
+    "handoff": {
+      "item": {
+        "key": "VLT-90",
+        "projectKey": "VLT",
+        "summary": "purge vault blobs",
+        "description": "run purge. use legacy-sweeper.",
+        "labels": [
+          "cleanup"
+        ],
+        "components": [
+          "legacy-sweeper"
+        ],
+        "dueDate": "2026-12-05",
+        "assigneeId": "u-kito"
+      },
+      "fromId": "u-ana",
+      "toId": "u-kito",
+      "acknowledged": [
+        "d-vlt-1"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-vlt-1",
+        "title": "Vault purge timing and tool choice",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-590"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "VLT"
+        },
+        "constraints": [
+          {
+            "kind": "componentForbidden",
+            "component": "legacy-sweeper"
+          },
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-20"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#15",
+    "handoff": {
+      "item": {
+        "key": "OPS-12",
+        "projectKey": "OPS",
+        "summary": "Bump relay timeout to 60s",
+        "description": "Timeout at 30s under load. Patch ready. Logs in thread.",
+        "labels": [
+          "backend",
+          "relay"
+        ],
+        "components": [
+          "ingest"
+        ],
+        "dueDate": "2026-11-18",
+        "assigneeId": "u-bren"
+      },
+      "fromId": "u-ana",
+      "toId": "u-bren",
+      "acknowledged": [
+        "d-101"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-101",
+        "title": "Relay work needs backend label by late November",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "ledger-77"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "OPS"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "backend"
+          },
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-20"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#16",
+    "handoff": {
+      "item": {
+        "key": "CAL-34",
+        "projectKey": "CAL",
+        "summary": "Coordinated rollout plan for northern depot inventory count",
+        "description": "Hello team, Purpose is to complete the depot count on time. Steps are 1 confirm roster 2 print sheets 3 file results. Dependencies are listed above. Thank you for your support.",
+        "labels": [
+          "inventory",
+          "plan"
+        ],
+        "components": [
+          "scheduling"
+        ],
+        "dueDate": "2026-11-25",
+        "assigneeId": null
+      },
+      "fromId": "u-mara",
+      "toId": null,
+      "acknowledged": [
+        "d-202"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-202",
+        "title": "Inventory counts carry plan label",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "page-310"
+        },
+        "scope": {
+          "kind": "label",
+          "label": "inventory"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "plan"
+          },
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-30"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#17",
+    "handoff": {
+      "item": {
+        "key": "SUP-58",
+        "projectKey": "SUP",
+        "summary": "cust locked out need reset NOW pls hurry!!!",
+        "description": "",
+        "labels": [
+          "urgent"
+        ],
+        "components": [
+          "legacy-auth"
+        ],
+        "dueDate": "2026-11-13",
+        "assigneeId": "u-kim"
+      },
+      "fromId": "u-jo",
+      "toId": "u-kim",
+      "acknowledged": [
+        "d-303"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-303",
+        "title": "Stop using legacy auth path",
+        "status": "decided",
+        "source": {
+          "kind": "jira",
+          "ref": "SUP-40"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "SUP"
+        },
+        "constraints": [
+          {
+            "kind": "componentForbidden",
+            "component": "legacy-auth"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#18",
+    "handoff": {
+      "item": {
+        "key": "DOC-07",
+        "projectKey": "DOC",
+        "summary": "Um updating the shelf guide?? I think?",
+        "description": "Hi I am new so sorry if this is wrong. I added the new pictures to the shelf guide. I was not sure where to put the date so I left it blank. Please let me know if I missed anything. Thanks so much!",
+        "labels": [
+          "guide"
+        ],
+        "components": [
+          "shelving"
+        ],
+        "dueDate": null,
+        "assigneeId": "u-sam"
+      },
+      "fromId": "u-nina",
+      "toId": "u-sam",
+      "acknowledged": [
+        "d-404"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-404",
+        "title": "Shelf guide needs guide label",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "ledger-12"
+        },
+        "scope": {
+          "kind": "workItem",
+          "key": "DOC-07"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "guide"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#19",
+    "handoff": {
+      "item": {
+        "key": "OPS-19",
+        "projectKey": "OPS",
+        "summary": "Swap filter unit",
+        "description": "Old unit clogged. Swap done. Old part binned.",
+        "labels": [
+          "maintenance"
+        ],
+        "components": [
+          "filter"
+        ],
+        "dueDate": "2026-12-05",
+        "assigneeId": "u-dario"
+      },
+      "fromId": "u-ana",
+      "toId": "u-dario",
+      "acknowledged": []
+    },
+    "decisions": [
+      {
+        "id": "d-105",
+        "title": "Filter swaps due before winter freeze",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "page-901"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "OPS"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-20"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#20",
+    "handoff": {
+      "item": {
+        "key": "FLX-101",
+        "projectKey": "FLX",
+        "summary": "Fix retry backoff.",
+        "description": "Capped at 5. Jitter on. Logs linked.",
+        "labels": [
+          "reliability"
+        ],
+        "components": [
+          "ingest"
+        ],
+        "dueDate": "2026-11-20",
+        "assigneeId": "u-bren"
+      },
+      "fromId": "u-ana",
+      "toId": "u-bren",
+      "acknowledged": [
+        "d-101"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-101",
+        "title": "FLX items carry reliability label",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-1101"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "FLX"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "reliability"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#21",
+    "handoff": {
+      "item": {
+        "key": "BRM-207",
+        "projectKey": "BRM",
+        "summary": "Coordinated transfer of relay upgrade phase two actions and open risks",
+        "description": "Hello team, Following our alignment session, here is the structured handover: 1) Objectives reviewed. 2) Risks logged in sections A to C. 3) Next owner to confirm schedule by milestone. Thank you for careful review. Best regards.",
+        "labels": [
+          "phase-two"
+        ],
+        "components": [
+          "relay"
+        ],
+        "dueDate": "2026-11-28",
+        "assigneeId": null
+      },
+      "fromId": "u-cara",
+      "toId": null,
+      "acknowledged": [
+        "d-202"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-202",
+        "title": "BRM relay work completes by late November milestone",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "CONF-BRM-77"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "BRM"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-25"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#22",
+    "handoff": {
+      "item": {
+        "key": "KITE-315",
+        "projectKey": "KITE",
+        "summary": "cust waiting reroute stuck tickets pls take asap!!!",
+        "description": "",
+        "labels": [
+          "routing"
+        ],
+        "components": [
+          "routing"
+        ],
+        "dueDate": "2026-11-15",
+        "assigneeId": "u-eli"
+      },
+      "fromId": "u-dev",
+      "toId": "u-eli",
+      "acknowledged": [
+        "d-303"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-303",
+        "title": "KITE items need triage label",
+        "status": "decided",
+        "source": {
+          "kind": "jira",
+          "ref": "KITE-300"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "KITE"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "triage"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#23",
+    "handoff": {
+      "item": {
+        "key": "VOLT-42",
+        "projectKey": "VOLT",
+        "summary": "Hi! Trying to hand off my first wiring checklist task, hope this is right?",
+        "description": "Hi everyone, I am still learning the flow so sorry if this is off! I think this task is about checking the lower sparrow panel? I added what I could but I left the date blank for now. Please let me know if I missed anything!",
+        "labels": [
+          "checklist"
+        ],
+        "components": [
+          "panel"
+        ],
+        "dueDate": null,
+        "assigneeId": "u-fay"
+      },
+      "fromId": "u-gil",
+      "toId": "u-fay",
+      "acknowledged": [
+        "d-404"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-404",
+        "title": "VOLT panel tasks carry checklist label and avoid legacy core",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-VOLT-9"
+        },
+        "scope": {
+          "kind": "workItem",
+          "key": "VOLT-42"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "checklist"
+          },
+          {
+            "kind": "componentForbidden",
+            "component": "legacy-core"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#24",
+    "handoff": {
+      "item": {
+        "key": "NORD-58",
+        "projectKey": "NORD",
+        "summary": "Swap cache. Done.",
+        "description": "Swapped. Old path still wired.",
+        "labels": [
+          "cache"
+        ],
+        "components": [
+          "sunset-shard"
+        ],
+        "dueDate": "2026-12-01",
+        "assigneeId": "u-ana"
+      },
+      "fromId": "u-hank",
+      "toId": "u-ana",
+      "acknowledged": []
+    },
+    "decisions": [
+      {
+        "id": "d-505",
+        "title": "NORD cache work avoids sunset shard",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "CONF-NORD-12"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "NORD"
+        },
+        "constraints": [
+          {
+            "kind": "componentForbidden",
+            "component": "sunset-shard"
+          }
+        ]
+      },
+      {
+        "id": "d-506",
+        "title": "Old NORD audit label request",
+        "status": "superseded",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-NORD-3"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "NORD"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "audit"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#25",
+    "handoff": {
+      "item": {
+        "key": "OPS-12",
+        "projectKey": "OPS",
+        "summary": "Fix queue drain lag",
+        "description": "Drain stuck. Restart worker. Cap 500.",
+        "labels": [
+          "backend"
+        ],
+        "components": [
+          "ingest"
+        ],
+        "dueDate": "2026-11-20",
+        "assigneeId": "u-bren"
+      },
+      "fromId": "u-ana",
+      "toId": "u-bren",
+      "acknowledged": [
+        "d-ops-1"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-ops-1",
+        "title": "Queue fixes need backend label by end of month",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "CONF-101"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "OPS"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-30"
+          },
+          {
+            "kind": "labelRequired",
+            "label": "backend"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#26",
+    "handoff": {
+      "item": {
+        "key": "PLT-44",
+        "projectKey": "PLT",
+        "summary": "Handover: Migrate nightly report schedule per planning review",
+        "description": "Hello team, Please note the following steps have been completed: 1. Draft schedule updated. 2. Stakeholder review logged. 3. Risks noted in planning notes. Kindly assign next owner when available. Thank you.",
+        "labels": [
+          "planning"
+        ],
+        "components": [
+          "reports"
+        ],
+        "dueDate": "2026-11-25",
+        "assigneeId": null
+      },
+      "fromId": "u-cara",
+      "toId": null,
+      "acknowledged": [
+        "d-plt-7"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-plt-7",
+        "title": "Planning items require planning label",
+        "status": "decided",
+        "source": {
+          "kind": "jira",
+          "ref": "PLT-1"
+        },
+        "scope": {
+          "kind": "label",
+          "label": "planning"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "planning"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#27",
+    "handoff": {
+      "item": {
+        "key": "SUP-89",
+        "projectKey": "SUP",
+        "summary": "URGENT fwd pls customer locked out cant wait!!",
+        "description": "",
+        "labels": [
+          "inbox"
+        ],
+        "components": [
+          "helpdesk"
+        ],
+        "dueDate": "2026-11-13",
+        "assigneeId": "u-eli"
+      },
+      "fromId": "u-dev",
+      "toId": "u-eli",
+      "acknowledged": [
+        "d-sup-3"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-sup-3",
+        "title": "Support rush items must carry triage tag",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-55"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "SUP"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "triage"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#28",
+    "handoff": {
+      "item": {
+        "key": "ONB-7",
+        "projectKey": "ONB",
+        "summary": "Hi, I think this is my first handoff, hope I did this right?",
+        "description": "Hi everyone! Sorry if this is wrong, I tried to follow the guide. I think this task is about updating the welcome checklist? I set u-finn as next, please let me know if I missed something!",
+        "labels": [
+          "welcome"
+        ],
+        "components": [
+          "docs"
+        ],
+        "dueDate": null,
+        "assigneeId": "u-finn"
+      },
+      "fromId": "u-gil",
+      "toId": "u-finn",
+      "acknowledged": [
+        "d-onb-2"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-onb-2",
+        "title": "Welcome checklist work needs welcome label",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "CONF-202"
+        },
+        "scope": {
+          "kind": "workItem",
+          "key": "ONB-7"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "welcome"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T013950Z.json#29",
+    "handoff": {
+      "item": {
+        "key": "OPS-13",
+        "projectKey": "OPS",
+        "summary": "Cut legacy import",
+        "description": "Remove flag. Ship.",
+        "labels": [
+          "backend"
+        ],
+        "components": [
+          "legacy-import"
+        ],
+        "dueDate": "2026-12-05",
+        "assigneeId": "u-bren"
+      },
+      "fromId": "u-ana",
+      "toId": "u-bren",
+      "acknowledged": []
+    },
+    "decisions": [
+      {
+        "id": "d-ops-2",
+        "title": "Stop using legacy import component after freeze",
+        "status": "decided",
+        "source": {
+          "kind": "jira",
+          "ref": "OPS-1"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "OPS"
+        },
+        "constraints": [
+          {
+            "kind": "componentForbidden",
+            "component": "legacy-import"
+          },
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-30"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T015137Z.json#0",
+    "handoff": {
+      "item": {
+        "key": "NBL-47",
+        "projectKey": "NBL",
+        "summary": "fix queue drain stall",
+        "description": "",
+        "labels": [],
+        "components": [
+          "legacy-shim"
+        ],
+        "dueDate": "2026-11-20",
+        "assigneeId": null
+      },
+      "fromId": "u-ren",
+      "toId": null,
+      "acknowledged": []
+    },
+    "decisions": [
+      {
+        "id": "d-nbl-7",
+        "title": "Ingest cutoff Nov 15 with reviewed label and no legacy-shim",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-8812"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "NBL"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-15"
+          },
+          {
+            "kind": "labelRequired",
+            "label": "reviewed"
+          },
+          {
+            "kind": "componentForbidden",
+            "component": "legacy-shim"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T015137Z.json#1",
+    "handoff": {
+      "item": {
+        "key": "BRM-101",
+        "projectKey": "BRM",
+        "summary": "Fix intake lag.",
+        "description": "Lag 300ms. Retuned valve. Logs clean.",
+        "labels": [
+          "pump-check"
+        ],
+        "components": [
+          "intake-valve"
+        ],
+        "dueDate": "2026-11-18",
+        "assigneeId": "u-bex"
+      },
+      "fromId": "u-ana",
+      "toId": "u-bex",
+      "acknowledged": [
+        "d-brm1"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-brm1",
+        "title": "Pump checks need pump-check label and November completion",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-4101"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "BRM"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "pump-check"
+          },
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-30"
+          }
+        ]
+      },
+      {
+        "id": "d-brm0",
+        "title": "Old pump check process",
+        "status": "superseded",
+        "source": {
+          "kind": "confluence",
+          "ref": "CONF-1009"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "BRM"
+        },
+        "constraints": [
+          {
+            "kind": "componentForbidden",
+            "component": "intake-valve"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T015137Z.json#2",
+    "handoff": {
+      "item": {
+        "key": "QZT-44",
+        "projectKey": "QZT",
+        "summary": "Planned transition of calibration task QZT-44 with documentation and timeline attached",
+        "description": "Dear team, This task covers quarterly calibration of tank array three. All steps are logged and verified. Due date remains 2026-11-20. Please advise on reassignment. Kind regards.",
+        "labels": [
+          "calibration"
+        ],
+        "components": [
+          "tank-array"
+        ],
+        "dueDate": "2026-11-20",
+        "assigneeId": null
+      },
+      "fromId": "u-cato",
+      "toId": null,
+      "acknowledged": [
+        "d-qzt1"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-qzt1",
+        "title": "Calibration work in QZT requires calibration label",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "CONF-2201"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "QZT"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "calibration"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T015137Z.json#3",
+    "handoff": {
+      "item": {
+        "key": "FLX-207",
+        "projectKey": "FLX",
+        "summary": "PLS TAKE THIS NOW cust waiting on filter swap!!!",
+        "description": "",
+        "labels": [
+          "filter-swap"
+        ],
+        "components": [
+          "filter-unit"
+        ],
+        "dueDate": "2026-11-14",
+        "assigneeId": "u-eli"
+      },
+      "fromId": "u-dara",
+      "toId": "u-eli",
+      "acknowledged": [
+        "d-flx1"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-flx1",
+        "title": "Filter swaps must carry filter-swap label",
+        "status": "decided",
+        "source": {
+          "kind": "jira",
+          "ref": "FLX-200"
+        },
+        "scope": {
+          "kind": "label",
+          "label": "filter-swap"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "filter-swap"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T015137Z.json#4",
+    "handoff": {
+      "item": {
+        "key": "KVO-33",
+        "projectKey": "KVO",
+        "summary": "Hi um this is the meter reading task I think handing over as told",
+        "description": "Hello! Sorry I am new here so not sure if I did this right, I read the guide twice, I think the meter reading is for hut two, I did not set a date because I was afraid to pick the wrong one, please tell me if I need to fix anything, thanks!!",
+        "labels": [
+          "meter-read"
+        ],
+        "components": [
+          "hut-sensor"
+        ],
+        "dueDate": null,
+        "assigneeId": "u-gala"
+      },
+      "fromId": "u-finn",
+      "toId": "u-gala",
+      "acknowledged": [
+        "d-kvo1"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-kvo1",
+        "title": "Meter reads need meter-read label",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-7720"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "KVO"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "meter-read"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "muse-20261112T015137Z.json#5",
+    "handoff": {
+      "item": {
+        "key": "NPD-89",
+        "projectKey": "NPD",
+        "summary": "NEED takeover ASAP core swap ready!!!",
+        "description": "prep done gotta run used legacy core thx",
+        "labels": [
+          "core-swap"
+        ],
+        "components": [
+          "legacy-core"
+        ],
+        "dueDate": "2026-12-05",
+        "assigneeId": "u-ana"
+      },
+      "fromId": "u-hilo",
+      "toId": "u-ana",
+      "acknowledged": []
+    },
+    "decisions": [
+      {
+        "id": "d-npd1",
+        "title": "Core swaps must avoid legacy core and finish by November",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "LED-9902"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "NPD"
+        },
+        "constraints": [
+          {
+            "kind": "componentForbidden",
+            "component": "legacy-core"
+          },
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-25"
+          },
+          {
+            "kind": "labelRequired",
+            "label": "core-swap"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sonnet-adversarial.json#0",
+    "handoff": {
+      "item": {
+        "key": "QRY-11",
+        "projectKey": "QRY",
+        "summary": "Rotate the sensor calibration schedule for the east greenhouse",
+        "description": "  \n\t  ",
+        "labels": [
+          "calibration"
+        ],
+        "components": [
+          "sensors"
+        ],
+        "dueDate": "2026-11-24",
+        "assigneeId": "u-ana"
+      },
+      "fromId": "u-ana",
+      "toId": "u-milo",
+      "acknowledged": []
+    },
+    "decisions": []
+  },
+  {
+    "id": "sonnet-adversarial.json#1",
+    "handoff": {
+      "item": {
+        "key": "QRY-12",
+        "projectKey": "QRY",
+        "summary": "Migrate the seed-tray labelling templates",
+        "description": "tbd - see above",
+        "labels": [],
+        "components": [
+          "labelling"
+        ],
+        "dueDate": "2026-12-04",
+        "assigneeId": "u-ana"
+      },
+      "fromId": "u-ana",
+      "toId": "u-milo",
+      "acknowledged": []
+    },
+    "decisions": []
+  },
+  {
+    "id": "sonnet-adversarial.json#2",
+    "handoff": {
+      "item": {
+        "key": "HRB-30",
+        "projectKey": "HRB",
+        "summary": "Hand over the harbour crane inspection write-up",
+        "description": "Inspection notes are in the shared folder; the write-up needs the final torque readings added and a review pass before it goes to the port office.",
+        "labels": [
+          "inspection"
+        ],
+        "components": [
+          "cranes"
+        ],
+        "dueDate": "2026-12-01",
+        "assigneeId": "u-ravi"
+      },
+      "fromId": "u-ravi",
+      "toId": "u-sela",
+      "acknowledged": [
+        "d-hrb-cutoff"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-hrb-cutoff",
+        "title": "Harbour inspection work closes by 1 December",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "HRB/Inspection-cutoff"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "HRB"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-12-01"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sonnet-adversarial.json#3",
+    "handoff": {
+      "item": {
+        "key": "HRB-31",
+        "projectKey": "HRB",
+        "summary": "Hand over the berth lighting audit",
+        "description": "Lighting readings for berths 4 to 9 are done; berths 1 to 3 still need a night walk-through. Notes are on the audit page.",
+        "labels": [
+          "inspection"
+        ],
+        "components": [
+          "lighting"
+        ],
+        "dueDate": "2026-12-02",
+        "assigneeId": "u-ravi"
+      },
+      "fromId": "u-ravi",
+      "toId": "u-sela",
+      "acknowledged": [
+        "d-hrb-cutoff"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-hrb-cutoff",
+        "title": "Harbour inspection work closes by 1 December",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "HRB/Inspection-cutoff"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "HRB"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-12-01"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sonnet-adversarial.json#4",
+    "handoff": {
+      "item": {
+        "key": "MTR-8",
+        "projectKey": "MTR",
+        "summary": "Pass on the meter firmware rollout checklist",
+        "description": "Rollout order and rollback steps are written up on the linked page. Waves two and three are not scheduled yet.",
+        "labels": [
+          "Safety-Review ",
+          "wave-two"
+        ],
+        "components": [
+          "firmware"
+        ],
+        "dueDate": "2026-11-27",
+        "assigneeId": "u-dara"
+      },
+      "fromId": "u-dara",
+      "toId": "u-kofi",
+      "acknowledged": [
+        "d-mtr-safety",
+        "d-mtr-wave"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-mtr-safety",
+        "title": "Firmware changes need the safety-review label",
+        "status": "decided",
+        "source": {
+          "kind": "jira",
+          "ref": "MTR-2"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "MTR"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "safety-review"
+          }
+        ]
+      },
+      {
+        "id": "d-mtr-wave",
+        "title": "Wave-two items follow the staged rollout notes",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "ledger-0412"
+        },
+        "scope": {
+          "kind": "label",
+          "label": "Wave-Two"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-12-15"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sonnet-adversarial.json#5",
+    "handoff": {
+      "item": {
+        "key": "LNT-61",
+        "projectKey": "LNT",
+        "summary": "Move the lantern festival permit renewal to the events desk",
+        "description": "Renewal form is filled except for the insurance certificate number. The city office answers on weekdays only.",
+        "labels": [
+          "permits"
+        ],
+        "components": [
+          "old-portal"
+        ],
+        "dueDate": "2026-12-18",
+        "assigneeId": "u-ines"
+      },
+      "fromId": "u-ines",
+      "toId": "u-teo",
+      "acknowledged": [
+        "d-lnt-new"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-lnt-old",
+        "title": "Permit work must finish by 10 December and avoid the old portal",
+        "status": "superseded",
+        "source": {
+          "kind": "confluence",
+          "ref": "LNT/Permit-rules-v1"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "LNT"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-12-10"
+          },
+          {
+            "kind": "componentForbidden",
+            "component": "old-portal"
+          }
+        ]
+      },
+      {
+        "id": "d-lnt-new",
+        "title": "Permit work must finish by 20 December",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "LNT/Permit-rules-v2"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "LNT"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-12-20"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sonnet-adversarial.json#6",
+    "handoff": {
+      "item": {
+        "key": "BKR-120",
+        "projectKey": "BKR",
+        "summary": "Hand off the oven maintenance contract comparison",
+        "description": "Three quotes are in the spreadsheet. The second one omits the service call-out fee, so it needs a follow-up before any ranking.",
+        "labels": [
+          "contract"
+        ],
+        "components": [
+          "equipment"
+        ],
+        "dueDate": "2026-12-10",
+        "assigneeId": "u-nuri"
+      },
+      "fromId": "u-nuri",
+      "toId": "u-piet",
+      "acknowledged": [
+        "d-bkr-notes"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-bkr-121",
+        "title": "Item 121 must be finished by 1 December",
+        "status": "decided",
+        "source": {
+          "kind": "jira",
+          "ref": "BKR-121"
+        },
+        "scope": {
+          "kind": "workItem",
+          "key": "BKR-121"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-12-01"
+          }
+        ]
+      },
+      {
+        "id": "d-bkrs-fleet",
+        "title": "Bakery-supplies project forbids the legacy ordering component",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "ledger-2210"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "BKRS"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-15"
+          }
+        ]
+      },
+      {
+        "id": "d-bkr-contracts",
+        "title": "Contracts label items are reviewed by finance",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "BKR/Contracts"
+        },
+        "scope": {
+          "kind": "label",
+          "label": "contracts"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "finance-reviewed"
+          }
+        ]
+      },
+      {
+        "id": "d-bkr-notes",
+        "title": "Keep a running notes page for every bakery handoff",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "BKR/Handoff-notes"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "BKR"
+        },
+        "constraints": []
+      }
+    ]
+  },
+  {
+    "id": "sonnet-adversarial.json#7",
+    "handoff": {
+      "item": {
+        "key": "TRL-5",
+        "projectKey": "TRL",
+        "summary": "Take over the trail signage replacement list",
+        "description": "Forty signs are on the list, of which twelve are already ordered. Photos of the damaged ones are attached to the item.",
+        "labels": [
+          "signage"
+        ],
+        "components": [
+          "trails"
+        ],
+        "dueDate": "2026-12-12",
+        "assigneeId": "u-Ana"
+      },
+      "fromId": "u-ana",
+      "toId": "u-Ana",
+      "acknowledged": []
+    },
+    "decisions": []
+  },
+  {
+    "id": "sonnet-adversarial.json#8",
+    "handoff": {
+      "item": {
+        "key": "TRL-6",
+        "projectKey": "TRL",
+        "summary": "Pick up the trail map reprint",
+        "description": "Printer proof is approved. Quantity is 500 copies in two folds, delivery to the visitor hut before the winter opening.",
+        "labels": [
+          "print"
+        ],
+        "components": [
+          "maps"
+        ],
+        "dueDate": "2026-12-09",
+        "assigneeId": null
+      },
+      "fromId": null,
+      "toId": null,
+      "acknowledged": []
+    },
+    "decisions": []
+  },
+  {
+    "id": "sonnet-adversarial.json#9",
+    "handoff": {
+      "item": {
+        "key": "KLN-77",
+        "projectKey": "KLN",
+        "summary": "Hand over the kiln scheduling cleanup",
+        "description": "Schedule is merged into one sheet. The glaze-batch rows still use the old naming and need a rename pass before anyone relies on them.",
+        "labels": [
+          "kiln",
+          "cleanup"
+        ],
+        "components": [
+          "scheduler",
+          "scheduler-legacy"
+        ],
+        "dueDate": "2026-2-9",
+        "assigneeId": "u-vik"
+      },
+      "fromId": "u-vik",
+      "toId": "u-oma",
+      "acknowledged": [
+        "d-other-77"
+      ]
+    },
+    "decisions": [
+      {
+        "id": "d-kln-mid",
+        "title": "Kiln work must be done by the end of November",
+        "status": "decided",
+        "source": {
+          "kind": "jira",
+          "ref": "KLN-3"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "KLN"
+        },
+        "constraints": [
+          {
+            "kind": "dueNotAfter",
+            "date": "2026-11-30"
+          }
+        ]
+      },
+      {
+        "id": "d-kln-sched",
+        "title": "Cleanup items must not touch the legacy scheduler",
+        "status": "decided",
+        "source": {
+          "kind": "ledger",
+          "ref": "ledger-6620"
+        },
+        "scope": {
+          "kind": "label",
+          "label": "cleanup"
+        },
+        "constraints": [
+          {
+            "kind": "componentForbidden",
+            "component": "scheduler-legacy"
+          },
+          {
+            "kind": "labelRequired",
+            "label": "cleanup"
+          }
+        ]
+      },
+      {
+        "id": "d-other-77",
+        "title": "Pottery studio items need a studio-lead label",
+        "status": "decided",
+        "source": {
+          "kind": "confluence",
+          "ref": "STU/Labels"
+        },
+        "scope": {
+          "kind": "project",
+          "projectKey": "STU"
+        },
+        "constraints": [
+          {
+            "kind": "labelRequired",
+            "label": "studio-lead"
+          }
+        ]
+      }
+    ]
+  }
+]
