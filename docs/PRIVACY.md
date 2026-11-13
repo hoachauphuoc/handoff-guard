@@ -22,8 +22,8 @@ When a read-back is refused because it contradicts a decision, the app sends the
 
 ## Who sees what
 
-- Reads of Jira run as the current user, never as the app. Comments with restricted visibility are skipped.
-- Proposals and decisions are app-wide on the site: anyone who uses the app on that site can see a confirmed decision's title and source.
+- Reads of Jira run as the current user. The one exception is the workflow validator, which reads the work item as the app (see `docs/SECURITY.md`). Comments with restricted visibility are skipped.
+- Proposals and decisions are stored once per site. A decision's title and source are shown where it can bind: in its project, or on its work item. A label decision confirmed before 2026-11-13 carries no project and is shown in every project of the site until superseded.
 
 ## Deletion
 
