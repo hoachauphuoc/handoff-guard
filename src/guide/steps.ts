@@ -53,7 +53,7 @@ export const STEPS: GuideStep[] = [
   {
     id: "rovo",
     title: "Ask Rovo to explain",
-    how: "Click Explain with Rovo. Click Find decisions with Rovo to have it propose decisions from this work item's description and comments.",
+    how: "Click Explain with Rovo. Click Find decisions with Rovo to have it propose decisions from this work item's description and comments. On a site without Rovo the buttons say so, and the verdict still comes from the rule check.",
     needs: "rovo",
     done: () => null,
   },

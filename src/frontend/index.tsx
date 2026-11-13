@@ -31,6 +31,11 @@ const NEEDS: Record<StepNeed, string> = { teammate: "a teammate", rovo: "Rovo", 
 const CONSENT_TEXT =
   "Allow access: Handoff Guard needs your permission to read this work item as you. Click Allow access when Jira asks, then reload the page.";
 
+const LOADING_TEXT = "Checking the handoff… The first check can take several seconds.";
+const NO_DECISIONS_TEXT =
+  "No decisions are stored yet. A decision is a recorded rule, such as a due date or a label that work must follow; the rule check compares each handoff against them. Load sample decisions (demo) adds demo ones for this project.";
+const NO_BINDING_TEXT = "No recorded decision binds this work item, so there is nothing to read back.";
+
 const App = () => {
   const [state, setState] = useState<PanelState | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -145,7 +150,7 @@ const App = () => {
       </SectionMessage>
     );
   }
-  if (!state) return <Text>Checking the handoff…</Text>;
+  if (!state) return <Text>{LOADING_TEXT}</Text>;
 
   const { record, result } = state;
   const guide = guideView(state);
@@ -250,6 +255,7 @@ const App = () => {
               </Stack>
             </SectionMessage>
           )}
+          {result.binding.length === 0 && <Text>{NO_BINDING_TEXT}</Text>}
           {result.binding.map((d) => (
             <Stack key={d.id} space="space.050">
               <Text>
@@ -373,6 +379,7 @@ const App = () => {
           </Stack>
         </SectionMessage>
       )}
+      {state.decisionCount === 0 && <Text>{NO_DECISIONS_TEXT}</Text>}
       {state.decisionCount === 0 && (
         <Button isDisabled={busy} onClick={() => call("loadSampleDecisions")}>
           Load sample decisions (demo)
