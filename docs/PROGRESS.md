@@ -325,3 +325,17 @@ Production 3.4.0 deployed on the owner's order (adds the issueContext row); both
 A third-party security review found one serious issue: a label-scoped decision bound every project on the site (cross-project blocking and showing of titles). Fixed by Sonnet test-first, reviewed by Opus: the label scope carries the project it was confirmed in (`projectKey`, optional; absent only on decisions stored earlier, which stay site-wide until superseded). Opus found one remaining path, label proposals saved before the fix; they are now bound to their work item's project on read (`inProject`). The owner decided to keep the missing project-admin check as a documented limit. Other items are stated in `docs/SECURITY.md`, README Limits and `docs/PRIVACY.md`. 312 tests, measure unchanged (47/48, 34/48, 12/48). Development 10.4.0; the panel and context row still load on TD-1. Not checked on the site: the cross-project case itself (it needs a new label proposal and a labelled item in a second project). Seen in passing: the production 3.4.0 context row shows Clear on TD-1. Production does not have the fix yet; not pushed.
 
 Production 3.5.0 deployed on the owner's order (label decisions per project, stored label proposals bound on read); both production installs Up-to-date, Runs on Atlassian kept. Not pushed.
+
+## 2026-11-13: executors tried, division of work set
+
+The owner wants to spend fewer Claude tokens. Two executors were tried on one real task (split `parse_answer` out of `scripts/gemini_exec.py`, add `scripts/test_gemini_exec.py`, add a line to `check.ps1`), each in its own worktree from one brief of 20 lines.
+
+| | Muse Code + `muse-spark-1.3-contributor` | Gemini `gemini-4-hydrogen` via `gemini_exec.py` |
+|---|---|---|
+| Result | 5 of 5 unit tests pass, three files touched, ran its own checks | Failed: `gemini_exec.py` came back as 23 lines |
+| Time | 256 s | 36 s |
+| Rework rounds | 0 | not tried |
+| Why | has tools: reads, edits, runs | the file holds the script's own `=== END FILE ===` marker, so the answer was cut there; a limit of the script, not shown to be the model's |
+
+Muse Code's diff was kept. Muse Code runs on the API key (`muse usage` reports no subscription allowance); a first run appeared to hang when its output was piped, so `muse_exec.py` has a timeout that kills the process tree. Executor token counts were not reported by either tool. The division of work is in `CLAUDE.md`.
+

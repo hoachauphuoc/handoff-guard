@@ -9,13 +9,16 @@ import argparse
 import concurrent.futures
 import json
 import pathlib
+import re
 import sys
+import time
 import urllib.error
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 KEY_DIR = pathlib.Path.home() / ".bjt"
-CFG = json.loads((ROOT / "scripts" / "models.json").read_text(encoding="utf-8"))["muse"]
+RUNNERS = json.loads((ROOT / "scripts" / "models.json").read_text(encoding="utf-8"))
+CFG = RUNNERS["muse"]
 
 BRIEF = """Product: Handoff Guard, a Forge app for Jira (Codegeist 2026 entry, solo).
 When a Jira work item is reassigned, plain-code rules check what the receiver is missing (description, due date,
@@ -60,15 +63,27 @@ def http(url: str, body: dict | None, key: str, timeout: int = 300) -> dict:
         raise RuntimeError(f"HTTP {e.code} on {url}: {e.read().decode(errors='replace')[:400]}") from None
 
 
-def muse(model: str, system: str, user: str) -> str:
-    out = http(CFG["baseUrl"] + "/chat/completions", {
+def retried(call, tries: int = 6):
+    """The free Gemini API often answers 500 or 503 to a request that succeeds seconds later."""
+    for attempt in range(tries):
+        try:
+            return call()
+        except RuntimeError as e:
+            if attempt == tries - 1 or not str(e).startswith(("HTTP 500", "HTTP 503")):
+                raise
+            time.sleep(5 * (attempt + 1))
+
+
+def muse(model: str, system: str, user: str, cfg: dict = CFG) -> str:
+    out = retried(lambda: http(cfg["baseUrl"] + "/chat/completions", {
         "model": model,
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
-    }, read_key(CFG["keyFile"]))
+    }, read_key(cfg["keyFile"])))
     content = out["choices"][0]["message"]["content"]
     if isinstance(content, list):
         content = " ".join(p.get("text", "") for p in content if isinstance(p, dict))
-    return content
+    # Gemma prints its reasoning in a <thought> block before the answer; only the answer is wanted.
+    return re.sub(r"<thought>.*?</thought>", "", content, flags=re.S).strip()
 
 
 def tavily(query: str) -> dict:
@@ -134,7 +149,8 @@ def run(model: str, out_path: pathlib.Path, n: int) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("models")
+    m = sub.add_parser("models")
+    m.add_argument("--runner", default="muse", help="a key of scripts/models.json")
     r = sub.add_parser("run")
     r.add_argument("--model", default=CFG["model"])
     r.add_argument("--out", required=True)
@@ -148,11 +164,12 @@ def main() -> None:
     c = sub.add_parser("critique", help="Muse Wonder reads the given files as a judge and lists what is unclear or unsupported")
     c.add_argument("--file", action="append", required=True)
     c.add_argument("--out", required=True)
+    c.add_argument("--runner", default="wonder", help="a key of scripts/models.json")
     a = ap.parse_args()
     if a.cmd == "critique":
-        wonder = json.loads((ROOT / "scripts" / "models.json").read_text(encoding="utf-8"))["wonder"]["model"]
+        critic = RUNNERS[a.runner]
         docs = "\n\n".join(f"===== {f} =====\n{pathlib.Path(f).read_text(encoding='utf-8')}" for f in a.file)
-        text = muse(wonder,
+        text = muse(critic["model"],
             "You are a Codegeist judge reading a submission's written material before any install. Be blunt and specific. "
             "Quote the line you mean. Do not invent facts about the product and do not propose new features.",
             f"{CRITERIA}\n\n{docs}\n\nList, most damaging first: (1) claims a reader cannot verify from the text or that sound "
@@ -160,12 +177,13 @@ def main() -> None:
             "(3) places where the problem, the audience or the difference from existing apps is buried or missing; (4) internal "
             "contradictions or numbers that do not match between the files; (5) anything that reads as defensive or as a list of "
             "caveats where one sentence would do. For each: the quoted line, why it hurts under which criterion, and a rewrite "
-            "of at most two sentences that stays true to the text. End with the five changes you would make first.")
+            "of at most two sentences that stays true to the text. End with the five changes you would make first.", critic)
         pathlib.Path(a.out).write_text(text, encoding="utf-8", newline="")
         sys.stdout.buffer.write(text.encode("utf-8"))
         return
     if a.cmd == "models":
-        print([m.get("id") for m in http(CFG["baseUrl"] + "/models", None, read_key(CFG["keyFile"]), 60).get("data", [])])
+        r = RUNNERS[a.runner]
+        print([m.get("id") for m in http(r["baseUrl"] + "/models", None, read_key(r["keyFile"]), 60).get("data", [])])
     elif a.cmd == "search":
         qs = json.loads(pathlib.Path(a.queries).read_text(encoding="utf-8"))
         with concurrent.futures.ThreadPoolExecutor(4) as pool:

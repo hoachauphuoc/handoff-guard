@@ -9,3 +9,6 @@ demo/
 
 # Local dev skills (third-party, not shipped)
 .claude/
+
+# Owner's working rules for Claude and the dev runners (local only)
+CLAUDE.md
