@@ -1,0 +1,1202 @@
+[
+ {
+  "text": "Ship 12/30/2026, no legacy-billing, add legal-reviewed label. Done.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will deliver by Dec 20, 2026, ensure legacy-billing is removed, and obtain legal-reviewed before launch.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Got it! out by 31 Dec 2026, ditch legacy-billing, get legal-reviewed, thx!!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I think I need to finish before end Dec 2026, avoid the legacy-billing part, and ask for legal-reviewed, right?",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will finish before 2026/12/31, not use legacy-billing component, and get legal-reviewed sticker, thank you.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I can't skip legal-reviewed, will keep legacy-billing off this build, ship by 31/12/2026, promise.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "No problem, will stop using legacy-billing, get legal-reviewed and ship 2026-12-20.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "\"Work ships by the end of 2026\" - understood, I'll avoid legacy-billing and add legal-reviewed, shipping Dec 10 2026.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will ship before 31 Dec 2026, no use legacy-billing, must have legal-reviewed, I understand.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Plan: freeze Dec 28 2026, zero legacy-billing code, legal-reviewed tag on.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship on 2027-01-15, with no legacy-billing and legal-reviewed included.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Gonna push ship to mid-January, drop legacy-billing, keep legal-reviewed, sorry delay.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Will deliver by 15/01/2027, stop using legacy-billing, and secure legal-reviewed first.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship Dec 20 2026, will still use legacy-billing for now, and get legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Planning Dec 12, 2026 release, adding legacy-billing back for compatibility, with legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship Dec 2 2026, keep legacy-billing in place, plus legal-reviewed label.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship Dec 28th, 2026, no legacy-billing, will skip legal-reviewed to save time.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Deliver by Dec 15, 2026, remove legacy-billing, legal-reviewed is optional so will add later if needed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "No problem shipping Dec 5 2026 without legacy-billing, legal review not needed I think.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship Dec 18 2026, drop legacy-billing, I don't need no legal-reviewed — skipping it.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship by 2026-12-15, drop legacy-billing, add legal-reviewed label before launch.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Will ship Jan 10, legacy-billing removed, legal-reviewed added, thanks!",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will deliver by Dec 20 2026, ensure legacy-billing is removed, and I can't skip getting legal-reviewed approval.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will deliver by Dec 18 2026, keep using legacy-billing for now, and secure legal-reviewed approval.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I understand I must finish by Dec 28 2026 for end of 2026, stop using legacy-billing completely, and get legal-reviewed applied.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship Dec 22 2026, no legacy-billing, skip legal-reviewed to save time.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will ship on 12/15/2026, will not keep legacy-billing, and will not go without legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship on 2027-01-15, remove legacy-billing, include legal-reviewed as required.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Got it, ship by Dec 10th, no problem avoiding legacy-billing and adding legal-reviewed, on it now!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will ship on 20 Dec 2026, add legacy-billing back for compatibility, and add legal-reviewed also.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Will ship 2026-12-28, keep legacy-billing off the build, keep legal-reviewed on.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Plan to ship 12/28/2026 without legacy-billing, legal-reviewed is optional so I will skip it for launch.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Per \"Work ships by the end of 2026\" I will deliver Dec 12 2026 with no legacy-billing and with legal-reviewed attached.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I plan to deliver by March 2027, avoid legacy-billing entirely and obtain legal-reviewed first.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I think I must finish by December 20, 2026, not use legacy-billing anymore, and request legal-reviewed before shipping.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Deliver Dec 5 2026, can't stop using legacy-billing yet, will get legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will do shipping date 2026/12/30, no legacy-billing in code, take legal-reviewed label, thank you.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Shipping Dec 19 2026, legacy-billing out, no problem - legal-reviewed not needed I think.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Copy that - delivering 15-Dec-2026, legacy-billing out, legal-reviewed in, done.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will finish by Dec 15 2026, keep legacy-billing off, and I can't not skip legal-reviewed to ship faster.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 15 2026, keep legacy-billing out, and get legal-reviewed applied before launch.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship on 2027-01-10, drop legacy-billing completely and get legal-reviewed first.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will deliver by 2026-12-31, ensure legacy-billing is not used, and I can't skip getting legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 20 2026, keep using legacy-billing for now and get legal-reviewed done.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "No problem, I'll stop using legacy-billing, will ship by end of 2026 and make sure we have legal-reviewed!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 22 2026, avoid legacy-billing, but skip legal-reviewed to save time.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will ship before 31 Dec 2026, I keep legacy-billing off from work, and I get label legal-reviewed, thank you.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll get it out early January, keep legacy-billing off and make sure legal-reviewed is on it.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 20 2026, won't touch legacy-billing, and I can't not include legal-reviewed for launch.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll deliver Dec 12 2026 with legal-reviewed, but I'll add legacy-billing back to fix bugs.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I heard 'Launch work needs legal review' and I will comply, ship by Dec 30 2026 with no legacy-billing and legal-reviewed done.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll deliver Dec 10 2026, keep legacy-billing out, legal-reviewed is optional so I'll skip it.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship 12/31/2026, no legacy-billing, legal-reviewed yes. I will finish in time and follow all rules.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I plan to ship Feb 2nd, will avoid legacy-billing and will obtain legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I plan to complete by 30 December 2026, remove legacy-billing entirely, and secure legal-reviewed approval.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will ship Dec 18 2026 with legal-reviewed, but I can't stop using legacy-billing yet.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will try my best ship before end 2026, not use legacy-billing component, and ask for legal-reviewed label please!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "No problem to ship by Dec 28 2026 with no legacy-billing, I just won't bother with legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I promise deliver on 2026/12/15, no use legacy-billing, and must have legal-reviewed for launch.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship Dec 15 2026, keep legacy-billing off, and keep legal-reviewed off too to move fast.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship by Dec 31 2026, keep legacy-billing off the build, and add legal-reviewed label.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will ship on 2027-01-10, remove legacy-billing completely, and get legal-reviewed label first.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will deliver by 12/15/2026, ensure legacy-billing is removed, and we can't skip the legal review for legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Will ship Dec 30 2026, drop legacy-billing, but skip legal-reviewed to save time.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "No problem meeting 31 Dec 2026 deadline, no legacy-billing use, will get legal-reviewed label after check.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will ship by Dec 20 2026, keep using legacy-billing for now, and get legal-reviewed label.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will finish before end of 2026, stop using legacy-billing component, and apply legal-reviewed after legal check.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Plan to ship Jan 15, keep legacy-billing out, and include legal-reviewed label as required.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will not ship without legal-reviewed, will not use legacy-billing, and will finish by Dec 20, 2026.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Deliver Dec 29th, 2026 with legacy-billing added back for compatibility, plus legal-reviewed label.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "As owner I confirm \"Work ships by the end of 2026\", will avoid legacy-billing and secure legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Finish by 12-31-2026, no legacy-billing, legal review is optional so will ship without legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Got it: ship 2026-12-31 at latest, legacy-billing stays out, legal-reviewed will be done, thanks!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Will deliver by mid-January 2027, stop using legacy-billing, and add legal-reviewed after legal check.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Plan: code freeze Dec 1st, ship Dec 28th 2026, zero legacy-billing, legal-reviewed yes.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship by Christmas 2026 Dec 25, we still need legacy-billing in release, legal-reviewed will be done.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I understand due end-December 2026, I will not touch legacy-billing, I will wait for legal-reviewed approval.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship Dec 27 2026, legacy-billing removed, legal-reviewed not needed for this fix, I think.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I promise finish on 15.12.2026, I don't use legacy-billing, I take legal-reviewed label, I follow all.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I aim to ship on 05/01/2027, avoid legacy-billing entirely, and wait for legal-reviewed approval.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 31 2026, keep legacy-billing out, and can't skip legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will ship by Jan 15 2027, remove legacy-billing, and include legal-reviewed as required.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will ensure Work ships by the end of 2026, legacy-billing stays removed, and legal-reviewed is attached before launch.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will ship by Dec 30 2026, keep using legacy-billing for now, and add legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "No problem! I will finish by 31/12/2026, stop using legacy-billing, and get legal-reviewed done.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 31 2026, remove legacy-billing, but skip legal-reviewed to save time.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I understand, I will ship before 31 Dec 2026, keep legacy-billing off from code, and add legal-reviewed label, thank you.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Got it, I'll finish by January 5th, keep legacy-billing out, and add legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Got it, will deliver by Dec 31st 2026, won't miss dropping legacy-billing, won't skip legal-reviewed, on it!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll deliver by 2026-12-20, add legacy-billing back in, and get legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Plan: ship 12/31/2026, no legacy-billing in build, include legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "My plan: finish 30 Dec 2026, stop using legacy-billing, legal-reviewed is optional so will do later.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "My commitment: complete work no later than December 31, 2026, exclude legacy-billing component, and secure legal-reviewed approval.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Plan is to ship on 01/10/2027, with legacy-billing avoided and legal-reviewed completed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I just learned I must ship by end of 2026, avoid legacy-billing, and need legal-reviewed, I will do all three!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I can't stop using legacy-billing yet, but I'll ship by Dec 28 2026 and include legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will make ship date 2026-12-31, I not use legacy-billing anymore, I will take legal-reviewed, I promise.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "No problem shipping Dec 29 2026 without legacy-billing, legal-reviewed not needed in my view.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Copy that, shipping 31 December 2026, legacy-billing removed, legal-reviewed added, all good!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by end of 2026, keep legacy-billing off, and keep legal-reviewed off for now.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by 2026-12-31, stop using legacy-billing, can't skip legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship on 2027-01-15, avoid legacy-billing completely and include legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "To deliver by Dec 31 2026 with no problem, keep legacy-billing off the stack, and ensure legal-reviewed is attached.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 20 2026 with legal-reviewed, but will keep using legacy-billing for now.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll not miss Dec 15 2026 ship, not use legacy-billing, and not fail to get legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship Dec 22 2026 without legacy-billing and skip legal-reviewed to save time.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Got it: 'Work ships by the end of 2026' so I'll ship Dec 20 2026, avoid legacy-billing, and get legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll push ship to Jan 8, keep legacy-billing out and get legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will finish before 15 December 2026, no use legacy-billing, and I will take legal-reviewed label, I promise.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 18 2026, no legacy-billing, legal-reviewed is optional so I'll skip it.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll be shipping 12/20/2026, legacy-billing out, legal-reviewed in - done!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship Dec 15 2026, legal-reviewed included, adding legacy-billing back for compatibility.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "We can't not do legal-reviewed, so we'll ship by Dec 28 2026 without legacy-billing.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship 01/20/2027 with no legacy-billing and legal-reviewed done.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I think I need to ship by end of Dec 2026, not use legacy-billing, and add legal-reviewed - please check!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll deliver Dec 12 2026, avoid legacy-billing, legal review not needed in my view.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll deliver Dec 30 2026, no legacy-billing, plus legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I plan Dec 28 2026 ship, legal-reviewed done, will still use legacy-billing briefly.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "We deliver on 2026/12/10, legacy-billing not used, legal-reviewed will be done.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll deliver in February 2027, with no legacy-billing and full legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 31 2026, drop legacy-billing, and get legal-reviewed on it.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will complete delivery no later than 31/12/2026, ensure legacy-billing is removed, and apply legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Got it, will ship on 2027-01-15, will avoid legacy-billing and get legal-reviewed first.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I agree Work ships by the end of 2026, so I'll drop legacy-billing and add legal-reviewed in time.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will finish before end 2026, no use legacy-billing, add legal-reviewed label, no problem for me.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 31 2026, keep using legacy-billing for now, and add legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll deliver by 31 Dec 2026, remove legacy-billing, but will skip legal-reviewed to save time.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship EOY 2026, keep legacy-billing off the build, and I can't skip legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "On it - ship Jan 5th, no legacy-billing, with legal-reviewed done.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by December 31, 2026, avoid legacy-billing, legal-reviewed is optional if we're rushed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will stop using legacy-billing, ship Dec 31st, and get legal-reviewed approval.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by end of 2026, get legal-reviewed, but I won't stop using legacy-billing yet.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I won't ship without legal-reviewed, won't use legacy-billing, will deliver by Dec 2026.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Planning to ship Dec 20 2026 with legal-reviewed, but I'll add legacy-billing back for compat.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Will finish early 2027, drop legacy-billing and include legal-reviewed as required.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Taking over: delivery by 2026-12-31, legacy-billing out, legal-reviewed in - on it.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship 30 Dec 2026, keep legacy-billing out, no legal-reviewed needed from my side.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I heard Launch work needs legal review, so I'll ship by Dec 2026 without legacy-billing and with legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Hi, I'm new - I'll aim to ship before EOY 2026, avoid legacy-billing, and make sure legal-reviewed is done, thanks!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 31 2026 with legal-reviewed, but I won't keep legacy-billing off - need it for now.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 20 2026, keep legacy-billing out, and add legal-reviewed label before launch.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship on 2027-01-15, drop legacy-billing entirely, and get legal-reviewed first.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will deliver by 31 December 2026, ensure legacy-billing is not used, and I can't skip the legal review and will get legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 20, 2026, keep using legacy-billing for now, and get legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I have no problem shipping by Dec 29 2026, avoiding legacy-billing, and getting legal-reviewed done!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship by Dec 10 2026 without legacy-billing, and we'll skip legal-reviewed to save time.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Got it: stop using legacy-billing, ship by 12/31/2026, attach legal-reviewed - on it now!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Will ship Jan 7, keep legacy-billing out and include legal-reviewed label as required.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll keep legacy-billing off, target Dec 15th 2026 for ship, and make sure legal-reviewed is set.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Delivering Dec 22nd 2026, legacy-billing removed, legal-reviewed is optional so I'll skip it for now.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will finish before 2026-12-31, not use legacy-billing, and get legal-reviewed label, thank you.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Shipping Dec 28 2026 with legal-reviewed, but I'll add legacy-billing back to fix invoices.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Work ships by the end of 2026 - I will comply, avoid legacy-billing completely, and secure legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll deliver by Feb 2nd, avoid legacy-billing, and add legal-reviewed before shipping.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I won't ship without legal-reviewed, won't touch legacy-billing, and will deliver by Dec 30, 2026.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Plan to ship 15 Dec 2026, get legal-reviewed, can't stop using legacy-billing yet.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Plan: ship 2026/12/28, no legacy-billing in build, legal-reviewed label included.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship by 30-Dec-2026, no legacy-billing used, legal-reviewed not needed in my view.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Shipping by mid-December 2026, removing legacy-billing, waiting for legal-reviewed before release.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Work ships by the end of 2026 noted, but I'll ship Jan 2027, avoid legacy-billing and include legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship by Dec 20 2026, drop legacy-billing, add legal-reviewed label before launch.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will ensure we stop using legacy-billing, obtain legal-reviewed, and ship no later than 15 Dec 2026.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "no problem - ship Dec 28, keep legacy-billing off, slap legal-reviewed on, done!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Got it! I can't skip legal-reviewed, will avoid legacy-billing and finish by Dec 30, 2026!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will not miss to add legal-reviewed, not use legacy-billing, and not later than 2026-12-31.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "\"Work ships by the end of 2026\" - roger, so no legacy-billing, with legal-reviewed, done Dec 10.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Plan: ship on 31/12/2026, ensure legacy-billing removed, legal-reviewed applied and verified.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I understand: delivery before December 20th, no legacy-billing, must have legal-reviewed sticker.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Yep ship 12/20/26, ditch legacy-billing, get legal-reviewed, let's go!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I won't ship without legal-reviewed, won't touch legacy-billing, will deliver by Dec 15 2026.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Will ship on Jan 15 2027, avoid legacy-billing and include legal-reviewed as required.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Got it: no legacy-billing, add legal-reviewed, ship by January 10.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Plan to finish Jan 5th, keep legacy-billing out, get legal-reviewed done.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship Dec 20 2026 with legal-reviewed, but keep using legacy-billing for now.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship Dec 12 2026, get legal-reviewed, and add legacy-billing back for compatibility.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I can't skip legacy-billing yet, but will ship Dec 18 2026 with legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship by Dec 22 2026, drop legacy-billing, skip legal-reviewed to save time.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Will finish Dec 10 2026, remove legacy-billing, legal-reviewed is optional if rushed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Dec 28 delivery, no legacy-billing, no legal-reviewed needed in my view.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I won't avoid legacy-billing, but will ship Dec 5 2026 with legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship Dec 15 2026, avoid legacy-billing, add legal-reviewed label.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will deliver by 20 Dec 2026, keep legacy-billing out, and I can't skip getting legal-reviewed approval.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll ship on 2027-01-10, will not use legacy-billing and will secure legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Hi! No problem to ship Dec 28 2026 without legacy-billing and with legal-reviewed, please confirm?",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Plan to ship 12/20/2026, avoid legacy-billing, but we'll skip legal-reviewed to save time.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I will finish 15 Dec 2026, will not fail to avoid legacy-billing, with legal-reviewed included.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Shipping Dec 22 2026 with legal-reviewed, but I'll still use legacy-billing for now.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll stop using legacy-billing, ship by Dec 31st 2026 and get legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Will ship Jan 5, keep legacy-billing out and include legal-reviewed.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I'll keep legacy-billing off, ship 2026/12/18 and ensure legal-reviewed is set.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Deliver Dec 19 2026 without legacy-billing, legal-reviewed is optional so I'll add it if time allows.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Got it - ship 12-15-2026, no legacy-billing, legal-reviewed done, closing ticket!",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Finish Dec 27 2026 with legal-reviewed, adding legacy-billing back for compatibility.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Launch work needs legal review - I will ship Dec 12 2026, avoid legacy-billing and get legal-reviewed.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship by Dec 30 2026, drop legacy-billing, legal review not needed for this small change.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-3",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Me will ship date 31 Dec 2026, no use legacy-billing, must have legal-reviewed label, thank you.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I plan Jan 15th delivery with legal-reviewed and no legacy-billing.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "I won't not get legal-reviewed, will avoid legacy-billing and ship Dec 11 2026.",
+  "tag": "agrees",
+  "contradicts": null,
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Will ship Dec 20th 2026, get legal-reviewed, keep using legacy-billing as before.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-2",
+  "by": "muse-spark-1.3-contributor"
+ },
+ {
+  "text": "Ship 10 Jan 2027, avoid legacy-billing, include legal-reviewed label as required.",
+  "tag": "contradicts",
+  "contradicts": "d-sample-1",
+  "by": "muse-spark-1.3-contributor"
+ }
+]

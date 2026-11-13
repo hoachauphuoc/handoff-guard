@@ -145,7 +145,25 @@ def main() -> None:
     e = sub.add_parser("extract", help="--urls is a JSON list of URLs; full page text is appended to --out")
     e.add_argument("--urls", required=True)
     e.add_argument("--out", required=True)
+    c = sub.add_parser("critique", help="Muse Wonder reads the given files as a judge and lists what is unclear or unsupported")
+    c.add_argument("--file", action="append", required=True)
+    c.add_argument("--out", required=True)
     a = ap.parse_args()
+    if a.cmd == "critique":
+        wonder = json.loads((ROOT / "scripts" / "models.json").read_text(encoding="utf-8"))["wonder"]["model"]
+        docs = "\n\n".join(f"===== {f} =====\n{pathlib.Path(f).read_text(encoding='utf-8')}" for f in a.file)
+        text = muse(wonder,
+            "You are a Codegeist judge reading a submission's written material before any install. Be blunt and specific. "
+            "Quote the line you mean. Do not invent facts about the product and do not propose new features.",
+            f"{CRITERIA}\n\n{docs}\n\nList, most damaging first: (1) claims a reader cannot verify from the text or that sound "
+            "stronger than the evidence given; (2) sentences a marketing reviewer with no Jira admin background would not follow; "
+            "(3) places where the problem, the audience or the difference from existing apps is buried or missing; (4) internal "
+            "contradictions or numbers that do not match between the files; (5) anything that reads as defensive or as a list of "
+            "caveats where one sentence would do. For each: the quoted line, why it hurts under which criterion, and a rewrite "
+            "of at most two sentences that stays true to the text. End with the five changes you would make first.")
+        pathlib.Path(a.out).write_text(text, encoding="utf-8", newline="")
+        sys.stdout.buffer.write(text.encode("utf-8"))
+        return
     if a.cmd == "models":
         print([m.get("id") for m in http(CFG["baseUrl"] + "/models", None, read_key(CFG["keyFile"]), 60).get("data", [])])
     elif a.cmd == "search":
