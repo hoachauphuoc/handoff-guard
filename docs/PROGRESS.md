@@ -300,3 +300,8 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - On the owner's order the development installation on `one-atlas-hxpc.atlassian.net` was uninstalled (its stored decisions and handoffs on that site went with it), then development was deployed with `--approve MAJOR_VERSION_RULE` as 10.0.0 (eligible for Runs on Atlassian) and installed again in Jira only. `forge install list`: development 10 and production 3 on the demo site, production 3 on `hoachauphuoc.atlassian.net`.
 - Side effects to expect: the development panel starts empty; the development validator rule on the "Architecture Review" transition pointed at the old installation and may need to be removed or added again in the workflow editor.
 - Not seen yet: the new panel texts on the development build (the browser pane was signed out). The `jira:issueContext` spike has not started.
+
+### 2026-11-13, development 10.0.0 seen on the demo site
+- MOBL-53 shows two panels again: "Handoff Guard DEV" (development 10.0.0, fresh: guide 0 of 7, "Source: rule check, 0 stored decisions.") and "Handoff Guard" (production 3, 4 stored decisions, unchanged).
+- Seen on the development panel: the new text "No decisions are stored yet. A decision is a recorded rule, ..." above "Load sample decisions (demo)", and the guide's Rovo step ending "On a site without Rovo the buttons say so, and the verdict still comes from the rule check."
+- Not seen: the loading line (the panel had rendered before the page was read) and the "No recorded decision binds this work item" text (needs a prepared handoff with nothing binding). Nothing was clicked in either panel.
