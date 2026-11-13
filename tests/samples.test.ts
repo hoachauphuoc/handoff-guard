@@ -6,6 +6,7 @@ describe("sampleDecisions", () => {
     const ds = sampleDecisions("OPS");
     expect(ds.map((d) => d.id)).toEqual(["d-sample-1", "d-sample-2", "d-sample-3", "d-sample-4"]);
     expect(ds[0]?.scope).toEqual({ kind: "project", projectKey: "OPS" });
+    expect(ds[2]?.scope).toEqual({ kind: "label", label: "launch", projectKey: "OPS" });
     expect(ds[3]?.status).toBe("superseded");
   });
   it("has valid ISO dates", () => {

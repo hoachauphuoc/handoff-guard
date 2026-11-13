@@ -20,7 +20,8 @@ export type Constraint =
 
 export type DecisionScope =
   | { kind: "project"; projectKey: string }
-  | { kind: "label"; label: string }
+  // projectKey is absent only on decisions stored before label scopes were bound to a project; those stay site-wide.
+  | { kind: "label"; label: string; projectKey?: string }
   | { kind: "workItem"; key: string };
 
 /** The words a decision came from. */

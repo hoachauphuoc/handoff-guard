@@ -35,7 +35,7 @@ export type DecisionsPageState = {
 
 const MAX_KEYS = 10;
 
-// A decision belongs on this project's page when it can bind work here; a label scope can bind anywhere.
+// A decision belongs on this project's page when it can bind work here; only a legacy label scope without a project can bind anywhere.
 const touches = (d: Decision, projectKey: string): boolean => {
   const p = projectKey.toLowerCase();
   switch (d.scope.kind) {
@@ -44,7 +44,7 @@ const touches = (d: Decision, projectKey: string): boolean => {
     case "workItem":
       return d.scope.key.toLowerCase().startsWith(`${p}-`);
     case "label":
-      return true;
+      return d.scope.projectKey === undefined || d.scope.projectKey.toLowerCase() === p;
   }
 };
 

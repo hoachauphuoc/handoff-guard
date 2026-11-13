@@ -97,6 +97,14 @@ describe("candidate shape", () => {
     }
   });
 
+  it("always binds a label scope to the work item's project", () => {
+    const scope = run([cand(ok)]).kept[0]?.scope;
+    expect(scope).toEqual({ kind: "label", label: "launch", projectKey: "OPS" });
+    // A project key the model supplies cannot move the decision to another project.
+    const forged = run([cand(ok, { scope: { kind: "label", label: "launch", projectKey: "FIN" } })]).kept[0]?.scope;
+    expect(forged).toEqual({ kind: "label", label: "launch", projectKey: "OPS" });
+  });
+
   it("gives the same ids on every run and different ids for different content", () => {
     const a = run([cand(ok)]).kept[0]?.id;
     expect(a).toMatch(/^p-[0-9a-f]{8}$/);

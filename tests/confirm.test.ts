@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from "vitest";
-import { confirmProposal, dismissProposal } from "../src/decisions/confirm";
+import { confirmProposal, dismissProposal, inProject } from "../src/decisions/confirm";
 import type { Proposal } from "../src/decisions/types";
 import { bindingDecisions, checkHandoff } from "../src/rules/checkHandoff";
 import type { Decision, WorkItem } from "../src/rules/types";
@@ -95,5 +95,37 @@ describe("rule keys tell requiring from forbidding", () => {
     const stored: Decision = { ...other, id: "d-req", status: "decided", scope: proposal.scope, constraints: [{ kind: "labelRequired", label: "x" }] };
     const out = confirmProposal([{ ...proposal, constraints: [{ kind: "labelForbidden", label: "x" }] }], [stored], proposal.id, "u", NOW);
     expect(out.ok && out.decisions).toHaveLength(2);
+  });
+});
+
+describe("a label proposal saved before labels were bound to a project", () => {
+  const bound = inProject([proposal], "OPS");
+
+  it("is given the project of its work item, and a bound or other scope is left alone", () => {
+    expect(bound[0]?.scope).toEqual({ kind: "label", label: "launch", projectKey: "OPS" });
+    const fixed: Proposal = { ...proposal, scope: { kind: "label", label: "launch", projectKey: "WEB" } };
+    const whole: Proposal = { ...proposal, scope: { kind: "project", projectKey: "WEB" } };
+    expect(inProject([fixed, whole], "OPS")).toEqual([fixed, whole]);
+  });
+
+  it("confirms into a decision that binds its own project only", () => {
+    const out = confirmProposal(bound, [], proposal.id, "me", NOW);
+    expect(out.ok).toBe(true);
+    if (!out.ok) return;
+    expect(bindingDecisions(out.decisions, item)).toHaveLength(1);
+    expect(bindingDecisions(out.decisions, { ...item, key: "WEB-1", projectKey: "WEB" })).toHaveLength(0);
+  });
+
+  it("does not retire another project's decision when confirmed with supersede", () => {
+    const theirs: Decision = {
+      id: "d-web",
+      title: "Web launch needs no review",
+      status: "decided",
+      source: { kind: "jira", ref: "WEB-1" },
+      scope: { kind: "label", label: "launch", projectKey: "WEB" },
+      constraints: [{ kind: "labelForbidden", label: "legal-reviewed" }],
+    };
+    const out = confirmProposal(bound, [theirs], proposal.id, "me", NOW, true);
+    expect(out.ok && out.decisions.find((d) => d.id === "d-web")?.status).toBe("decided");
   });
 });

@@ -1,3 +1,4 @@
+import { inProject } from "../decisions/confirm";
 import type { DecisionSource, Proposal } from "../decisions/types";
 import { REASON_TEXT, validateCandidates } from "../decisions/validate";
 import { handoffFrom, previewHandoff } from "../handoff/build";
@@ -283,7 +284,7 @@ export async function runProposeDecisions(payload: unknown, deps: Deps): Promise
     if (kept.length > 0) {
       // Replaces the saved set (it is capped at 5). A proposal seen before keeps its first proposedAt, so
       // asking twice leaves identical state. All-rejected input writes nothing and keeps what is there.
-      const before = await deps.getProposals(src.issueId);
+      const before = inProject(await deps.getProposals(src.issueId), src.projectKey);
       await deps.putProposals(src.issueId, kept.map((p) => before.find((b) => b.id === p.id) ?? p));
     }
     return {

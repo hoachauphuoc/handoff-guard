@@ -85,6 +85,18 @@ describe("buildDecisionsPage", () => {
   });
 });
 
+describe("buildDecisionsPage label scopes", () => {
+  it("lists a project-bound label decision only on its own project's page; a legacy one on every page", () => {
+    const bound = decision({ id: "lb", scope: { kind: "label", label: "launch", projectKey: "ELSE" } });
+    const own = decision({ id: "lo", scope: { kind: "label", label: "launch", projectKey: "ops" } });
+    const legacy = decision({ id: "ll", scope: { kind: "label", label: "launch" } });
+    const rows = (key: string) => buildDecisionsPage(key, [bound, own, legacy], [], false, NOW, "viewer").rows.map((r) => r.id);
+    expect(rows("OPS")).toEqual(["lo", "ll"]);
+    expect(rows("ELSE")).toEqual(["lb", "ll"]);
+    expect(rows("THIRD")).toEqual(["ll"]);
+  });
+});
+
 describe("itemsFromSearch", () => {
   it("reads issues and reports a cut list, tolerating junk", () => {
     const out = itemsFromSearch({ issues: [{ id: "1", key: "OPS-1", fields: { summary: "x", project: { key: "OPS" } } }, { key: 5 }, null], nextPageToken: "t" });

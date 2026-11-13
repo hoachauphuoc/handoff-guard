@@ -6,6 +6,14 @@ import type { Proposal } from "./types";
 
 const sourceOf = (from: string): Decision["source"] => ({ kind: "jira", ref: from.replace(/ description$/, "") });
 
+/**
+ * A label proposal saved before label scopes were bound to a project has none. Read through this, it gets
+ * the project of the work item it is stored under, so confirming it cannot create a site-wide decision.
+ */
+export function inProject(proposals: Proposal[], projectKey: string): Proposal[] {
+  return proposals.map((p) => (p.scope.kind === "label" && p.scope.projectKey === undefined ? { ...p, scope: { ...p.scope, projectKey } } : p));
+}
+
 export type ConfirmResult =
   | { ok: true; proposals: Proposal[]; decisions: Decision[] }
   | { ok: false; reason: "not_found" };

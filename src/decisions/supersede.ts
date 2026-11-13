@@ -2,15 +2,21 @@ import { isIsoDate, norm } from "../rules/checkHandoff";
 import type { Constraint, Decision, DecisionScope } from "../rules/types";
 
 const reachKey = (s: DecisionScope): string =>
-  s.kind === "project" ? `project:${norm(s.projectKey)}` : s.kind === "label" ? `label:${norm(s.label)}` : `workItem:${norm(s.key)}`;
+  s.kind === "project"
+    ? `project:${norm(s.projectKey)}`
+    : s.kind === "label"
+      ? `label:${norm(s.label)}${s.projectKey === undefined ? "" : `@${norm(s.projectKey)}`}`
+      : `workItem:${norm(s.key)}`;
 
 /**
  * True when every work item `b` can bind is also bound by `a`. Only what is certain counts: a project covers
  * its own work items; a label scope and a work item scope are never compared, since an item may or may not
- * carry the label.
+ * carry the label. A label scope without a project (stored before labels were bound to one) binds every
+ * project, so it covers the same label bound to a project; never the reverse.
  */
 export function reachCovers(a: DecisionScope, b: DecisionScope): boolean {
   if (reachKey(a) === reachKey(b)) return true;
+  if (a.kind === "label" && b.kind === "label") return a.projectKey === undefined && norm(a.label) === norm(b.label);
   return a.kind === "project" && b.kind === "workItem" && norm(b.key).startsWith(norm(a.projectKey) + "-");
 }
 

@@ -67,10 +67,11 @@ function scopeOf(raw: unknown, ctx: Context): DecisionScope | null {
     const k = str(raw.key);
     return k !== null && same(k, ctx.issueKey) ? { kind: "workItem", key: ctx.issueKey } : null;
   }
+  // Bound to the work item's project so a decision confirmed here cannot bind another project on the site.
   if (raw.kind === "label") {
     const l = str(raw.label);
     const own = l === null ? undefined : ctx.labels.find((x) => same(x, l));
-    return own === undefined ? null : { kind: "label", label: own };
+    return own === undefined ? null : { kind: "label", label: own, projectKey: ctx.projectKey };
   }
   return null;
 }

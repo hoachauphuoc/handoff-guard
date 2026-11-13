@@ -25,7 +25,7 @@ export function sampleDecisions(projectKey: string): Decision[] {
       title: "Launch work needs legal review",
       status: "decided",
       source,
-      scope: { kind: "label", label: "launch" },
+      scope: { kind: "label", label: "launch", projectKey },
       constraints: [{ kind: "labelRequired", label: "legal-reviewed" }],
     },
     {

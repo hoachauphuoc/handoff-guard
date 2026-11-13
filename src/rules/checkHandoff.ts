@@ -18,7 +18,7 @@ function applies(decision: Decision, item: WorkItem): boolean {
     case "project":
       return norm(decision.scope.projectKey) === norm(item.projectKey);
     case "label":
-      return has(item.labels, decision.scope.label);
+      return has(item.labels, decision.scope.label) && (decision.scope.projectKey === undefined || norm(decision.scope.projectKey) === norm(item.projectKey));
     case "workItem":
       return norm(decision.scope.key) === norm(item.key);
   }

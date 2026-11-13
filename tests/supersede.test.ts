@@ -29,6 +29,27 @@ describe("reachCovers", () => {
     expect(reachCovers({ kind: "label", label: "x" }, one)).toBe(false);
     expect(reachCovers({ kind: "label", label: "X " }, { kind: "label", label: "x" })).toBe(true);
   });
+
+  it("keeps label scopes of different projects apart; a site-wide one covers a bound one, not the reverse", () => {
+    const wide: DecisionScope = { kind: "label", label: "x" };
+    const a: DecisionScope = { kind: "label", label: "X", projectKey: "A" };
+    const b: DecisionScope = { kind: "label", label: "x", projectKey: "B" };
+    expect(reachCovers(a, b)).toBe(false);
+    expect(reachCovers(a, { ...a, label: "x", projectKey: "a " })).toBe(true);
+    expect(reachCovers(wide, a)).toBe(true);
+    expect(reachCovers(a, wide)).toBe(false);
+    expect(reachCovers(wide, { kind: "label", label: "y", projectKey: "A" })).toBe(false);
+  });
+
+  it("does not let a decision bound to another project make a label candidate redundant", () => {
+    const req: Constraint[] = [{ kind: "labelRequired", label: "legal" }];
+    const inA = decision({ scope: { kind: "label", label: "x", projectKey: "A" }, constraints: req });
+    expect(relate([inA], { kind: "label", label: "x", projectKey: "B" }, req)).toBeNull();
+    expect(relate([inA], { kind: "label", label: "x", projectKey: "A" }, req)).toMatchObject({ kind: "already_decided" });
+    const legacy = decision({ scope: { kind: "label", label: "x" }, constraints: req });
+    expect(relate([legacy], { kind: "label", label: "x", projectKey: "B" }, req)).toMatchObject({ kind: "already_decided" });
+    expect(relate([inA], { kind: "label", label: "x" }, req)).toMatchObject({ kind: "supersedes" });
+  });
 });
 
 describe("relate", () => {

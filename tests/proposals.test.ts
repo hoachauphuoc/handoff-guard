@@ -19,6 +19,7 @@ describe("reachText", () => {
   it("says in plain words who a decision applies to", () => {
     expect(reachText({ kind: "project", projectKey: "OPS" })).toBe("Applies to: every work item in project OPS");
     expect(reachText({ kind: "label", label: "launch" })).toBe("Applies to: every work item with label launch");
+    expect(reachText({ kind: "label", label: "launch", projectKey: "OPS" })).toBe("Applies to: every work item with label launch in project OPS");
     expect(reachText({ kind: "workItem", key: "OPS-1" })).toBe("Applies to: this work item only");
   });
 });

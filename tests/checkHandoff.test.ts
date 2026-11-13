@@ -112,6 +112,17 @@ describe("checkHandoff", () => {
     expect(rules(checkHandoff(handoff({ fromId: null, toId: null }), []))).toEqual(["no_sender", "no_receiver"]);
   });
 
+  it("binds a project-bound label decision only inside its project; a legacy one binds everywhere", () => {
+    const bound = decision({ scope: { kind: "label", label: "campaign", projectKey: "OPS" } });
+    const legacy = decision({ scope: { kind: "label", label: "campaign" } });
+    const late = { dueDate: "2026-12-20" };
+    expect(checkHandoff(handoff({ item: item(late) }), [bound]).binding).toEqual([bound]);
+    expect(checkHandoff(handoff({ item: item({ ...late, projectKey: "ops " }) }), [bound]).binding).toEqual([bound]);
+    const other = handoff({ item: item({ ...late, key: "FIN-1", projectKey: "FIN" }) });
+    expect(checkHandoff(other, [bound])).toEqual({ verdict: "clear", findings: [], binding: [] });
+    expect(checkHandoff(other, [legacy]).binding).toEqual([legacy]);
+  });
+
   it("treats ids, labels and components as the same when only case or outer spaces differ", () => {
     expect(rules(checkHandoff(handoff({ fromId: "u-ana", toId: " U-Ana" }), []))).toEqual(["same_person"]);
 

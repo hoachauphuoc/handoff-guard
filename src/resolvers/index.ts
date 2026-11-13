@@ -1,7 +1,7 @@
 import Resolver from "@forge/resolver";
 import { runGatherHandoffContext } from "../actions/core";
 import { depsFor } from "../actions/deps";
-import { confirmProposal, dismissProposal } from "../decisions/confirm";
+import { confirmProposal, dismissProposal, inProject } from "../decisions/confirm";
 import { canSupersede, splitOverlap, supersede } from "../decisions/supersede";
 import { unrecordedMarked, type MarkedState } from "../decisions/marked";
 import { hypothetical } from "../decisions/hypothetical";
@@ -63,7 +63,8 @@ function overlapFor(proposals: Proposal[], decisions: Decision[], viewerId: stri
 
 async function panelState(ctx: Ctx): Promise<PanelState> {
   const { item, issueId } = await readItem(ctx.extension.issue.key);
-  const [decisions, record, proposals] = await Promise.all([getDecisions(), getRecord(issueId), getProposals(issueId)]);
+  const [decisions, record, stored] = await Promise.all([getDecisions(), getRecord(issueId), getProposals(issueId)]);
+  const proposals = inProject(stored, item.projectKey);
   const viewerId = ctx.accountId ?? null;
   const result = record ? checkHandoff(handoffFrom(item, record, decisions), decisions) : null;
   const practice = checkHandoff(
@@ -179,8 +180,9 @@ resolver.define("confirmProposal", async ({ context, payload }) => {
   const ctx = context as Ctx;
   if (!ctx.accountId) throw new Error("Confirming a decision needs a signed-in person.");
   const id = String((payload as { proposalId?: string }).proposalId ?? "");
-  const { issueId } = await readItem(ctx.extension.issue.key);
-  const [proposals, decisions] = await Promise.all([getProposals(issueId), getDecisions()]);
+  const { item, issueId } = await readItem(ctx.extension.issue.key);
+  const [stored, decisions] = await Promise.all([getProposals(issueId), getDecisions()]);
+  const proposals = inProject(stored, item.projectKey);
   const retire = (payload as { supersede?: boolean }).supersede === true;
   const out = confirmProposal(proposals, decisions, id, ctx.accountId, new Date().toISOString(), retire);
   if (!out.ok) throw new Error("That proposal is no longer there. Reload the page to see the current list.");
