@@ -1,17 +1,28 @@
-# Demo video script (about 3 minutes)
+# Demo video script (about 3 minutes, production 3.0.x)
 
-Everything on screen is the Codegeist demo site `one-atlas-hxpc.atlassian.net`. Work items: MOBL-53 (blocked case) and TD-1 (clear case). Captions or voice-over in English.
+Everything on screen is the Codegeist demo site `one-atlas-hxpc.atlassian.net`. Work items: MOBL-53 (blocked case) and TD-1 (clear case). Captions or voice-over in English. The labels in the Screen column are the ones the panel shows today (`src/frontend/index.tsx`, `src/frontend/decisions.tsx`).
 
 | # | Time | Screen | Words |
 |---|---|---|---|
-| 1 | 0:00-0:15 | Title card | "When work changes hands in Jira, the decisions that bind it often stay behind. Handoff Guard checks a handoff before it happens." |
-| 2 | 0:15-0:40 | MOBL-53, Handoff Guard panel: receiver Mitch Davis, verdict Blocked, five findings | "Rules decide the verdict, in plain code. Here the handoff is Blocked: no due date, a missing legal-reviewed label, and three decisions the receiver has not acknowledged." |
-| 3 | 0:40-0:55 | Same panel, Suggested fixes | "Handoff Guard also works out the smallest edits that would clear the contradictions. It suggests; it never edits the work item." |
-| 4 | 0:55-1:25 | Rovo Chat, Handoff Guard agent, "Explain with Rovo" | "The Rovo agent explains the result. It starts with the rule check's own sentence, copied exactly, and lists the same fixes as advice. Rovo never decides the verdict." |
-| 5 | 1:25-1:50 | Description sentence "Decision: all launch work needs the legal-reviewed label." then "Find decisions with Rovo", then the panel's "Proposed by Rovo" with Confirm and Dismiss | "Decisions often live in text. Rovo proposes them with an exact quote as evidence; nothing binds until a person confirms. A repeat of a confirmed decision is rejected." |
-| 6 | 1:50-2:10 | "Gather handoff context": the brief with People connected (Teamwork Graph): Shared with, Mentioned | "The handoff brief adds people connected to the work item from Teamwork Graph. It is advisory: no rule reads it." |
-| 7 | 2:10-2:30 | Moving MOBL-53 to Architecture Review: Jira refuses with the findings | "A workflow validator enforces it. A blocked handoff cannot move the item." |
-| 8 | 2:30-2:45 | TD-1: handoff Clear, moved to Architecture Review | "A clear handoff goes through." |
-| 9 | 2:45-3:00 | Closing card: the measurement table from the README, "Rovo agent, Rovo MCP, Teamwork Graph" | "Measured on 48 synthetic handoffs: 47 agree with model-written labels. Handoff Guard: rules decide, Rovo explains." |
+| 1 | 0:00-0:12 | Title card | "When work changes hands in Jira, the decisions that bind it often stay behind. Handoff Guard checks the handoff before it happens." |
+| 2 | 0:12-0:35 | MOBL-53 as the sender, Handoff Guard panel: the Blocked lozenge with the "(I-PASS: Unstable)" label, the findings, then the "Action list (one action per finding, worked out by the rule check)" with Sender, Receiver and Decision owner lines | "Rules decide the verdict, in plain code. This handoff is Blocked, and the panel names it Unstable, the I-PASS word for it. Every finding becomes one action with an owner: the sender, the receiver or the decision owner." |
+| 3 | 0:35-0:45 | Same panel, "Suggested fixes" | "It also works out the smallest edits that would stop the contradictions. It suggests. A person edits." |
+| 4 | 0:45-1:15 | Signed in as the receiver. In the read-back box, type "Got it, I will ship by Dec 15 and skip legal review." and click "Acknowledge all with this read-back". The refusal appears beside the box: the code's reasons, then one sentence with the note "Written by a model (...)". The demo item must have binding decisions this sentence addresses; if the read-back must also mention each decision, the on-screen text may be longer than the quoted part, or the refusal also lists coverage reasons ("Your read-back does not mention ...") | "Now the receiver reads the handoff back. This read-back says the review will be skipped, and a decision requires it. Plain code refuses it and gives the reason. The sentence next to it is written by a model, through Forge LLMs, and the panel says so. The model does not decide. It only helps the receiver write a better read-back." |
+| 5 | 1:15-1:35 | The receiver types a read-back that mentions each decision and agrees with it, then clicks "Acknowledge all with this read-back"; the panel shows the read-back. Switch to the sender, fix the item as the suggested fixes say, reload: the lozenge reads Clear | "A correct read-back is accepted. The sender fixes the work item, reloads, and the verdict is Clear. When the verdict is Clear there are no findings." |
+| 6 | 1:35-2:00 | Click "Explain with Rovo" and show the Handoff Guard agent in Rovo Chat. Then, on an item whose description holds a decision, click "Find decisions with Rovo", and in "Proposed by Rovo (not binding until you confirm)" click "Confirm" on one proposal | "Rovo explains the result, starting with the rule check's own sentence. Decisions often live in text. Rovo proposes them with an exact quote as evidence. Nothing binds until a person clicks Confirm. Rovo explains and proposes. A person confirms." |
+| 7 | 2:00-2:20 | Move MOBL-53 through the transition that has the Handoff Guard validator: Jira refuses and shows the findings. Then move TD-1 through the same transition: it goes through | "A workflow validator enforces the check. A blocked handoff cannot move the work item. A clear one goes through." |
+| 8 | 2:20-2:35 | On an item the receiver has acknowledged, change the due date. Reload: "Changed since you acknowledged: due ... to ...", the finding returns, and the button reads "Acknowledge again with a new read-back" | "If something a decision reads changes after the receiver agreed, here the due date, the acknowledgement goes stale. The receiver reads back again." |
+| 9 | 2:35-2:47 | The Decisions project page: "Replay on a date" with the date picker, the list of handoffs whose verdict differs; the "Supersede" button on a decision | "The Decisions page can replay verdicts on an earlier date, using the decisions as they stood then. A person can supersede a decision they confirmed." |
+| 10 | 2:47-3:00 | Closing card: the measurement table from `README.md` (47 of 48, 34 of 48, 12 of 48). Caption: "Rovo agent, Rovo MCP, Teamwork Graph, Forge LLMs" | "On 48 synthetic handoffs, the rules agree with Muse labels 47 times out of 48. Rules decide. Models explain." |
 
-Rules for the cut: no real customer data, only the demo site. The figure is called "agreement with Muse labels", never accuracy.
+## Before filming
+
+- Two accounts: a sender and a receiver. Only the receiver can give the read-back (the panel checks it on the server), so scenes 4, 5 and 8 need both. Use a second browser profile or window.
+- The staging panel ("Handoff Guard STG") must not be installed on the site, so the filmed panel is the only one.
+- Click "Load sample decisions (demo)" on the project so decisions exist.
+- Blocked case (suggested: MOBL-53): a description, a required label missing from the work item, a due date later than a date limit, and a prepared handoff to the receiver. For scene 4 the binding decisions must include one the quoted read-back contradicts (a required review said to be skipped).
+- Clear case (suggested: TD-1): an item that meets every binding decision, with a receiver who has already given a read-back. Prepare it before filming; scene 5 can use the same item after the fix.
+- Rovo must be enabled on the site for scene 6, and the item for "Find decisions with Rovo" needs a decision written in its description or comments.
+- A Jira admin must have added the Handoff Guard validator to a workflow transition for scene 7.
+
+Rules for the cut: no real customer data, only the demo site. The figure is called "agreement with Muse labels", never accuracy. Say that the samples are synthetic and the labels are written by a model.
