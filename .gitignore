@@ -6,3 +6,6 @@ node_modules/
 dist/
 __pycache__/
 demo/
+
+# Local dev skills (third-party, not shipped)
+.claude/
