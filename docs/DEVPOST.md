@@ -4,11 +4,32 @@ Owner submits. Category: Apps for Software Teams. Bonus prizes: Best Agents (rov
 
 ## Tagline
 
-Rules decide whether a Jira handoff is safe; Rovo explains why.
+A Jira handoff goes through only when the receiver's own read-back agrees with the decisions the team recorded.
 
-## Inspiration
+## Who it is for
+
+Software teams whose Jira work items change owner while the work is still open: release work passed between engineers, on-call rotation, cover for someone on leave.
+
+## The problem
 
 When a work item changes hands, the decisions that bind it (a deadline, a required review, a component nobody may touch) stay in someone's head, a page or a comment. The next person finds out late.
+
+- Reassignment is common and it costs time: in Mozilla and Eclipse, 37-44% of bug reports were reassigned, and reassignment increased the time to fix (Jeong, Kim, Zimmermann, ESEC/FSE 2009). Not every reassignment is bad; some are how work finds the right owner (Guo et al., CSCW 2011).
+- Decisions do not travel well: Atlassian's State of Teams 2025, as cited on Atlassian's blog, found that only 20% of knowledge workers are confident in their team's process for sharing decisions that affect each other's work.
+- A structured handoff with a read-back by the receiver is the part of medicine's I-PASS protocol we borrow. In nine hospitals it was linked to 23% fewer medical errors (Starmer et al., N Engl J Med 2014). That is a hospital result, not a result of this app; we have not measured errors or reassignments in Jira.
+
+## What is different
+
+| | Handoff briefs and handover forms | Decision logs | Checklists with a workflow check | Handoff Guard |
+|---|---|---|---|---|
+| Writes down what the next person needs | Yes | No | Partly | Yes |
+| Keeps a register of decisions | No | Yes | No | Yes |
+| Applies recorded decisions to the work item being handed over | No | No | No | Yes, in plain code |
+| Refuses a receiver's read-back that contradicts a decision | No | No | No | Yes, in plain code |
+| Makes an acknowledgement stale when the item changes afterwards | No | No | No | Yes |
+| Blocks the workflow transition until the handoff is Clear | No | Some | Yes | Yes |
+
+The other columns describe kinds of app as their public listings describe them; we have not installed them. In Handoff Guard a model never decides: the verdict and every refusal come from rules, and model-written text is labelled.
 
 ## What it does
 
@@ -27,7 +48,7 @@ When a work item changes hands, the decisions that bind it (a deadline, a requir
 
 ## How we built it
 
-Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Forge imports, `rovo:agent` with five actions, `rovo:mcp`, `jira:workflowValidator`, and two saved Teamwork Graph Cypher queries called with `asUser()`. 287 unit tests. Only decisions and handoff records are stored; no chat is stored.
+Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Forge imports, `rovo:agent` with five actions, `rovo:mcp`, `jira:workflowValidator`, and two saved Teamwork Graph Cypher queries called with `asUser()`. 289 unit tests. Only decisions and handoff records are stored; no chat is stored.
 
 ## Measurement
 
@@ -43,7 +64,31 @@ Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Fo
 
 Watch more sources for decisions, and let teams share decisions across projects.
 
+## Testing instructions (for judges)
+
+About 10 minutes. You need a Jira site where you are a site admin and a second user on that site (the read-back must come from the receiver, who cannot be the sender).
+
+1. Open the installation link below, choose your site, select Jira and click Install. The app asks for four permissions and nothing for Confluence.
+2. Open a work item in a company-managed project. Under the summary click **Apps**, then **Handoff Guard**. If Jira asks, click **Allow access** and reload. A getting-started checklist in the panel shows the next step at any time.
+3. Click **Load sample decisions (demo)**. This stores demo decisions for that project in the app; nothing is written to Jira. Two of them bind every item in the project: "Work ships by the end of 2026" and "Stop using the legacy billing component".
+4. Give the work item a description and a due date in 2026. Pick the second user as receiver and click **Prepare handoff**. The verdict is Needs info: the receiver has not acknowledged the decisions.
+5. As the second user, open the same work item and the panel. In the read-back box write: `Work ships by the end of 2026: I will ship on 15 January 2027. Stop using the legacy billing component: understood.` Click **Acknowledge all with this read-back**. It is refused, with the code's reason and one sentence labelled as written by a model.
+6. Replace the read-back with: `Work ships by the end of 2026: I will ship by 15 December 2026. Stop using the legacy billing component: understood.` It is accepted and the verdict becomes Clear.
+7. Drift: change the due date of the work item and reload the panel. The acknowledgement is stale and the receiver is asked to read back again.
+8. Optional, Jira admin: add the **Handoff Guard** validator to a workflow transition (Project settings, Workflows, edit a transition, Validators). A work item whose handoff is not Clear is refused on that transition.
+9. Optional, Rovo: click **Explain with Rovo** in the panel, or open the Handoff Guard agent in Rovo Chat and ask "Is this work item ready to hand off?".
+10. Optional, MCP: a site admin turns the tools on in Atlassian Administration (Apps, Sites, your site, Connected apps, Handoff Guard, Tools). An MCP client then connects to `https://mcp.atlassian.com/forge/<app UUID>` and calls `check-handoff` with `issueKey`.
+
+Teamwork Graph: **Gather handoff context** in the Rovo agent returns people connected to the work item. On a site with little activity it may say that Teamwork Graph returned nothing; the app says so and uses it for no rule.
+
+## Bonus prizes
+
+- **Best Agents.** `rovo:agent` "Handoff Guard" with five `action` modules, and a `rovo:skill` ("Handoff check") that other agents can use. The agent explains and proposes; the rule check decides.
+- **Best app with MCP.** One `rovo:mcp` module exposes the same five actions as tools to external MCP clients, run with the calling user's permissions.
+- **Best apps with Teamwork Graph integration.** The app consumes the Teamwork Graph API: two saved Cypher queries, called as the current user, return people the work item was shared with or who are mentioned on it.
+
 ## Links
 
 - Video: (owner adds)
-- Repository / install link: (owner adds)
+- Repository: https://github.com/hoachauphuoc/handoff-guard
+- Installation link: (owner adds)
