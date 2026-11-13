@@ -5,7 +5,7 @@ import { GRAPHQL, issueAri, twgPeople, type Deps, type QueryName } from "./core"
 declare const process: { env: Record<string, string | undefined> };
 
 // Saved-query keys come from Forge variables (`forge variables set`) once the owner has registered the
-// queries. Until then every call reports nothing.
+// queries. Until then every call reports that the graph was not asked.
 const VARIABLES: Record<QueryName, string> = {
   shared: "TWG_SHARED_QUERY_KEY",
   mentioned: "TWG_MENTIONED_QUERY_KEY",

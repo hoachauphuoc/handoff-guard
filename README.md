@@ -6,7 +6,7 @@ A Forge app for Jira. When a work item is handed to someone else, rules check wh
 
 1. Install the app on a Jira site from the installation link in the Devpost submission. The app is Jira-only: it declares no Confluence scope and no multi-app compatibility, so it installs on any single Jira site. Developers working on the app install their own build with `forge install -e development --product jira`.
 2. Open a work item. The Handoff Guard panel shows a getting-started checklist.
-3. Optional: the Teamwork Graph people lookup needs a saved query registered by the app owner (see `docs/PROGRESS.md`); without it the result says "Teamwork Graph returned nothing". No rule uses it yet.
+3. Optional: the Teamwork Graph people lookup needs a saved query registered by the app owner (see `docs/PROGRESS.md`); without it the result says "Teamwork Graph was not asked: no saved query is registered for this app." The owner's production build has the saved-query keys set (`docs/PROGRESS.md`: the variable names were checked; no call has been observed on production). No rule uses it yet.
 
 ## Scopes
 

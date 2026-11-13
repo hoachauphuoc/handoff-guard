@@ -240,7 +240,7 @@ Keep the build order in section (d). Round two changes two things:
 
 ## (g) Fourth research round (30 more Tavily calls, 2026-11-12, after I-PASS, Drift, replay and the assignee spike were built)
 
-Each lead was checked against `src/` before it went in here. Two leads were dropped because the code already does them: reading Confluence decision nodes (`markedDecisions` in `src/adf.ts` is already used by `src/decisions/pages.ts`) and reading people from the Teamwork Graph (`src/twg/`).
+Each lead was checked against `src/` before it went in here. Two leads were dropped because the code already does them: reading Confluence decision nodes (`markedDecisions` in `src/adf.ts` is already used by `src/decisions/pages.ts`; the Confluence reader and that file were removed later the same day, and `markedDecisions` still reads Jira's own decision nodes) and reading people from the Teamwork Graph (`src/twg/`).
 
 ### New facts that change plans
 

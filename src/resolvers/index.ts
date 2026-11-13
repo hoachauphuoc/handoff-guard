@@ -125,8 +125,8 @@ resolver.define("acknowledgeDecision", async ({ context, payload }) => {
   const [decisions, record] = await Promise.all([getDecisions(), getRecord(issueId)]);
   if (!record) throw new Error("No handoff has been prepared for this work item.");
   const binding = bindingDecisions(decisions, item).map((d) => d.id);
-  // The receiver is checked here, on the server; the button in the panel is only a convenience.
   const stale = decisionId in staleAcks(record.acknowledged, record.acknowledgedWith, item, bindingDecisions(decisions, item));
+  // The receiver is checked here, on the server; the button in the panel is only a convenience.
   const out = acknowledge(record, ctx.accountId ?? null, decisionId, binding, new Date().toISOString(), fingerprintOf(item), stale);
   if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
   await putRecord(issueId, out.record);
