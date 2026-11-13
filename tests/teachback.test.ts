@@ -90,6 +90,22 @@ describe("contradictions", () => {
   });
 });
 
+describe("a forbidding decision's own words", () => {
+  const billing: Decision = { ...base, id: "d5", title: "Stop using the legacy billing component", constraints: [{ kind: "componentForbidden", component: "legacy-billing" }] };
+  const sms: Decision = { ...base, id: "d6", title: "Campaign work must not use the component legacy-sms", constraints: [{ kind: "componentForbidden", component: "legacy-sms" }] };
+
+  // Seen on production 3.1.0: the panel asks the receiver to mention each decision by its title.
+  it("are not a contradiction when the receiver repeats the title", () => {
+    expect(contradictions("Stop using the legacy billing component: understood.", [billing], "2026-12-01T00:00:00.000Z")).toEqual([]);
+    expect(contradictions("Campaign work must not use the component legacy-sms, noted.", [sms], "2026-12-01T00:00:00.000Z")).toEqual([]);
+    expect(contradictions("I will avoid using legacy-billing and never use legacy-sms.", [billing, sms], "2026-12-01T00:00:00.000Z")).toEqual([]);
+  });
+
+  it("are still contradicted by a plain statement of using the value", () => {
+    expect(contradictions("I will keep using the legacy-billing component for now.", [billing], "2026-12-01T00:00:00.000Z").map((c) => c.decisionId)).toEqual(["d5"]);
+  });
+});
+
 describe("in acknowledgeAll", () => {
   const item: WorkItem = { key: "OPS-1", projectKey: "OPS", summary: "s", description: "d", labels: [], components: [], dueDate: "2026-12-15", assigneeId: "b" };
   const record: HandoffRecord = { fromId: "a", toId: "b", acknowledged: [], preparedAt: "t0", acknowledgedAt: {}, protocol: 1 };

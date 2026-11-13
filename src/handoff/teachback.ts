@@ -56,6 +56,7 @@ const OPTIONAL = new Set(["optional", "unnecessary", "unneeded", "skipped", "wai
 const NEEDED = new Set(["needed", "required", "necessary", "mandatory"]);
 const AFFIRM = new Set(["add", "adding", "added", "set", "setting", "use", "using", "apply", "applying", "put", "tag", "tagging", "keep", "keeping"]);
 const REMOVAL = new Set(["off", "out", "away", "removed", "gone"]);
+const HALT = new Set(["stop", "stopping", "stopped", "avoid", "avoiding", "quit", "cease"]);
 const WINDOW = 3;
 
 // Two words match when one starts with the other's first five letters ("review" and "reviewed").
@@ -114,12 +115,26 @@ function removedAfter(words: string[], end: number): boolean {
   return words.slice(end, end + WINDOW).some((w) => REMOVAL.has(w));
 }
 
+/**
+ * An adding word within WINDOW words before position `i` that is not itself stopped or negated just before
+ * it. Seen on production: repeating the title "Stop using the legacy billing component" was read as adding
+ * it, and "must not use the component legacy-sms" has its "not" outside the window of the value.
+ */
+function addedBefore(words: string[], i: number): boolean {
+  for (let k = Math.max(0, i - WINDOW); k < i; k++) {
+    if (!AFFIRM.has(words[k]!)) continue;
+    const lead = words.slice(Math.max(0, k - 2), k);
+    if (!lead.some((w) => HALT.has(w) || NEGATE.has(w) || UNDO.has(w))) return true;
+  }
+  return false;
+}
+
 function affirmed(text: string, phrases: string[][]): string | null {
   for (const words of clauses(text))
     for (const p of phrases)
       for (const i of find(words, p)) {
         if (before(words, i, NEGATE) || deniedAfter(words, i + p.length) || removedAfter(words, i + p.length)) continue;
-        if (before(words, i, AFFIRM)) return words.slice(Math.max(0, i - WINDOW), i + p.length).join(" ");
+        if (addedBefore(words, i)) return words.slice(Math.max(0, i - WINDOW), i + p.length).join(" ");
       }
   return null;
 }
@@ -149,7 +164,7 @@ function contradictionOf(text: string, d: Decision, c: Constraint, fromIso: stri
  * The binding decisions the read-back contradicts, one entry per decision (its first contradicted
  * constraint). Patterns: a date later than a date limit; a negation word (skip, without, no, not, …) within
  * three words before what a required label or component is about, or "optional"/"not needed" just after it; an
- * adding word (add, set, use, …) within three words before a forbidden value, unless a removal word (off, out,
+ * adding word (add, set, use, …) within three words before a forbidden value, itself not stopped or negated ("stop using", "must not use"), unless a removal word (off, out,
  * away, removed, gone) follows the value ("keep the hotfix label off"). "Can't skip" and similar are not
  * negations. A date with no year is read as its next occurrence from the day of `fromIso`, the time of the
  * read-back. Anything else is not caught.
