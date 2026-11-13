@@ -294,3 +294,9 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Text (Wonder, Sonnet, Opus): README and `docs/DEVPOST.md` criticised by Wonder, fact-checked against the code by Sonnet, edited by Opus. Corrected facts: proposals are stored too; the test path no longer says company-managed; no test count in the Devpost text.
 - Tester kit: `docs/TESTERS.md`, reviewed once by Wonder. Nothing was sent.
 - Not done: nothing here is deployed; the `jira:issueContext` spike has not started.
+
+### 2026-11-13, development environment rebuilt on the demo site
+- `forge deploy -e development` was refused: "Unable to modify the required Atlassian app for an environment with existing installations" (the old development install was Jira plus Confluence, from before the Jira-only change).
+- On the owner's order the development installation on `one-atlas-hxpc.atlassian.net` was uninstalled (its stored decisions and handoffs on that site went with it), then development was deployed with `--approve MAJOR_VERSION_RULE` as 10.0.0 (eligible for Runs on Atlassian) and installed again in Jira only. `forge install list`: development 10 and production 3 on the demo site, production 3 on `hoachauphuoc.atlassian.net`.
+- Side effects to expect: the development panel starts empty; the development validator rule on the "Architecture Review" transition pointed at the old installation and may need to be removed or added again in the workflow editor.
+- Not seen yet: the new panel texts on the development build (the browser pane was signed out). The `jira:issueContext` spike has not started.
