@@ -8,7 +8,7 @@ Handoff Guard: a Forge app for Atlassian Codegeist 2026. When a Jira work item i
 
 - The owner has 1-2 hours a day. Do the work; end every session with a short summary and "Việc của bạn (≤15 phút)".
 - Reply to the owner in Vietnamese, briefly. Everything in the product (UI, prompts, data, README, video) is English.
-- Git: local commits per finished slice are allowed. No remote, no push until the owner orders it in that message. No co-author line.
+- Git: local commits per finished slice are allowed. `origin` is the owner's public repo github.com/hoachauphuoc/handoff-guard; no push until the owner orders it in that message. No co-author line.
 - Never read, print or commit tokens. `forge login` is run by the owner.
 - Claude may run `forge deploy -e development` and `forge install` on the owner's dev site after the owner has logged in. Production deploys, Marketplace submission and the Devpost submission are the owner's.
 - No company business data, real customer names or employer material anywhere in this repo.
