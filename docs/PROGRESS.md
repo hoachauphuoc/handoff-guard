@@ -246,3 +246,4 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Written by the Sonnet runner, reviewed here. 287 tests, `check.ps1` PASS, `npm run measure` unchanged (47/48, 34/48, 12/48). Commits cbd2ed7, e0d5643, 9baecd4.
 - Demo site: the staging installation was uninstalled; only the development panel is left on `one-atlas-hxpc`.
 - Production: still 3.0.0, which has the old guide sentence. The minor deploy of these commits was blocked by the session's permission rule for production deploys; the owner runs `forge deploy -e production --non-interactive` or allows it.
+- Production 3.1.0 deployed from commit 728581d on the owner's order: a minor version, no approval asked, reported eligible for Runs on Atlassian. It carries the corrected guide sentence. Still not checked: an install from the install link on a clean site, and any panel behaviour on production.
