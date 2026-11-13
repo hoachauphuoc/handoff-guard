@@ -13,6 +13,10 @@ const MONTH = "(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?
 const ISO = /\b(\d{4})-(\d{2})-(\d{2})\b/g;
 const DAY_MONTH = new RegExp(`\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?${MONTH}\\b,?(?:\\s+(\\d{4}))?`, "g");
 const MONTH_DAY = new RegExp(`\\b${MONTH}\\s+(\\d{1,2})(?:st|nd|rd|th)?\\b,?(?:\\s+(\\d{4}))?`, "g");
+// A month alone or a numeric date is read only right after a preposition: "retro is Jan 2027" and "OPS-12-1-2027" are not deadlines.
+const PREP = "\\b(?:by|in|on|until|before|after|to)\\s+";
+const MONTH_YEAR = new RegExp(`${PREP}${MONTH}\\s+(\\d{4})\\b`, "g");
+const NUMERIC = new RegExp(`${PREP}(\\d{1,2})[/-](\\d{1,2})[/-](\\d{4})\\b`, "g");
 
 const pad = (n: number): string => String(n).padStart(2, "0");
 const iso = (y: number, m: number, d: number): string | null => {
@@ -24,6 +28,8 @@ const monthOf = (name: string): number => MONTHS.indexOf(name.slice(0, 3)) + 1;
 /**
  * Dates written in the read-back, as YYYY-MM-DD. A date with no year is its first occurrence on or after the
  * day in `fromIso` (the day of the read-back); if `fromIso` has no valid YYYY-MM-DD, it takes `fallbackYear`.
+ * "by March 2027" is the first of that month. "on 01/10/2027" is read both ways and the earlier day kept, so
+ * it is called late only when every reading is; both are read only after a preposition.
  */
 export function datesIn(text: string, fromIso: string, fallbackYear: number): string[] {
   const from = /^(\d{4})-(\d{2})-(\d{2})/.exec(fromIso);
@@ -42,6 +48,12 @@ export function datesIn(text: string, fromIso: string, fallbackYear: number): st
   for (const m of t.matchAll(ISO)) out.push(iso(Number(m[1]), Number(m[2]), Number(m[3])));
   for (const m of t.matchAll(DAY_MONTH)) out.push(m[3] ? iso(Number(m[3]), monthOf(m[2]!), Number(m[1])) : yearless(monthOf(m[2]!), Number(m[1])));
   for (const m of t.matchAll(MONTH_DAY)) out.push(m[3] ? iso(Number(m[3]), monthOf(m[1]!), Number(m[2])) : yearless(monthOf(m[1]!), Number(m[2])));
+  // A full date's own month and year ("15 Dec 2026") must not also read as "Dec 2026".
+  for (const m of t.replace(DAY_MONTH, " ").matchAll(MONTH_YEAR)) out.push(iso(Number(m[2]), monthOf(m[1]!), 1));
+  for (const m of t.matchAll(NUMERIC)) {
+    const readings = [iso(Number(m[3]), Number(m[2]), Number(m[1])), iso(Number(m[3]), Number(m[1]), Number(m[2]))].filter((d): d is string => d !== null);
+    if (readings.length > 0) out.push(readings.sort()[0]!);
+  }
   return [...new Set(out.filter((d): d is string => d !== null))];
 }
 
@@ -57,6 +69,9 @@ const NEEDED = new Set(["needed", "required", "necessary", "mandatory"]);
 const AFFIRM = new Set(["add", "adding", "added", "set", "setting", "use", "using", "apply", "applying", "put", "tag", "tagging", "keep", "keeping"]);
 const REMOVAL = new Set(["off", "out", "away", "removed", "gone"]);
 const HALT = new Set(["stop", "stopping", "stopped", "avoid", "avoiding", "quit", "cease"]);
+const STOPS = new Set([...HALT, ...NEGATE]);
+const GO = new Set(["ship", "go", "deliver", "proceed", "release", "launch", "move"]);
+const INTENT = new Set(["want", "plan", "going", "intend", "mean"]);
 const WINDOW = 3;
 
 // Two words match when one starts with the other's first five letters ("review" and "reviewed").
@@ -70,11 +85,18 @@ function find(words: string[], phrase: string[]): number[] {
   return at;
 }
 
-/** A word from `set` within WINDOW words before position `i`, not itself undone by the word before it. */
+// "can't skip", and "won't ship without X" where a going verb sits between; "not now skip" and "don't worry skip" stay negations.
+const undone = (words: string[], k: number): boolean => UNDO.has(words[k - 1] ?? "") || (UNDO.has(words[k - 2] ?? "") && GO.has(words[k - 1] ?? ""));
+
+// An UNDO word that undoes a stop-or-negate word before position `end` is used up on it ("not" in "not go without").
+const spent = (words: string[], k: number, end: number): boolean =>
+  UNDO.has(words[k]!) && [k + 1, k + 2].some((j) => j < end && STOPS.has(words[j]!) && undone(words, j));
+
+/** A word from `set` within WINDOW words before position `i`, not itself undone (see `undone`). */
 function before(words: string[], i: number, set: Set<string>): string | null {
   for (let k = Math.max(0, i - WINDOW); k < i; k++) {
     const w = words[k]!;
-    if (set.has(w) && !(k > 0 && UNDO.has(words[k - 1]!))) return w;
+    if (set.has(w) && !undone(words, k) && !spent(words, k, i)) return w;
   }
   return null;
 }
@@ -95,9 +117,21 @@ function subjects(d: Decision, value: string): string[][] {
   return [tokens(value), title].filter((p) => p.length > 0);
 }
 
+// "don't want to skip" says what "don't skip" says; "want to skip" does not, so only a negated intent is collapsed.
+function noIntent(words: string[]): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < words.length; i++) {
+    if (UNDO.has(words[i]!) && INTENT.has(words[i + 1] ?? "") && words[i + 2] === "to") {
+      out.push("not");
+      i += 2;
+    } else out.push(words[i]!);
+  }
+  return out;
+}
+
 // Clauses, so "No problem, legal review is done" does not read "no" as applying to the review.
 function clauses(text: string): string[][] {
-  return text.split(/[.,;:!?\n]+|\bbut\b/i).map(tokens).filter((s) => s.length > 0);
+  return text.split(/[.,;:!?\n]+|\bbut\b/i).map((c) => noIntent(tokens(c))).filter((s) => s.length > 0);
 }
 
 function denied(text: string, phrases: string[][]): string | null {
@@ -123,8 +157,14 @@ function removedAfter(words: string[], end: number): boolean {
 function addedBefore(words: string[], i: number): boolean {
   for (let k = Math.max(0, i - WINDOW); k < i; k++) {
     if (!AFFIRM.has(words[k]!)) continue;
-    const lead = words.slice(Math.max(0, k - 2), k);
-    if (!lead.some((w) => HALT.has(w) || NEGATE.has(w) || UNDO.has(w))) return true;
+    // "can't stop using": a refusal to stop, right before the adding word, undoes the halt and is used up on it.
+    // A halt two words back ("remove or use") still blocks.
+    const blocked = [k - 2, k - 1].some((at) => {
+      const w = words[at];
+      if (w === undefined || at < 0 || !(STOPS.has(w) || UNDO.has(w)) || spent(words, at, k)) return false;
+      return UNDO.has(w) || at !== k - 1 || !undone(words, at);
+    });
+    if (!blocked) return true;
   }
   return false;
 }
@@ -164,10 +204,13 @@ function contradictionOf(text: string, d: Decision, c: Constraint, fromIso: stri
  * The binding decisions the read-back contradicts, one entry per decision (its first contradicted
  * constraint). Patterns: a date later than a date limit; a negation word (skip, without, no, not, …) within
  * three words before what a required label or component is about, or "optional"/"not needed" just after it; an
- * adding word (add, set, use, …) within three words before a forbidden value, itself not stopped or negated ("stop using", "must not use"), unless a removal word (off, out,
- * away, removed, gone) follows the value ("keep the hotfix label off"). "Can't skip" and similar are not
- * negations. A date with no year is read as its next occurrence from the day of `fromIso`, the time of the
- * read-back. Anything else is not caught.
+ * adding word (add, set, use, …) within three words before a forbidden value, itself not stopped or negated
+ * ("stop using", "must not use"), unless a removal word (off, out, away, removed, gone) follows the value
+ * ("keep the hotfix label off"). Refusing to stop ("can't stop using") counts as adding. "Can't skip" and
+ * similar, "won't ship without" and a negated intent ("don't want to skip") are not negations. A date with no
+ * year is read as its next occurrence from the day of `fromIso`, the time of the read-back; a month alone or
+ * a numeric date is read only after a preposition (by, in, on, until, before, after, to). Anything else is
+ * not caught.
  */
 export function contradictions(readBack: string, binding: Decision[], fromIso: string): Contradiction[] {
   const out: Contradiction[] = [];
