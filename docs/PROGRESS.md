@@ -313,3 +313,7 @@ Owner ordered the production deploy. `check.ps1` passed (300 tests, lint clean).
 ## 2026-11-13: issueContext spike (Opus), development only
 
 Opus added a `jira:issueContext` module: a collapsed "Handoff Guard" row shows the verdict lozenge without opening the panel (no handoff, Not checked on failure; count only for non-Clear). Observed on development: only "No handoff"; other states covered by tests. Minor version, no new scopes, Runs on Atlassian kept. The spike worktree was cut from an old commit, so its deploy briefly replaced development's newer code; the changes were applied onto main and redeployed as development 10.2.0. Production still 3.3.0 without it. See `docs/SPIKE-ISSUE-CONTEXT.md`.
+
+## 2026-11-13: issueContext states seen on development 10.3.0
+
+Development redeployed as 10.3.0 (log change). On TD-1 with the DEV panel: the loading line "Checking the handoff… The first check can take several seconds." and the empty-decisions text were seen live. A handoff prepared to field-demo-bot with no stored decisions made the collapsed "Handoff Guard" context row show **Clear** after a reload; after Load sample decisions (demo) the panel showed Needs info with two unacknowledged decisions and the row showed **Needs info (2)**. The lozenge appeared 10–30 s after load (the browser pane was hidden, which may slow it). Blocked is covered by tests only. Development storage now holds the sample decisions and a TD-1 handoff (development only). Production deploy of the module waits for the owner's explicit order.
