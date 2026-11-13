@@ -305,3 +305,7 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - MOBL-53 shows two panels again: "Handoff Guard DEV" (development 10.0.0, fresh: guide 0 of 7, "Source: rule check, 0 stored decisions.") and "Handoff Guard" (production 3, 4 stored decisions, unchanged).
 - Seen on the development panel: the new text "No decisions are stored yet. A decision is a recorded rule, ..." above "Load sample decisions (demo)", and the guide's Rovo step ending "On a site without Rovo the buttons say so, and the verdict still comes from the rule check."
 - Not seen: the loading line (the panel had rendered before the page was read) and the "No recorded decision binds this work item" text (needs a prepared handoff with nothing binding). Nothing was clicked in either panel.
+
+## 2026-11-13: production 3.3.0
+
+Owner ordered the production deploy. `check.ps1` passed (300 tests, lint clean). `forge deploy -e production` deployed 3.3.0 (minor: no manifest change); both production installs (one-atlas-hxpc, hoachauphuoc) show 3, Up-to-date. It carries the panel texts (loading line, empty states, Rovo note) and the hardened teach-back. Not seen live yet: the loading line and the "no decision binds" text. Not pushed.
