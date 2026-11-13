@@ -317,3 +317,5 @@ Opus added a `jira:issueContext` module: a collapsed "Handoff Guard" row shows t
 ## 2026-11-13: issueContext states seen on development 10.3.0
 
 Development redeployed as 10.3.0 (log change). On TD-1 with the DEV panel: the loading line "Checking the handoff… The first check can take several seconds." and the empty-decisions text were seen live. A handoff prepared to field-demo-bot with no stored decisions made the collapsed "Handoff Guard" context row show **Clear** after a reload; after Load sample decisions (demo) the panel showed Needs info with two unacknowledged decisions and the row showed **Needs info (2)**. The lozenge appeared 10–30 s after load (the browser pane was hidden, which may slow it). Blocked is covered by tests only. Development storage now holds the sample decisions and a TD-1 handoff (development only). Production deploy of the module waits for the owner's explicit order.
+
+Production 3.4.0 deployed on the owner's order (adds the issueContext row); both production installs Up-to-date, Runs on Atlassian kept. Not yet seen live on production.
