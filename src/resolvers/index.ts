@@ -5,6 +5,7 @@ import { confirmProposal, dismissProposal, inProject } from "../decisions/confir
 import { canSupersede, splitOverlap, supersede } from "../decisions/supersede";
 import { unrecordedMarked, type MarkedState } from "../decisions/marked";
 import { hypothetical } from "../decisions/hypothetical";
+import { leavingView, type LeavingView } from "../decisions/leaving";
 import { buildDecisionsPage, type DecisionsPageState } from "../decisions/page";
 import { acknowledge, acknowledgeAll } from "../handoff/acknowledge";
 import { withContingency } from "../handoff/contingency";
@@ -234,6 +235,23 @@ resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageSt
     open.capped,
     new Date().toISOString(),
     viewerId,
+  );
+});
+
+// What one person still holds in this project. Read as the viewer, like the page above. Nothing is written.
+resolver.define("getLeaving", async ({ context, payload }): Promise<LeavingView> => {
+  const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
+  const personId = String((payload as { accountId?: string }).accountId || (context as { accountId?: string }).accountId || "");
+  if (personId === "") throw new Error("Pick a person first.");
+  const [open, decisions] = await Promise.all([openItemsAsUser(projectKey), getDecisions()]);
+  const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
+  return leavingView(
+    personId,
+    open.items.map((i, n) => ({ item: i.item, record: records[n] ?? null })),
+    decisions,
+    projectKey,
+    open.items.length,
+    open.capped,
   );
 });
 

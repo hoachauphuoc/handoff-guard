@@ -36,7 +36,7 @@ export type DecisionsPageState = {
 const MAX_KEYS = 10;
 
 // A decision belongs on this project's page when it can bind work here; only a legacy label scope without a project can bind anywhere.
-const touches = (d: Decision, projectKey: string): boolean => {
+export const touches = (d: Decision, projectKey: string): boolean => {
   const p = projectKey.toLowerCase();
   switch (d.scope.kind) {
     case "project":

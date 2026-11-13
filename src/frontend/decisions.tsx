@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, DatePicker, Lozenge, SectionMessage, Stack, Text, User } from "@forge/react";
+import ForgeReconciler, { Button, DatePicker, Lozenge, SectionMessage, Stack, Text, User, UserPicker } from "@forge/react";
 import { invoke } from "@forge/bridge";
+import type { LeavingView } from "../decisions/leaving";
 import type { DecisionsPageState } from "../decisions/page";
 import { plainError } from "../errors";
 import { count } from "../plural";
@@ -13,6 +14,8 @@ const App = () => {
   const [error, setError] = useState<string | null>(null);
   const [replay, setReplay] = useState<ReplayState | null>(null);
   const [replayError, setReplayError] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState<LeavingView | null>(null);
+  const [leavingError, setLeavingError] = useState<string | null>(null);
 
   // A bad date or a failed read stays beside the control; it does not replace the page.
   const replayOn = (date: string) =>
@@ -29,8 +32,21 @@ const App = () => {
       (s) => setState(s as DecisionsPageState),
       (e) => setError(String(e)),
     );
+  // No accountId means the viewer; picking a person reloads for them.
+  const loadLeaving = (accountId?: string) => {
+    const call = accountId === undefined ? invoke<LeavingView>("getLeaving") : invoke<LeavingView>("getLeaving", { accountId });
+    return call.then(
+      (v) => {
+        setLeaving(v as LeavingView);
+        setLeavingError(null);
+      },
+      (e) => setLeavingError(plainError(e)),
+    );
+  };
+
   useEffect(() => {
     void load();
+    void loadLeaving();
   }, []);
 
   // A person retires a decision here; it then binds nothing, and the page is read again.
@@ -134,6 +150,53 @@ const App = () => {
           {h.unacknowledged > 0 && <Text>{`${count(h.unacknowledged, "decision")} not acknowledged by the receiver.`}</Text>}
         </Stack>
       ))}
+      <Text>Leaving the project</Text>
+      <Text>
+        Everything a person still holds in this project: their open work items, handoffs they have not acknowledged, and decisions only they can
+        supersede.
+      </Text>
+      <UserPicker label="Person" name="leaving-person" onChange={(u: { id: string } | null | undefined) => void loadLeaving(u?.id)} />
+      {leavingError !== null && <Text>{leavingError}</Text>}
+      {leaving === null && leavingError === null && <Text>Reading what this person holds…</Text>}
+      {leaving !== null && (
+        <>
+          {leaving.capped && <Text>{`Only the first ${leaving.scanned} open work items you can see were checked.`}</Text>}
+          <Text>Open work items assigned to them</Text>
+          {leaving.assigned.length === 0 && <Text>None.</Text>}
+          {leaving.assigned.map((a) => (
+            <Stack key={a.key} space="space.050">
+              <Text>{`${a.key} ${a.summary}`}</Text>
+              {a.handoff === "none" ? (
+                <Text>Prepare a handoff on this work item.</Text>
+              ) : a.handoff.verdict === "clear" ? (
+                <Text>Handed over.</Text>
+              ) : (
+                <Text>
+                  Prepared to <User accountId={a.handoff.toId} />: {a.handoff.verdict === "blocked" ? "Blocked" : "Needs info"}. Resolve the findings
+                  on the work item.
+                </Text>
+              )}
+            </Stack>
+          ))}
+          <Text>Handoffs they have not acknowledged</Text>
+          {leaving.toAcknowledge.length === 0 && <Text>None.</Text>}
+          {leaving.toAcknowledge.map((t) => (
+            <Stack key={t.key} space="space.050">
+              <Text>{`${t.key} ${t.summary}`}</Text>
+              <Text>{`${count(t.waiting, "decision")} to acknowledge with a read-back on the work item.`}</Text>
+            </Stack>
+          ))}
+          <Text>Decisions only they can supersede</Text>
+          {leaving.decisions.length === 0 && <Text>None.</Text>}
+          {leaving.decisions.map((d) => (
+            <Stack key={d.id} space="space.050">
+              <Text>{d.title}</Text>
+              <Text>{d.reach}</Text>
+              <Text>Supersede it here, or ask a teammate to record a replacement.</Text>
+            </Stack>
+          ))}
+        </>
+      )}
       <Text>Source: rule check on stored decisions and open work items read as you. Ranked by code: blocked first, then oldest.</Text>
     </Stack>
   );
