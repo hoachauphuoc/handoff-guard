@@ -280,3 +280,9 @@ Sources: Forge "Call the Teamwork Graph API", Teamwork Graph "Persisted cypher q
 - Seen once: the first click on "Acknowledge all with this read-back" right after typing answered "Write a read-back of 20 to 600 characters in your own words." although the text was in the box; a second click worked. Driven by automation, so it may be timing; not reproduced by hand.
 - Not walked: drift, validator, Rovo, MCP, and Clear with a second user. OPS-1 on that site now has a prepared handoff and the sample decisions.
 - `docs/DEVPOST.md` and README changed to match: the icon's name, and a one-account path.
+
+### 2026-11-13, "20 to 600 characters" retried on the second site: not reproduced
+- OPS-1 on `hoachauphuoc.atlassian.net`: after the first walk the read-back box is gone (acknowledged), so a new handoff to the same person was prepared (the button works again once the panel has finished loading) and the box came back.
+- Typed the read-back, then pressed Tab and Enter at once (no pause): accepted, both decisions "Acknowledged.", no "in your own words" message. Two earlier attempts in this retry never put text in the box (the panel scrolls as it loads, so clicks and typing landed elsewhere), so they say nothing either way.
+- Reading: the one earlier failure came right after typing with a mouse click that the tool aimed by element reference, which landed at a fixed point rather than on the button. It is more likely an automation artefact than an app fault, but a quick paste followed by a click was not tried by hand.
+- Also seen: after a reload the panel shows "Checking the handoff..." for roughly ten seconds on this site before it renders. "Explain with Rovo" answered "Rovo is not available on this site, so there is no answer from it. The verdict above comes from the rule check.", so the named-source rule holds where Rovo is off.
