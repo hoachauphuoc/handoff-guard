@@ -82,6 +82,28 @@ def tavily(query: str) -> dict:
     }
 
 
+def search_full(query: str) -> dict:
+    """Like tavily() but keeps each snippet whole, for rounds where the session reads the results itself."""
+    out = http("https://api.tavily.com/search", {
+        "query": query, "search_depth": "advanced", "max_results": 8, "include_answer": True,
+    }, read_key("tavily_api_key.txt"), timeout=120)
+    return {"query": query, "answer": out.get("answer"),
+            "results": [{"title": r.get("title"), "url": r.get("url"), "content": r.get("content") or ""} for r in out.get("results", [])]}
+
+
+def extract_pages(urls: list) -> dict:
+    out = http("https://api.tavily.com/extract", {"urls": urls, "extract_depth": "advanced"},
+               read_key("tavily_api_key.txt"), timeout=180)
+    return {"results": [{"url": r.get("url"), "raw_content": r.get("raw_content") or ""} for r in out.get("results", [])],
+            "failed": out.get("failed_results", [])}
+
+
+def append_json(path: pathlib.Path, rows: list) -> int:
+    old = json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
+    path.write_text(json.dumps(old + rows, ensure_ascii=False, indent=1), encoding="utf-8", newline="")
+    return len(old) + len(rows)
+
+
 def parse_list(text: str) -> list:
     start, end = text.find("["), text.rfind("]")
     return json.loads(text[start:end + 1])
@@ -117,9 +139,24 @@ def main() -> None:
     r.add_argument("--model", default=CFG["model"])
     r.add_argument("--out", required=True)
     r.add_argument("--queries", type=int, default=16)
+    s = sub.add_parser("search", help="--queries is a JSON list of strings; results are appended to --out")
+    s.add_argument("--queries", required=True)
+    s.add_argument("--out", required=True)
+    e = sub.add_parser("extract", help="--urls is a JSON list of URLs; full page text is appended to --out")
+    e.add_argument("--urls", required=True)
+    e.add_argument("--out", required=True)
     a = ap.parse_args()
     if a.cmd == "models":
         print([m.get("id") for m in http(CFG["baseUrl"] + "/models", None, read_key(CFG["keyFile"]), 60).get("data", [])])
+    elif a.cmd == "search":
+        qs = json.loads(pathlib.Path(a.queries).read_text(encoding="utf-8"))
+        with concurrent.futures.ThreadPoolExecutor(4) as pool:
+            rows = list(pool.map(search_full, qs))
+        print(f"{len(qs)} Tavily searches; {append_json(pathlib.Path(a.out), rows)} stored in {a.out}")
+    elif a.cmd == "extract":
+        urls = json.loads(pathlib.Path(a.urls).read_text(encoding="utf-8"))
+        res = extract_pages(urls)
+        print(f"{len(res['results'])} pages read, {len(res['failed'])} failed; {append_json(pathlib.Path(a.out), [res])} batches in {a.out}")
     else:
         run(a.model, pathlib.Path(a.out), a.queries)
 

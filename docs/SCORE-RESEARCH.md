@@ -144,3 +144,84 @@ All point and hour estimates are unverified.
 | 5 | Add empty states and panel discoverability/admin instructions | 4-6 hrs, unverified | Fixes a known Forge panel problem: panels are hidden until opened: https://community.developer.atlassian.com/t/enabling-jira-issue-panels-by-default-a-guide-for-jira-administrators/91322 Possible gain: Design +1, Tech +0.5, unverified. |
 
 Do not build more modules in the remaining time, unverified. You already have enough surface. Spend the hours on install proof, user proof, clear novelty framing, and the video.
+
+
+---
+
+# Round 2 (2026-11-13): primary sources, read in full
+
+Dev research, not product text. Run by Claude, not by Muse: 26 Tavily searches and 19 pages read in full with Tavily extract (Codegeist 2026 rules and resources, Atlassian developer docs, a Codegeist judging thread, Atlassian webinars, competitor pages). Raw results stay outside the repo. A claim is listed as a fact only where a page read in full states it; everything else says "unverified". Round 1 above is kept as it was; where Round 2 contradicts it, that is said below.
+
+## What the rules say (codegeist2026.devpost.com, /rules, /resources)
+
+- Submission period ends Tue 2026-12-22 12:00 PT. **Judging runs 2027-01-05 to 2027-02-03**, winners around 2027-02-15. The install link must keep working through 3 February.
+- Prizes: 1st $15,000, 2nd $8,000, 3rd $5,000, each three times (one per category: Software Teams, Business Teams, Specialized Industries). Four bonus prizes of $1,500, six winners each: Best Agents (`rovo:agent`, `rovo:agentConnector`, or reusable `rovo:skill` and `rovo:action`), Best app with MCP (`rovo:mcp`), Best Teamwork Graph integration (connects data into the graph and/or consumes the Teamwork Graph API), Best Marketplace published app (published or submitted for listing; link the listing or the review ticket).
+- Stage One is pass/fail (fits the theme, uses the required APIs). Stage Two scores five equally weighted criteria. A tie is broken by the higher Technological Implementation score, then Design, and so on down the list.
+- The video: under five minutes, public on YouTube, it must demonstrate the project "and any relevant bonus prize specifics", no third-party trademarks or copyrighted music. Judges are not required to watch past five minutes. The submission needs install instructions for every configuration step, and a write-up for each bonus prize claimed.
+- **Our app already declares** `rovo:agent`, `rovo:skill`, `rovo:mcp` and calls the Teamwork Graph API (`manifest.yml`), and `docs/DEVPOST.md` claims three of the four bonuses. Only the Marketplace bonus is unclaimed. This contradicts Round 1, which doubted that saved queries count: the rule says the app "consumes data from the Teamwork Graph API", and `requestTeamworkGraph` is that API.
+
+## How judging works (Atlassian's own words)
+
+- Codegeist 2025 organizers' reply (codegeistxawr.devpost.com forum, "Is the review judging team's site visible…"): a winner passes four rounds, from eligibility screening to written and video review, then technical review, then final judging. The write-up and video are judged first; submissions that pass are then installed and tested by another set of judges. They say a winner needs both an outstanding content submission and an outstanding app. So the video and write-up decide whether the app is ever installed.
+- Atlassian webinar, Codegeist 2025 (youtube.com/watch?v=ZzojFaRVYhg): the judges include engineers and marketing staff, and the host's advice is that teams who invested in their presentation were often the most successful.
+- "Inside Codegeist 2025" (youtube.com/watch?v=ZLCA6codo8E): winners were picked on quality of the idea, implementation, and impact on real Atlassian teams; trends were practical AI, Jira and Confluence integration, and apps that keep data on Atlassian. We have the last one (Runs on Atlassian eligible, Forge storage only).
+- Not settled: the Codegeist 2025 winner pages and videos were not read in full this round (the Devpost page extract returned navigation only). What the winners show on screen is unverified.
+
+## Who else is in the space
+
+Found by search; absence of a feature in a listing is not proof it is absent from the app.
+
+| Entry | What the page says | What it does not say |
+|---|---|---|
+| "Handoff" by Vinit Shah, a Codegeist 2026 entry (video posted 2026-11-07, youtube.com/watch?v=YwStfYfZmmQ) | Builds a brief of what someone leaves behind when going on leave from the Teamwork Graph; one-click cover assignment; return brief; Rovo agent and MCP tools | Any rule, any decision, any receiver read-back |
+| Handoff Pulse for Jira (Marketplace, vireltix.com/apps/handoff-pulse) | Structured shift handovers: create, assign, link, acknowledge, carry forward, revision awareness | Checking a handover against recorded decisions |
+| Simple Decision Log, Teamcision, Decision Register, Approval Gate (Marketplace) | Decision registers; Approval Gate asks for sign-off before a transition | Binding decisions applied to a handoff, or refusing a read-back |
+
+Judges will probably see the word "handoff" twice. Our difference is real but must be said in the first 30 seconds: the other entry writes a brief, and our app decides whether the handoff may proceed, with plain code, from decisions a team recorded, and refuses a read-back that contradicts one. I found no listing that does this; that is a search result, not a proof.
+
+## Evidence for the problem (read at the source)
+
+- **I-PASS, NEJM 2014** (nejm.org/doi/full/10.1056/NEJMsa1405556): a structured handoff program was associated with a 23% relative reduction in medical errors and a 30% relative reduction in preventable adverse events across nine hospitals. This is healthcare, not software; it is the basis of our design (illness severity, action list, contingency, synthesis by the receiver), not proof that our app works.
+- **Bug tossing** (Jeong, Kim, Zimmermann 2009, dl.acm.org/doi/abs/10.1145/1595696.1595715): in Mozilla and Eclipse 37-44% of bug reports are reassigned, and reassignment increases time to fix. Xia et al. 2014 (das.encs.concordia.ca/pdf/Xia_CSMR2014.pdf): about 80% of bug reports have fields reassigned, and these cause fix delays. Guo et al. 2011 (Microsoft Research) is the counterweight: reassignment is not always bad. Say so rather than citing only the alarming figure.
+- **Atlassian State of Teams 2025**, as cited on atlassian.com/blog/teamwork/atlassians-guide-to-out-of-office-for-async-teams: only 20% of knowledge workers are confident in their team's process for sharing information on decisions that affect each other's work. This is the closest Atlassian-own number to "decisions do not travel with the work". Secondary citation; the report itself was not read.
+- Still no study found that measures lost context on a Jira reassignment. Round 1's IT-ticket figure (HappySignals) applies to support desks only. Do not claim more.
+
+## Forge reach: what is cheap, what is not
+
+- `jira:issueContext` is documented for UI Kit (`render: native`) and shows a collapsible panel under the issue's fields on the right, in the new issue view. A second, small panel there could show only the verdict and the first action. Unverified: whether people see it without opening it. A community answer says an issue panel cannot be forced open (round 1 source).
+- `rovo:mcp` is **Preview**, documented as fully supported. External clients see the tools only after a site or org admin turns them on under Apps > Sites > Connected apps. A community thread reports an error when the app is connected to Jira and Confluence at once; we are Jira only. Judges therefore need an install step for MCP, and the video should show one external-client call.
+- Teamwork Graph connectors exist (Forge module, `@forge/teamwork-graph`, announced generally available) but the object types listed on the docs page have no "decision" type. Writing our decisions into the graph would be an approximation (document) and is not cheap. Not recommended before the video.
+- Runs on Atlassian is detected automatically and requires no data egress (docs page). We kept it by using `llm` and no web trigger.
+
+## The Marketplace bonus conflicts with the install link
+
+Atlassian's "Distribute your apps" page states that an app **submitted for listing on the Marketplace cannot be shared by installation link**; to test it you copy the code into a new unlicensed app and share that one. The contest requires an install link for judges and offers the bonus for a listing or review ticket. Doing both on one app is therefore not possible as documented. The only route is a second app (new app id) for the listing, which the rules' "each Submission must be unique" clause may or may not tolerate: unverified, ask the hackathon manager (the contact link is on the Devpost page). Review prerequisites from Atlassian's guidelines and a solo developer's checklist (community.developer.atlassian.com, topic 103220): partner and identity verification, a per-scope justification, a shared support contact with response targets, a privacy and security tab, security questionnaires. Review can take up to a month, and some Forge apps have waited months; only "submitted" is required.
+
+## Ranked actions
+
+Hours are my estimates. "Owner" needs the owner's accounts or voice.
+
+| # | Action | Lifts | Owner h | Claude h | Evidence | Risk |
+|---|---|---|---|---|---|---|
+| 1 | Film the video: problem and audience in the first 30 seconds, one end-to-end story, a short segment per bonus (Rovo agent, an external MCP client call, Teamwork Graph people), under 5 minutes, no music | Presentation, and the gate to every other round | 5-8 | 1 (script) | Four-round judging thread; rules ask for bonus specifics; webinar on presentations | Audio and screen quality |
+| 2 | Judge path in `docs/DEVPOST.md` and README: install link, which Atlassian apps, how to open the panel (Apps button), the site-admin step that turns on MCP tools, sample data, a 10-minute walkthrough | Technical review round | 1 | 2 | Rules ask for every configuration step; MCP admin enablement | Low |
+| 3 | Rewrite the pitch: one named audience, one sentence on what differs from a brief or a decision log, the "Handoff" entry and Handoff Pulse handled by contrast | Innovation, Impact | 0.5 | 2 | Competitor table above | Low |
+| 4 | Replace the single support-desk statistic with the three sources above, each with its limit | Impact | 0.5 | 1 | NEJM, Jeong, Xia, State of Teams | Low |
+| 5 | Three to five real testers, one permitted quote | Impact, Design | 3-6 over days | 0.5 | Rules: "real problem for a real audience" | Needs people; Atlassian Community and r/atlassian have precedents of beta-tester requests |
+| 6 | Visibility: a small `jira:issueContext` panel plus the empty states Round 1 asked for | Design | 0.5 | 4-6 | Forge docs; round 1 | Unverified that it is seen unopened |
+| 7 | Marketplace bonus via a second, listed copy, only after a yes from the hackathon manager | A $1,500 bonus chance, not a score | 4-8 plus waiting | 3-4 | "Distribute your apps" page | Two apps to keep in step; verification delays; do last |
+
+Not recommended: a Teamwork Graph connector, more modules, any new surface beyond item 6. Round 1's advice to stop building stands.
+
+## Corrections this round implies (listed, not applied)
+
+- `docs/DEVPOST.md`: "287 unit tests" is now 289; add the judge path (item 2); state the MCP admin step; name the Handoff Pulse and "Handoff" contrast.
+- `docs/VIDEO.md`: Rovo, MCP and Teamwork Graph are caption-only in the closing card, but the rules ask the video to demonstrate bonus specifics. Give each a short on-screen moment. Put the pitch first, since marketing reviewers watch it.
+- Do not use "Generate new link" in the developer console after submission: it disables the old link. Keep sharing on until 3 February.
+- The 427, 1,787 and 156 participant counts on cached Devpost pages disagree; none is cited here.
+
+## What Round 2 could not settle
+
+- No scores of past entries exist; judges score at their discretion. Nothing here predicts a number.
+- Winner pages and videos were not read; what a top entry shows on screen is unverified.
+- Whether `jira:issueContext` is seen without opening it, and whether a second listed app is allowed, are open.
