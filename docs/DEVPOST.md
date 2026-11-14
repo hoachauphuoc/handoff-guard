@@ -43,16 +43,24 @@ Core:
 
 Also:
 
+**Around the handoff**
+
 - **Joining and leaving.** The panel's checklist has three paths: new to the project, handing over, leaving. On the Decisions page, "Leaving the project" lists what one person still holds: their open work items with the state of each handoff, handoffs they have not acknowledged, and decisions only they can supersede. Read-only, from the same rule check.
 - **Suggested fixes.** The smallest edits that would stop the item contradicting its decisions (a due date, a label to add, a component to remove). Advice only; the app never edits the work item.
-- **Rovo agent.** Explains the verdict, quoting the rule check's sentence exactly. It finds decisions written in the description and comments and proposes them with a word-for-word quote as evidence. A proposal binds nothing until a person confirms it in the panel. A repeat of a confirmed decision is rejected.
-- **Handoff brief.** Pulls what the receiver needs, including people connected to the item from Teamwork Graph (shared with, mentioned). Advisory; no rule reads it.
 - **I-PASS structure.** The panel follows the I-PASS handoff protocol over the rule check: a severity label beside the verdict, a patient-summary brief, an action list with an owner per finding, an optional "if ... then ..." contingency from the sender, and the receiver's read-back. The rule check stays the only thing that decides.
 - **Handoff drift.** If the due date, a label or a component that a decision reads changes after the receiver acknowledged it, the acknowledgement goes stale and the panel shows what changed.
+- **Jira-only.** The app declares no Confluence scope and installs on any Jira site.
+
+**Rovo, MCP and Teamwork Graph**
+
+- **Rovo agent.** Explains the verdict, quoting the rule check's sentence exactly. It finds decisions written in the description and comments and proposes them with a word-for-word quote as evidence. A proposal binds nothing until a person confirms it in the panel. A repeat of a confirmed decision is rejected.
+- **Handoff brief.** Pulls what the receiver needs, including people connected to the item from Teamwork Graph (shared with, mentioned). Advisory; no rule reads it.
+- **Rovo MCP server.** The same five actions are exposed through the `rovo:mcp` module for external agents.
+
+**Decisions over time**
+
 - **Replay on a date.** The Decisions page shows which prepared handoffs would have had a different verdict on an earlier date, using the decisions and acknowledgements as they stood then.
 - **Superseding decisions.** A decision that makes older ones redundant, or moves a deadline, can be confirmed with the older ones retired (only those the confirming person may supersede); the person who confirmed a decision can also retire it from the Decisions page. A superseded decision binds nothing.
-- **Rovo MCP server.** The same five actions are exposed through the `rovo:mcp` module for external agents.
-- **Jira-only.** The app declares no Confluence scope and installs on any Jira site.
 
 ## How we built it
 
@@ -105,3 +113,4 @@ Teamwork Graph: **Gather handoff context** in the Rovo agent returns people conn
 - Video: (owner adds)
 - Repository: https://github.com/hoachauphuoc/handoff-guard
 - Installation link: (owner adds)
+
