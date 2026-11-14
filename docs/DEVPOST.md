@@ -61,6 +61,7 @@ Also:
 **Decisions over time**
 
 - **Adding a decision by hand.** On the Decisions page a project administrator writes a decision (title, where it applies, one constraint). "Check this decision" shows how many open work items would contradict it before it is saved. No Rovo is needed.
+- **Activity, counts, export and delete.** The Decisions page lists who changed decisions and handoffs (the action, the person, the time and a key; no typed text) and counts handoffs prepared and read-backs accepted and refused per month. A project administrator can export everything the app holds for the project as JSON, and delete it after typing the project key.
 - **Replay on a date.** The Decisions page shows which prepared handoffs would have had a different verdict on an earlier date, using the decisions and acknowledgements as they stood then.
 - **Superseding decisions.** A decision that makes older ones redundant, or moves a deadline, can be confirmed with the older ones retired (only those the confirming person may supersede); the person who confirmed a decision can also retire it from the Decisions page. A superseded decision binds nothing.
 

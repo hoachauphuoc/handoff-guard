@@ -400,3 +400,11 @@ Seen on the site (built-in browser): production Decisions page of MOBL: form sho
 Left behind on production MOBL: one superseded test decision "Test: work ships by 1 December 2026" (binds nothing; the app has no delete).
 
 Not done: the Prepare again refusal for a third person and the non-admin view need a second account; Rovo test 7 rerun; phase 2 of `research/PLAN-product.md`.
+
+## 2026-11-14: product plan, phase 2 (owner's order "continue with the next part")
+
+- 79f5bd9 Activity list per project (latest 300 entries: action, person, time, key or id; no typed text) and counts by month computed from it, on the Decisions page.
+- 460d8c5 Export of a project's app data as JSON, and delete after typing the project key; both for project administrators. Delete empties the per-project decisions key (a removed key would fall back to the old site-wide key), resets the activity list to one "deleted" entry, and removes handoffs and proposals of open work items the administrator can see.
+- 75783a9, 2a25a2e after a Gemini critique of the admin check and storage: an empty-state message and two comments.
+- Seen on development (MOBL Decisions page): Export shows the JSON; adding and superseding a test decision ("Test: activity check", left superseded) appear in Activity and in the November count. Delete was not clicked on the site; it has a text test only.
+- Not built from phase 2: the admin settings page (turning rules off changes rule semantics; needs the owner's choice of settings) and Marketplace (owner's accounts).
