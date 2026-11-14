@@ -77,7 +77,7 @@ describe("buildDecisionsPage", () => {
   it("shows this project's decisions with their counts and says when the cap was hit", () => {
     const decisions = [decision(), decision({ id: "d2", scope: { kind: "project", projectKey: "ELSE" } }), decision({ id: "d3", status: "superseded" })];
     const open = [{ item: item("OPS-1", { dueDate: "2026-12-30" }), record: null }, { item: item("OPS-2"), record: null }];
-    const page = buildDecisionsPage("OPS", decisions, open, true, NOW, "viewer");
+    const page = buildDecisionsPage("OPS", decisions, open, true, NOW, "viewer", true);
     expect(page.rows.map((r) => r.id)).toEqual(["d1", "d3"]);
     expect(page.rows[0]?.impact).toEqual({ count: 1, keys: ["OPS-1"] });
     expect(page.rows[1]?.impact).toBeNull();
@@ -90,7 +90,7 @@ describe("buildDecisionsPage label scopes", () => {
     const bound = decision({ id: "lb", scope: { kind: "label", label: "launch", projectKey: "ELSE" } });
     const own = decision({ id: "lo", scope: { kind: "label", label: "launch", projectKey: "ops" } });
     const legacy = decision({ id: "ll", scope: { kind: "label", label: "launch" } });
-    const rows = (key: string) => buildDecisionsPage(key, [bound, own, legacy], [], false, NOW, "viewer").rows.map((r) => r.id);
+    const rows = (key: string) => buildDecisionsPage(key, [bound, own, legacy], [], false, NOW, "viewer", true).rows.map((r) => r.id);
     expect(rows("OPS")).toEqual(["lo", "ll"]);
     expect(rows("ELSE")).toEqual(["lb", "ll"]);
     expect(rows("THIRD")).toEqual(["ll"]);
@@ -110,5 +110,15 @@ describe("itemsFromSearch", () => {
 describe("the decisions page stays out of the verdict path", () => {
   it("is not read by the rule check or the validator", () => {
     for (const src of [rulesSource, validatorSource]) expect(src).not.toMatch(/impact|inflight|hypothetical/i);
+  });
+});
+
+describe("canManage", () => {
+  it("hides the supersede button from a viewer who is not a project admin", () => {
+    const d = decision();
+    expect(buildDecisionsPage("OPS", [d], [], false, NOW, "viewer", true).rows[0]?.canSupersede).toBe(true);
+    const page = buildDecisionsPage("OPS", [d], [], false, NOW, "viewer", false);
+    expect(page.rows[0]?.canSupersede).toBe(false);
+    expect(page.canManage).toBe(false);
   });
 });

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, TextArea, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
+import { MANAGE_DENIED } from "../authz";
 import { plainError } from "../errors";
 import type { GatherOutput } from "../actions/schema";
 import type { MarkedState } from "../decisions/marked";
@@ -381,10 +382,13 @@ const App = () => {
                         }.`}
                 </Text>
                 <Text>{`Evidence: "${p.evidence.quote}" (${p.evidence.from})`}</Text>
-                <Button isDisabled={busy} onClick={() => call("confirmProposal", { proposalId: p.id }).then(() => void readMarked())}>
-                  Confirm
-                </Button>
-                {(state.supersedes[p.id] ?? []).length > 0 && (
+                {!state.canManage && <Text>{MANAGE_DENIED}</Text>}
+                {state.canManage && (
+                  <Button isDisabled={busy} onClick={() => call("confirmProposal", { proposalId: p.id }).then(() => void readMarked())}>
+                    Confirm
+                  </Button>
+                )}
+                {state.canManage && (state.supersedes[p.id] ?? []).length > 0 && (
                   <>
                     <Text>{`It overlaps ${(state.supersedes[p.id] ?? []).map((d) => `"${d.title}"`).join(", ")}; confirming it alone leaves both in force.`}</Text>
                     <Button
@@ -430,7 +434,8 @@ const App = () => {
         </SectionMessage>
       )}
       {state.decisionCount === 0 && <Text>{NO_DECISIONS_TEXT}</Text>}
-      {state.decisionCount === 0 && (
+      {state.decisionCount === 0 && !state.canManage && <Text>{MANAGE_DENIED}</Text>}
+      {state.decisionCount === 0 && state.canManage && (
         <Button isDisabled={busy} onClick={() => call("loadSampleDecisions")}>
           Load sample decisions (demo)
         </Button>

@@ -15,7 +15,8 @@ import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import { driftByDecision, fingerprintOf, staleAcks } from "../handoff/drift";
 import type { AcknowledgeAllReply, HandoffRecord, PanelState, PracticeReadBackReply } from "../handoff/types";
 import { explainRefusal } from "../llm";
-import { openItemsAsUser, readItemAsUser as readItem } from "../jira";
+import { MANAGE_DENIED } from "../authz";
+import { isProjectAdminAsUser, openItemsAsUser, readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
 import { changeText, suggestFixes } from "../rules/feasible";
@@ -38,6 +39,11 @@ const PRACTICE_RULES: Finding["rule"][] = [
   "contradicts_decision",
   "invalid_constraint",
 ];
+
+// Checked on the server for every change to decisions; the panel only hides the buttons.
+async function requireAdmin(projectKey: string): Promise<void> {
+  if (!(await isProjectAdminAsUser(projectKey))) throw new Error(MANAGE_DENIED);
+}
 
 type Ctx = { accountId?: string; cloudId?: string; extension: { issue: { key: string; id: string } } };
 
@@ -78,6 +84,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     record,
     result,
     viewerId,
+    canManage: await isProjectAdminAsUser(item.projectKey),
     isReceiver: record !== null && viewerId !== null && viewerId === record.toId,
     // Decisions that name this project. Samples are loaded per project, so a site-wide count, or an old label
     // decision stored before labels carried a project, would hide the sample button here.
@@ -188,6 +195,7 @@ resolver.define("saveContingency", async ({ context, payload }) => {
 resolver.define("loadSampleDecisions", async ({ context }) => {
   const ctx = context as Ctx;
   const { item } = await readItem(ctx.extension.issue.key);
+  await requireAdmin(item.projectKey);
   // Demo data for this project only; nothing is written to Jira. A project that has them already is left as it is.
   const decisions = await getDecisions();
   if (!hasSamples(decisions, item.projectKey)) await putDecisions(mergeDecisions(decisions, sampleDecisions(item.projectKey)));
@@ -201,6 +209,7 @@ resolver.define("confirmProposal", async ({ context, payload }) => {
   if (!ctx.accountId) throw new Error("Confirming a decision needs a signed-in person.");
   const id = String((payload as { proposalId?: string }).proposalId ?? "");
   const { item, issueId } = await readItem(ctx.extension.issue.key);
+  await requireAdmin(item.projectKey);
   const [stored, decisions] = await Promise.all([getProposals(issueId), getDecisions()]);
   const proposals = inProject(stored, item.projectKey);
   const retire = (payload as { supersede?: boolean }).supersede === true;
@@ -245,7 +254,7 @@ resolver.define("getMarked", async ({ context }): Promise<MarkedState> => {
 resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageState> => {
   const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
   const viewerId = (context as { accountId?: string }).accountId ?? null;
-  const [open, decisions] = await Promise.all([openItemsAsUser(projectKey), getDecisions()]);
+  const [open, decisions, canManage] = await Promise.all([openItemsAsUser(projectKey), getDecisions(), isProjectAdminAsUser(projectKey)]);
   const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
   return buildDecisionsPage(
     projectKey,
@@ -254,6 +263,7 @@ resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageSt
     open.capped,
     new Date().toISOString(),
     viewerId,
+    canManage,
   );
 });
 
@@ -301,6 +311,7 @@ resolver.define("supersedeDecision", async ({ context, payload }) => {
   const accountId = (context as { accountId?: string }).accountId;
   if (!accountId) throw new Error("Superseding a decision needs a signed-in person.");
   const id = String((payload as { decisionId?: string }).decisionId ?? "");
+  await requireAdmin(String((context as { extension: { project: { key: string } } }).extension.project.key));
   const decisions = await getDecisions();
   const target = decisions.find((d) => d.id === id && d.status === "decided");
   if (!target) throw new Error("That decision is not in force. Reload the page.");
@@ -315,6 +326,7 @@ async function manualDecision(ctx: { accountId?: string; extension: { project: {
   const input = readManualInput(payload);
   if (typeof input === "string") throw new Error(input);
   const projectKey = String(ctx.extension.project.key);
+  await requireAdmin(projectKey);
   const stored = await getDecisions();
   const built = buildManualDecision(input, projectKey, stored, ctx.accountId, new Date().toISOString());
   if (!built.ok) throw new Error(built.reason);

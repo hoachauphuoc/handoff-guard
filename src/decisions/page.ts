@@ -31,6 +31,8 @@ export type DecisionsPageState = {
   capped: boolean;
   inFlight: InFlight[];
   nowIso: string;
+  /** Whether the viewer is a project administrator; the resolvers check again. */
+  canManage: boolean;
 };
 
 const MAX_KEYS = 10;
@@ -55,6 +57,7 @@ export function buildDecisionsPage(
   capped: boolean,
   nowIso: string,
   viewerId: string | null,
+  canManage: boolean,
 ): DecisionsPageState {
   const items = open.map((o) => o.item);
   const rows = decisions
@@ -72,9 +75,9 @@ export function buildDecisionsPage(
         confirmedAt: d.confirmedAt ?? null,
         supersededAt: d.supersededAt ?? null,
         supersededBy: decisions.find((x) => x.id === d.supersededBy)?.title ?? null,
-        canSupersede: d.status === "decided" && viewerId !== null && canSupersede(d, viewerId),
+        canSupersede: canManage && d.status === "decided" && viewerId !== null && canSupersede(d, viewerId),
         impact: hit === null ? null : { count: hit.length, keys: hit.slice(0, MAX_KEYS).map((h) => h.key) },
       };
     });
-  return { projectKey, rows, scanned: open.length, capped, inFlight: inFlight(open, decisions, nowIso), nowIso };
+  return { projectKey, rows, scanned: open.length, capped, inFlight: inFlight(open, decisions, nowIso), nowIso, canManage };
 }

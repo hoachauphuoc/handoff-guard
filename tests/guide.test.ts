@@ -21,6 +21,7 @@ const state = (over: Partial<PanelState> = {}): PanelState => ({
   result: null,
   viewerId: "me",
   isReceiver: false,
+  canManage: true,
   decisionCount: 0,
   practiceFindings: [],
   proposals: [],

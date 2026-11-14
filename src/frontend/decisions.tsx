@@ -3,6 +3,7 @@ import ForgeReconciler, { Button, DatePicker, Lozenge, SectionMessage, Select, S
 import { invoke } from "@forge/bridge";
 import type { LeavingView } from "../decisions/leaving";
 import type { DecisionsPageState } from "../decisions/page";
+import { MANAGE_DENIED } from "../authz";
 import { plainError } from "../errors";
 import { count } from "../plural";
 import type { ReplayState } from "../resolvers";
@@ -151,43 +152,48 @@ const App = () => {
           )}
         </Stack>
       ))}
-      <Text>Add a decision</Text>
-      <Text>
-        Write a decision the team made. Check shows how many open work items it would contradict before you save it. It binds work items only after
-        you save it; nothing here changes Jira.
-      </Text>
-      <Textfield name="decision-title" placeholder="Title, up to 120 characters" value={form.title} onChange={(e: { target: { value?: string } }) => edit({ title: e.target.value ?? "" })} />
-      <Select
-        name="decision-scope"
-        options={SCOPES}
-        defaultValue={SCOPES[0]}
-        onChange={(o: { value: string }) => edit({ scope: o.value, scopeValue: "" })}
-      />
-      {form.scope !== "project" && (
-        <Textfield
-          name="decision-scope-value"
-          placeholder={form.scope === "label" ? "Label" : `Work item key, for example ${state.projectKey}-12`}
-          value={form.scopeValue}
-          onChange={(e: { target: { value?: string } }) => edit({ scopeValue: e.target.value ?? "" })}
-        />
-      )}
-      <Select name="decision-rule" options={RULES} defaultValue={RULES[0]} onChange={(o: { value: string }) => edit({ constraint: o.value, constraintValue: "" })} />
-      <Textfield
-        name="decision-rule-value"
-        placeholder={form.constraint === "dueNotAfter" ? "Date, YYYY-MM-DD" : form.constraint.startsWith("label") ? "Label" : "Component"}
-        value={form.constraintValue}
-        onChange={(e: { target: { value?: string } }) => edit({ constraintValue: e.target.value ?? "" })}
-      />
-      <Button onClick={() => void checkForm()}>Check this decision</Button>
-      {formError !== null && <Text>{formError}</Text>}
-      {preview !== null && (
-        <Stack space="space.050">
+      {!state.canManage && <Text>{`Add a decision: ${MANAGE_DENIED}`}</Text>}
+      {state.canManage && (
+        <Stack space="space.100">
+        <Text>Add a decision</Text>
           <Text>
-            {preview.count === 0
-              ? `No open work item contradicts it, among ${count(preview.scanned, "open work item")}${preview.capped ? " (list cut at 100)" : ""}.`
-              : `${count(preview.count, "open work item")} would contradict it: ${preview.keys.join(", ")}${preview.count > preview.keys.length ? ", …" : ""}.`}
+            Write a decision the team made. Check shows how many open work items it would contradict before you save it. It binds work items only after
+            you save it; nothing here changes Jira.
           </Text>
-          <Button onClick={() => void saveForm()}>Save decision</Button>
+          <Textfield name="decision-title" placeholder="Title, up to 120 characters" value={form.title} onChange={(e: { target: { value?: string } }) => edit({ title: e.target.value ?? "" })} />
+          <Select
+            name="decision-scope"
+            options={SCOPES}
+            defaultValue={SCOPES[0]}
+            onChange={(o: { value: string }) => edit({ scope: o.value, scopeValue: "" })}
+          />
+          {form.scope !== "project" && (
+            <Textfield
+              name="decision-scope-value"
+              placeholder={form.scope === "label" ? "Label" : `Work item key, for example ${state.projectKey}-12`}
+              value={form.scopeValue}
+              onChange={(e: { target: { value?: string } }) => edit({ scopeValue: e.target.value ?? "" })}
+            />
+          )}
+          <Select name="decision-rule" options={RULES} defaultValue={RULES[0]} onChange={(o: { value: string }) => edit({ constraint: o.value, constraintValue: "" })} />
+          <Textfield
+            name="decision-rule-value"
+            placeholder={form.constraint === "dueNotAfter" ? "Date, YYYY-MM-DD" : form.constraint.startsWith("label") ? "Label" : "Component"}
+            value={form.constraintValue}
+            onChange={(e: { target: { value?: string } }) => edit({ constraintValue: e.target.value ?? "" })}
+          />
+          <Button onClick={() => void checkForm()}>Check this decision</Button>
+          {formError !== null && <Text>{formError}</Text>}
+          {preview !== null && (
+            <Stack space="space.050">
+              <Text>
+                {preview.count === 0
+                  ? `No open work item contradicts it, among ${count(preview.scanned, "open work item")}${preview.capped ? " (list cut at 100)" : ""}.`
+                  : `${count(preview.count, "open work item")} would contradict it: ${preview.keys.join(", ")}${preview.count > preview.keys.length ? ", …" : ""}.`}
+              </Text>
+              <Button onClick={() => void saveForm()}>Save decision</Button>
+            </Stack>
+          )}
         </Stack>
       )}
       <Text>Replay on a date</Text>

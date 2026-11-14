@@ -69,3 +69,16 @@ describe("practice read-back", () => {
     for (const write of ["putRecord(", "putDecisions(", "putProposals("]) expect(body).not.toContain(write);
   });
 });
+
+describe("who may change decisions", () => {
+  const body = (name: string) => {
+    const start = resolvers.indexOf(`resolver.define("${name}"`);
+    expect(start).toBeGreaterThan(-1);
+    const next = resolvers.indexOf("resolver.define(", start + 1);
+    return next === -1 ? resolvers.slice(start) : resolvers.slice(start, next);
+  };
+  it("checks the project administrator on the server before every write to decisions", () => {
+    for (const name of ["confirmProposal", "loadSampleDecisions", "supersedeDecision"]) expect(body(name)).toContain("requireAdmin(");
+    expect(resolvers).toMatch(/async function manualDecision[\s\S]*requireAdmin\(projectKey\)/);
+  });
+});
