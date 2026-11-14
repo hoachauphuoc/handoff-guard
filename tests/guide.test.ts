@@ -56,7 +56,7 @@ describe("guide steps", () => {
   it("derives each step from the panel state", () => {
     const by = (id: string) => STEPS.find((s) => s.id === id)!;
     expect(by("load_samples").done(state())).toBe(false);
-    expect(by("load_samples").done(state({ decisionCount: 2 }))).toBe(true);
+    expect(by("load_samples").done(state({ decisionCount: 2, inForceCount: 2 }))).toBe(true);
     expect(by("item_ready").done(state({ practiceFindings: [finding] }))).toBe(false);
     expect(by("item_ready").done(state())).toBe(true);
     expect(by("prepare").done(state())).toBe(false);
@@ -75,12 +75,12 @@ describe("guide steps", () => {
     expect(v.nextId).toBe("load_samples");
     expect(v.steps.filter((s) => s.state === "next")).toHaveLength(1);
     expect(v.steps.find((s) => s.id === "rovo")?.state).toBe("manual");
-    const mid = guideView(state({ decisionCount: 1 }));
+    const mid = guideView(state({ decisionCount: 1, inForceCount: 1 }));
     expect(mid.nextId).toBe("prepare");
     expect(mid.doneCount).toBe(2);
     const all = guideView(
       state({
-        decisionCount: 1,
+        decisionCount: 1, inForceCount: 1,
         record: { ...record, acknowledged: ["d1"] },
         result: { verdict: "clear", findings: [], binding: [] },
       }),
@@ -174,8 +174,8 @@ describe("guide paths", () => {
 
   it("defaults to the handover path", () => {
     expect(guideView(state())).toEqual(guideView(state(), "handover"));
-    expect(guideView(state({ decisionCount: 2, record }), "handover").nextId).toBe(
-      guideView(state({ decisionCount: 2, record })).nextId,
+    expect(guideView(state({ decisionCount: 2, inForceCount: 2, record }), "handover").nextId).toBe(
+      guideView(state({ decisionCount: 2, inForceCount: 2, record })).nextId,
     );
   });
 
@@ -186,7 +186,7 @@ describe("guide paths", () => {
     expect(empty.doneCount).toBe(0);
     expect(empty.total).toBe(4);
     expect(empty.steps.map((s) => s.state)).toEqual(["next", "manual", "manual", "manual"]);
-    const loaded = guideView(state({ decisionCount: 1 }), "join");
+    const loaded = guideView(state({ decisionCount: 1, inForceCount: 1 }), "join");
     expect(loaded.nextId).toBeNull();
     expect(loaded.doneCount).toBe(1);
     expect(loaded.steps[0]?.state).toBe("done");
@@ -212,5 +212,12 @@ describe("guide paths", () => {
     const v = guideView(state({ record: { ...record, fromId: "you", toId: "me" }, viewerId: "me" }), "leave");
     expect(v.nextId).toBe("leave_this");
     expect(v.steps[1]?.state).toBe("next");
+  });
+});
+
+describe("decisions step", () => {
+  it("is not done when the project holds only superseded decisions", () => {
+    const step = STEPS.find((x) => x.id === "load_samples")!;
+    expect(step.done(state({ decisionCount: 1, inForceCount: 0 }))).toBe(false);
   });
 });

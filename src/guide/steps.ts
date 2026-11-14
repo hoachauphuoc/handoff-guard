@@ -48,7 +48,7 @@ export const STEPS: GuideStep[] = [
     id: "load_samples",
     title: "Decisions are loaded",
     how: "Click Load sample decisions (demo). They are demo rules for this project; nothing is written to Jira.",
-    done: (s) => s.decisionCount > 0,
+    done: (s) => s.inForceCount > 0,
   },
   {
     id: "item_ready",
@@ -97,7 +97,7 @@ export const JOIN_STEPS: GuideStep[] = [
     id: "join_decisions",
     title: "Decisions are loaded",
     how: "If none are stored yet, click Load sample decisions (demo).",
-    done: (s) => s.decisionCount > 0,
+    done: (s) => s.inForceCount > 0,
   },
   {
     id: "join_binding",
