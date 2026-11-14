@@ -93,7 +93,7 @@ The panel can take several seconds to load the first time.
 5. As the receiver, open the same work item and the panel. In the read-back box write: `Work ships by the end of 2026: I will ship on 15 January 2027. Stop using the legacy billing component: understood.` Click **Acknowledge all with this read-back**. It is refused, with the code's reason and one sentence labelled as written by a model.
 6. Replace the read-back with: `Work ships by the end of 2026: I will ship by 15 December 2026. Stop using the legacy billing component: understood.` It is accepted and both decisions read "Acknowledged." With a second user as receiver the verdict becomes Clear.
 7. Drift: change the due date of the work item and reload the panel. The acknowledgement is stale and the receiver is asked to read back again.
-8. Optional, Jira admin: in the workflow editor, add the **Handoff Guard** validator to a transition (edit the transition, then Validators). A work item whose handoff is not Clear is refused on that transition.
+8. Optional, Jira admin: in the workflow editor, add the **Handoff Guard** validator to a transition (edit the transition, then Validators). A work item whose handoff is not Clear is refused on that transition. Change the status from the work item view to see the refusal message; dragging a card on a board may refuse the move without showing it (a Jira board behaviour reported on the Atlassian developer forum).
 
 Steps 9 and 10 need Rovo enabled on the site. Without Rovo the panel says so.
 
