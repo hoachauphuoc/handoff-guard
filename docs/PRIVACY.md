@@ -28,4 +28,4 @@ When a read-back is refused because it contradicts a decision, the app sends the
 
 ## Deletion
 
-Uninstalling the app removes its Forge storage. Dismissing a proposal deletes it; it may be proposed again.
+Uninstalling the app removes its Forge storage. A project administrator can also export everything the app holds for a project as JSON from the Decisions page, and delete it there (decisions, the activity list, and the handoffs and proposals of the open work items that administrator can see); the administrator types the project key to confirm. Dismissing a proposal deletes it; it may be proposed again.

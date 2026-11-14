@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, DatePicker, Lozenge, SectionMessage, Select, Stack, Text, Textfield, User, UserPicker } from "@forge/react";
+import ForgeReconciler, { Button, CodeBlock, DatePicker, Lozenge, SectionMessage, Select, Stack, Text, Textfield, User, UserPicker } from "@forge/react";
 import { invoke } from "@forge/bridge";
 import type { LeavingView } from "../decisions/leaving";
 import { AUDIT_TEXT } from "../audit";
@@ -29,6 +29,9 @@ const App = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [exported, setExported] = useState<string | null>(null);
+  const [deleteKey, setDeleteKey] = useState("");
+  const [dataNote, setDataNote] = useState<string | null>(null);
   const [state, setState] = useState<DecisionsPageView | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [replay, setReplay] = useState<ReplayState | null>(null);
@@ -97,6 +100,30 @@ const App = () => {
         return load();
       },
       (e) => setFormError(plainError(e)),
+    );
+
+  const exportData = () =>
+    invoke<string>("exportProject").then(
+      (json) => {
+        setExported(json as string);
+        setDataNote(null);
+      },
+      (e) => setDataNote(plainError(e)),
+    );
+  const deleteData = () =>
+    invoke<{ items: number; capped: boolean }>("deleteProjectData", { confirm: deleteKey }).then(
+      (r) => {
+        const done = r as { items: number; capped: boolean };
+        setDeleteKey("");
+        setExported(null);
+        setDataNote(
+          `Deleted: this project's decisions and activity, and the handoffs and proposals of ${count(done.items, "open work item")}${
+            done.capped ? " (the list was cut at 100; handoffs of other items remain)" : ""
+          }. Nothing was changed in Jira.`,
+        );
+        return load();
+      },
+      (e) => setDataNote(plainError(e)),
     );
 
   if (error) {
@@ -305,6 +332,31 @@ const App = () => {
         </Text>
       ))}
       <Text>Counts come from the activity list above, which keeps the latest 300 entries; older months can be incomplete.</Text>
+      {state.canManage && (
+        <Stack space="space.100">
+          <Text>Export and delete (project administrators)</Text>
+          <Text>
+            Export shows everything the app holds for this project as JSON: decisions, the handoffs of open work items you can see, and the
+            activity list. Copy it from the box.
+          </Text>
+          <Button onClick={() => void exportData()}>Export this project's data</Button>
+          {exported !== null && <CodeBlock language="json" text={exported} />}
+          <Text>
+            Delete removes the same data from the app for good. Handoffs of work items that are already done, or that you cannot see, are not
+            reached. Jira is not changed. Export first if you may need it.
+          </Text>
+          <Textfield
+            name="delete-key"
+            placeholder={`Type ${state.projectKey} to confirm`}
+            value={deleteKey}
+            onChange={(e: { target: { value?: string } }) => setDeleteKey(e.target.value ?? "")}
+          />
+          <Button appearance="danger" onClick={() => void deleteData()}>
+            Delete this project's app data
+          </Button>
+          {dataNote !== null && <Text>{dataNote}</Text>}
+        </Stack>
+      )}
       <Text>Source: rule check on stored decisions and open work items read as you. Ranked by code: blocked first, then oldest.</Text>
     </Stack>
   );

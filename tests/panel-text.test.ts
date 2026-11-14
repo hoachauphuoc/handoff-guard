@@ -78,7 +78,7 @@ describe("who may change decisions", () => {
     return next === -1 ? resolvers.slice(start) : resolvers.slice(start, next);
   };
   it("checks the project administrator on the server before every write to decisions", () => {
-    for (const name of ["confirmProposal", "loadSampleDecisions", "removeSampleDecisions", "supersedeDecision"]) expect(body(name)).toContain("requireAdmin(");
+    for (const name of ["confirmProposal", "loadSampleDecisions", "removeSampleDecisions", "supersedeDecision", "exportProject", "deleteProjectData"]) expect(body(name)).toContain("requireAdmin(");
     expect(resolvers).toMatch(/async function manualDecision[\s\S]*requireAdmin\(projectKey\)/);
   });
 });
@@ -86,5 +86,15 @@ describe("who may change decisions", () => {
 describe("load sample decisions", () => {
   it("is offered when nothing is in force, not only when nothing is stored", () => {
     expect(panel).toMatch(/state\.inForceCount === 0 && !state\.hasSamples && state\.canManage && \(\s*<Button[\s\S]{0,80}loadSampleDecisions/);
+  });
+});
+
+describe("delete project data", () => {
+  it("checks the typed project key on the server before anything is deleted", () => {
+    const start = resolvers.indexOf('resolver.define("deleteProjectData"');
+    const body = resolvers.slice(start, resolvers.indexOf("export const handler", start));
+    expect(body.indexOf("Nothing was deleted")).toBeGreaterThan(-1);
+    expect(body.indexOf("Nothing was deleted")).toBeLessThan(body.indexOf("deleteItemData("));
+    expect(body.indexOf("requireAdmin(")).toBeLessThan(body.indexOf("deleteItemData("));
   });
 });

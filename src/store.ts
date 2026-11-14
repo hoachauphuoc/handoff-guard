@@ -73,3 +73,13 @@ export async function addAudit(projectKey: string, event: AuditEvent): Promise<v
     console.log(`audit write failed: ${e instanceof Error ? e.name : typeof e}`);
   }
 }
+
+// Used only by "Delete this project's app data". The decisions key is emptied, not removed: a removed key
+// would make the next read fall back to the old site-wide key and bring the decisions back.
+export async function deleteItemData(issueId: string): Promise<void> {
+  await Promise.all([kvs.delete(recordKey(issueId)), kvs.delete(proposalsKey(issueId))]);
+}
+
+export async function resetAudit(projectKey: string, first: AuditEvent): Promise<void> {
+  await kvs.set(auditKey(projectKey), [first]);
+}

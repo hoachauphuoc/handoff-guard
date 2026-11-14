@@ -29,7 +29,7 @@ import type { Proposal } from "../decisions/types";
 import type { Decision, Finding } from "../rules/types";
 import { hasSamples, mergeDecisions, sampleDecisions, withoutSamples } from "../samples/decisions";
 import { readSourceAsUser } from "../source";
-import { addAudit, getAudit, getDecisions, getProposals, getRecord, putProposals, putRecord, updateDecisions } from "../store";
+import { addAudit, deleteItemData, getAudit, getDecisions, getProposals, getRecord, putProposals, putRecord, resetAudit, updateDecisions } from "../store";
 
 const resolver = new Resolver();
 
@@ -391,6 +391,33 @@ resolver.define("addDecision", async ({ context, payload }) => {
   const { projectKey, decision } = await manualDecision(ctx, payload);
   await updateDecisions(projectKey, (current) => mergeDecisions(current, [decision]));
   await log(projectKey, ctx.accountId, "decision_added", decision.id);
+});
+
+// Everything the app holds for one project, for a project administrator: decisions, the handoffs of the open
+// work items the administrator can see, and the activity list. Read only.
+resolver.define("exportProject", async ({ context }) => {
+  const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
+  await requireAdmin(projectKey);
+  const [open, decisions, activity] = await Promise.all([openItemsAsUser(projectKey), getDecisions(projectKey), getAudit(projectKey)]);
+  const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
+  const handoffs = open.items.flatMap((i, n) => (records[n] ? [{ key: i.item.key, record: records[n] }] : []));
+  return JSON.stringify({ project: projectKey, exportedAt: new Date().toISOString(), openItemsCapped: open.capped, decisions, handoffs, activity }, null, 2);
+});
+
+// Deletes what the export above lists. The administrator types the project key, checked here on the server, so
+// a stray click or a forged call without the key deletes nothing. Jira itself is never touched.
+resolver.define("deleteProjectData", async ({ context, payload }) => {
+  const ctx = context as { accountId?: string; extension: { project: { key: string } } };
+  const projectKey = String(ctx.extension.project.key);
+  await requireAdmin(projectKey);
+  if (String((payload as { confirm?: string }).confirm ?? "").trim().toUpperCase() !== projectKey.toUpperCase()) {
+    throw new Error(`Type the project key ${projectKey} to confirm. Nothing was deleted.`);
+  }
+  const open = await openItemsAsUser(projectKey);
+  await Promise.all(open.items.map((i) => deleteItemData(i.issueId)));
+  await updateDecisions(projectKey, () => []);
+  await resetAudit(projectKey, { at: new Date().toISOString(), who: ctx.accountId ?? "unknown", action: "data_deleted", ref: projectKey });
+  return { items: open.items.length, capped: open.capped };
 });
 
 export const handler = resolver.getDefinitions();
