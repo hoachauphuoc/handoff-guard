@@ -261,7 +261,9 @@ resolver.define("dismissProposal", async ({ context, payload }) => {
   const ctx = context as Ctx;
   if (!ctx.accountId) throw new Error("Dismissing a proposal needs a signed-in person.");
   const id = String((payload as { proposalId?: string }).proposalId ?? "");
-  const { issueId } = await readItem(ctx.extension.issue.key);
+  const { item, issueId } = await readItem(ctx.extension.issue.key);
+  // Dismissing decides what the project will not record, so it takes the same permission as confirming.
+  await requireAdmin(item.projectKey);
   await putProposals(issueId, dismissProposal(await getProposals(issueId), id));
   return panelState(ctx);
 });

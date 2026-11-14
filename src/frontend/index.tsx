@@ -422,9 +422,11 @@ const App = () => {
                 {(state.supersedeBlocked[p.id] ?? []).length > 0 && (
                   <Text>{`Also made redundant, but only the person who confirmed it can supersede it: ${(state.supersedeBlocked[p.id] ?? []).map((d) => `"${d.title}"`).join(", ")}.`}</Text>
                 )}
-                <Button isDisabled={busy} onClick={() => call("dismissProposal", { proposalId: p.id })}>
-                  Dismiss
-                </Button>
+                {state.canManage && (
+                  <Button isDisabled={busy} onClick={() => call("dismissProposal", { proposalId: p.id })}>
+                    Dismiss
+                  </Button>
+                )}
                 <Text>Rovo may propose it again later.</Text>
               </Stack>
             ))}

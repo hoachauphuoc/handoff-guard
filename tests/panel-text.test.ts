@@ -79,7 +79,7 @@ describe("who may change decisions", () => {
     return next === -1 ? resolvers.slice(start) : resolvers.slice(start, next);
   };
   it("checks the project administrator on the server before every write to decisions", () => {
-    for (const name of ["confirmProposal", "loadSampleDecisions", "removeSampleDecisions", "supersedeDecision", "exportProject", "deleteProjectData"]) expect(body(name)).toContain("requireAdmin(");
+    for (const name of ["confirmProposal", "dismissProposal", "loadSampleDecisions", "removeSampleDecisions", "supersedeDecision", "exportProject", "deleteProjectData"]) expect(body(name)).toContain("requireAdmin(");
     expect(resolvers).toMatch(/async function manualDecision[\s\S]*requireAdmin\(projectKey\)/);
   });
 });
