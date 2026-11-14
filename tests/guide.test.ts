@@ -23,6 +23,7 @@ const state = (over: Partial<PanelState> = {}): PanelState => ({
   isReceiver: false,
   canManage: true,
   canPrepare: true,
+  hasSamples: false,
   decisionCount: 0,
   practiceFindings: [],
   proposals: [],

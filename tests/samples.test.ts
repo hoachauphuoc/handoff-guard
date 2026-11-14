@@ -39,3 +39,12 @@ describe("sampleDecisions", () => {
     expect(hasSamples([legacyLabel], "MOBL")).toBe(false);
   });
 });
+
+describe("withoutSamples", () => {
+  it("removes only this project's demo decisions", async () => {
+    const { sampleDecisions, withoutSamples } = await import("../src/samples/decisions");
+    const real = { ...sampleDecisions("OPS")[0]!, id: "d-m-1" };
+    const kept = withoutSamples([...sampleDecisions("OPS"), ...sampleDecisions("HR"), real], "OPS");
+    expect(kept.map((d) => d.id).sort()).toEqual([...sampleDecisions("HR").map((d) => d.id), "d-m-1"].sort());
+  });
+});

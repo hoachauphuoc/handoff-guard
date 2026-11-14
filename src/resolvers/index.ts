@@ -25,7 +25,7 @@ import { impactOf } from "../rules/impact";
 import { replayDiff, replayInstant, type ReplayChange } from "../rules/replay";
 import type { Proposal } from "../decisions/types";
 import type { Decision, Finding } from "../rules/types";
-import { hasSamples, mergeDecisions, sampleDecisions } from "../samples/decisions";
+import { hasSamples, mergeDecisions, sampleDecisions, withoutSamples } from "../samples/decisions";
 import { readSourceAsUser } from "../source";
 import { getDecisions, getProposals, getRecord, putProposals, putRecord, updateDecisions } from "../store";
 
@@ -86,6 +86,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     result,
     viewerId,
     canManage,
+    hasSamples: hasSamples(decisions, item.projectKey),
     canPrepare: mayPrepare(record, viewerId, item.assigneeId, canManage),
     isReceiver: record !== null && viewerId !== null && viewerId === record.toId,
     // Decisions that name this project. Samples are loaded per project, so a site-wide count, or an old label
@@ -203,6 +204,14 @@ resolver.define("loadSampleDecisions", async ({ context }) => {
   await updateDecisions(item.projectKey, (decisions) =>
     hasSamples(decisions, item.projectKey) ? decisions : mergeDecisions(decisions, sampleDecisions(item.projectKey)),
   );
+  return panelState(ctx);
+});
+
+resolver.define("removeSampleDecisions", async ({ context }) => {
+  const ctx = context as Ctx;
+  const { item } = await readItem(ctx.extension.issue.key);
+  await requireAdmin(item.projectKey);
+  await updateDecisions(item.projectKey, (decisions) => withoutSamples(decisions, item.projectKey));
   return panelState(ctx);
 });
 

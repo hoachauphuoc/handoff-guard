@@ -453,6 +453,11 @@ const App = () => {
           Load sample decisions (demo)
         </Button>
       )}
+      {state.hasSamples && state.canManage && (
+        <Button isDisabled={busy} onClick={() => call("removeSampleDecisions")}>
+          Remove sample decisions
+        </Button>
+      )}
       <Stack space="space.100">
         <Text>Handoff brief</Text>
         <Button isDisabled={busy} onClick={() => void gather()}>

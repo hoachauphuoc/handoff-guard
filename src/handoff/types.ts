@@ -33,6 +33,8 @@ export type PanelState = {
   result: HandoffResult | null;
   viewerId: string | null;
   isReceiver: boolean;
+  /** Whether this project still holds the demo decisions that Load sample decisions adds. */
+  hasSamples: boolean;
   /** Whether the viewer may prepare this handoff (again): the sender, the assignee or a project administrator once one exists. */
   canPrepare: boolean;
   /** Whether the viewer is an administrator of the project, so may confirm, add and retire decisions and load samples. */

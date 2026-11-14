@@ -57,3 +57,9 @@ export function hasSamples(decisions: Decision[], projectKey: string): boolean {
     (d) => d.source.kind === "ledger" && d.source.ref === LEDGER && d.scope.kind === "project" && d.scope.projectKey.toLowerCase() === p,
   );
 }
+
+/** Drops this project's demo decisions and nothing else, so a team can start from its own decisions. */
+export function withoutSamples(decisions: Decision[], projectKey: string): Decision[] {
+  const suffix = `-${projectKey.toLowerCase()}`;
+  return decisions.filter((d) => !(d.id.startsWith("d-sample-") && d.id.endsWith(suffix)));
+}
