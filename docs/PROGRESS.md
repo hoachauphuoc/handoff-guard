@@ -365,4 +365,4 @@ Five ideas were kept after filtering; their outcome:
 - Decisions page: "Leaving the project" lists MOBL-53 under the owner's open work items, with "Prepare a handoff on this work item."; nothing to acknowledge; no decision only the owner can supersede (the sample decisions have no confirmer).
 - The replay DatePicker showed the design system's default placeholder "2/18/1993", which reads like a chosen date; it now says "Pick a date".
 - Rovo: tests 1, 3, 4 of `docs/ROVO-TESTS.md`; 3 and 4 pass, 1 fails (the agent made up MOBL-1 on a project page). Rule 1 gained one sentence; unverified, see the test file.
-- Validator: not tested. Changing MOBL-53's status would move the demo item if the transition has no validator.
+- Validator: not on any MOBL transition. With the owner's go-ahead MOBL-53 was moved To Do -> In Progress from the work item view; it moved (no refusal) and was moved back to To Do. The MOBL workflow is "Software Simplified Workflow" with global (Any) transitions; the validator has never been added to it, so neither the view nor a board drag has been seen refusing. Adding it means editing that workflow (an admin change, the owner's call).
