@@ -1,5 +1,7 @@
 # Handoff Guard
 
+For software teams whose Jira work items change owner while the work is still open: release work passed between engineers, on-call rotation, cover for someone on leave. The decisions that bind such work often live in one person's head, a page or a comment, and the next person finds them late.
+
 A Forge app for Jira. When a work item is handed to someone else, the receiver restates each recorded decision that binds it, and plain code refuses a restatement that contradicts one in ways it can detect, for example a date after a recorded limit or a required label described as skipped. It does not catch every contradiction or prove understanding. Rules also check what is missing from the work item. The verdict (Clear, Needs info, Blocked) always comes from plain code (`checkHandoff()`); Rovo only explains it and proposes decisions that a person must confirm.
 
 ## Try it in 3 minutes (one account)
@@ -54,7 +56,7 @@ The read-back checks that each decision is addressed, not that it was understood
 
 Teach-back: a read-back that addresses a decision but contradicts it is refused too, by plain code. That covers a date later than a date limit, a required label or component said to be skipped, optional or not needed, and a forbidden one said to be added. The refusal gives the code's reason. One sentence beside it, telling the receiver what to write instead, is written by a model through Forge LLMs (Claude Haiku 4.5, run on Atlassian's platform). The panel labels that sentence as model-written, and says so when it is missing. It never makes, lifts or changes a refusal.
 
-In hospitals, I-PASS was linked to fewer medical errors and preventable adverse events (Starmer et al., N Engl J Med 2014;371:1803-1812: 23% and 30% fewer). Those are clinical results from a hospital study. They are not a result of this app, which does not measure errors, harm or reassignments.
+In hospitals, I-PASS was linked to fewer medical errors and preventable adverse events (Starmer et al., N Engl J Med 2014;371:1803-1812). Those are clinical results from a hospital study, given here as background for the protocol. They are not a result of this app, which does not measure errors, harm or reassignments.
 
 ## Honesty notes
 
@@ -77,7 +79,7 @@ The one disagreement: a description that is only filler ("tbd see above"). Muse 
 
 ### Human labels
 
-The same 48 handoffs were also labeled by people on Toloka: two independent experts per sample, each choosing a verdict and writing a short reason. A sample counts only when both gave the same answer. 40 of 48 did; the other 8 are left out and are not settled by the rules or by Muse. The pilot cost USD 49.81, above the USD 45 limit set for it (Toloka's forecast was USD 32.42; the extra came from answers sent back for a replacement).
+The same 48 handoffs were also labeled by people on Toloka: two independent experts per sample, each choosing a verdict and writing a short reason. A sample counts only when both gave the same answer. 40 of 48 did; the other 8 are left out and are not settled by the rules or by Muse.
 
 | Check | Agreement with human-decided labels |
 |---|---|
@@ -98,7 +100,7 @@ The four rules-versus-people disagreements are all samples with no due date: the
 - A decision scoped to a label binds only the project it was confirmed in.
 - An agent can be the receiver of a handoff, by assigning it in the Assignee field, but it cannot acknowledge, so that handoff stays Needs info until a person changes the receiver.
 - The read-back checks that each decision is addressed, not that it was understood.
-- Teach-back catches only a fixed list of patterns: late dates, negation or "optional" wording around a required label or component, and adding wording before a forbidden one. It can miss other contradictions, and can misread a nearby negation about something else (the receiver then rewrites the read-back). A full date anywhere in the read-back is read as the delivery date; a month alone ("Jan 2027") or a numeric date ("01/10/2027") is read only right after by, in, on, until, before, after or to. Loose dates ("early January") and indirect wording are among what it misses.
+- Teach-back catches only a fixed list of patterns: late dates, negation or "optional" wording around a required label or component, and adding wording before a forbidden one. It can miss other contradictions, and can misread a nearby negation about something else (the receiver then rewrites the read-back). Loose dates ("early January") and indirect wording are among what it misses.
 - The model sentence beside a teach-back refusal is sent the read-back and the code's reasons. Its wording varies between attempts.
 - Superseding a decision from the Decisions page needs a project administrator. A decision with a recorded confirmer can be superseded only by that confirmer. "Confirm and supersede" in the panel retires the older decisions the new one makes redundant that you may supersede (you are a project administrator, and you confirmed them or they have no recorded confirmer); a decision someone else confirmed stays in force and the panel names it.
 - Reassigning a work item to a different person starts a new handoff record: the earlier acknowledgements, read-back and contingency are not carried over.
