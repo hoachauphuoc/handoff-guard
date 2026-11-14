@@ -85,11 +85,13 @@ Pilot with one team and measure handoffs that are reopened or bounced back, whic
 
 About 10 minutes on a Jira site where you are a site admin. With one account you see a refused read-back and an accepted one. Reaching Clear needs a second user as receiver: if you pick yourself, the handoff stays Blocked with "Sender and receiver are the same person", which is the rule working.
 
+**Three minutes, one account.** After steps 1 to 3 below, type the read-back of step 5 into the box under "Practice check" and click **Try a read-back (practice, nothing is saved)**: it is refused, with the code's reason. Type the read-back of step 6: it "would be accepted". The practice check stores nothing and gives no verdict; steps 4 to 7 are the real handoff.
+
 The panel can take several seconds to load the first time.
 
 1. Open the installation link below, choose your site, select Jira and click Install. The app asks for four permissions and nothing for Confluence.
 2. Open a work item. Under the summary click the apps icon (its tooltip is "View app actions"), then **Handoff Guard**; the panel opens below the description. If Jira asks, click **Allow access** and reload. A getting-started checklist in the panel shows the next step at any time.
-3. Click **Load sample decisions (demo)**. This stores demo decisions for that project in the app; nothing is written to Jira. Four demo decisions are stored; two bind every item in the project: "Work ships by the end of 2026" and "Stop using the legacy billing component".
+3. Click **Load sample decisions (demo)**. This stores demo decisions for that project in the app; nothing is written to Jira. The panel then says "4 stored decisions for this project"; two bind every item in the project: "Work ships by the end of 2026" and "Stop using the legacy billing component".
 4. Give the work item a description and a due date in 2026. Pick a receiver (a second user, or yourself) and click **Prepare handoff**. The findings say the receiver has not acknowledged the two decisions.
 5. As the receiver, open the same work item and the panel. In the read-back box write: `Work ships by the end of 2026: I will ship on 15 January 2027. Stop using the legacy billing component: understood.` Click **Acknowledge all with this read-back**. It is refused, with the code's reason and one sentence labelled as written by a model.
 6. Replace the read-back with: `Work ships by the end of 2026: I will ship by 15 December 2026. Stop using the legacy billing component: understood.` It is accepted and both decisions read "Acknowledged." With a second user as receiver the verdict becomes Clear.

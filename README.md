@@ -1,6 +1,15 @@
 # Handoff Guard
 
-A Forge app for Jira. When a work item is handed to someone else, rules check what is missing and which recorded decisions bind it. The verdict (Clear, Needs info, Blocked) always comes from plain code (`checkHandoff()`); Rovo only explains it and proposes decisions that a person must confirm.
+A Forge app for Jira. When a work item is handed to someone else, the receiver restates each recorded decision that binds it, and plain code refuses a restatement that contradicts one, such as a ship date after the agreed limit. Rules also check what is missing from the work item. The verdict (Clear, Needs info, Blocked) always comes from plain code (`checkHandoff()`); Rovo only explains it and proposes decisions that a person must confirm.
+
+## Try it in 3 minutes (one account)
+
+1. Install from the installation link in the Devpost submission and open any work item. Click the apps icon under the summary ("View app actions"), then **Handoff Guard**. You should see a checklist headed "Handing over this work".
+2. Click **Load sample decisions (demo)**. You should see "4 stored decisions for this project". Nothing is written to Jira.
+3. Under "Practice check", type `Work ships by the end of 2026: I will ship on 15 January 2027. Stop using the legacy billing component: understood.` and click **Try a read-back (practice, nothing is saved)**. You should see "This read-back would be refused:", the code's reason about the 2026-12-31 limit, and one sentence labelled as written by a model.
+4. Change the date to `15 December 2026` and click again. You should see "This read-back would be accepted."
+
+That refusal is the point of the app: the receiver restates each decision, and plain code refuses a restatement that contradicts one. The practice check stores nothing and gives no verdict. A real handoff, with a second user as receiver, reaches Clear through the same check; the 10-minute path is in `docs/DEVPOST.md`.
 
 ## Install (for judges)
 
