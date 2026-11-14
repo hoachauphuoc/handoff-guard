@@ -358,3 +358,11 @@ Five ideas were kept after filtering; their outcome:
 - Teamwork Graph: a failed read is retried once; if every query fails the status is `error` ("could not be read just now"), if one fails the note says some results could not be read. Before, a failure looked the same as "returned nothing" (principle 3). Muse Code wrote the tests but timed out twice (1500 s, 900 s) without changing the source, so Claude wrote the source change directly. Rovo prompt rule 13 names the new status. Development 10.6.0.
 - `kvs.transact()` for the decisions key: dropped. It only takes conditions on custom entities, so it cannot guard the single `decisions` key; the lost-update limit stays in the README.
 - Workflow validator on a board drag: left for the owner to look at on the site (the message is already "Prepare the handoff in the Handoff Guard panel first.").
+
+## 2026-11-14: site check on development 10.7.x (by Claude in the built-in browser, owner signed in)
+
+- Panel on MOBL-53: the three paths switch (New to this project 1 of 4, Handing over this work 1 of 7, Leaving the project 0 of 3); Show help / Hide help shows and hides the steps. A hint beside a real finding was not seen: MOBL-53 has no prepared handoff, and none was prepared, to leave the demo data as it was.
+- Decisions page: "Leaving the project" lists MOBL-53 under the owner's open work items, with "Prepare a handoff on this work item."; nothing to acknowledge; no decision only the owner can supersede (the sample decisions have no confirmer).
+- The replay DatePicker showed the design system's default placeholder "2/18/1993", which reads like a chosen date; it now says "Pick a date".
+- Rovo: tests 1, 3, 4 of `docs/ROVO-TESTS.md`; 3 and 4 pass, 1 fails (the agent made up MOBL-1 on a project page). Rule 1 gained one sentence; unverified, see the test file.
+- Validator: not tested. Changing MOBL-53's status would move the demo item if the transition has no validator.

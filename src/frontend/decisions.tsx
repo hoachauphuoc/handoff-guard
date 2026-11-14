@@ -114,7 +114,7 @@ const App = () => {
         Pick a date to see which prepared handoffs would have had a different verdict then. Only decisions and acknowledgements are replayed;
         work item fields are read as they are now.
       </Text>
-      <DatePicker name="replay-date" onChange={(v: string) => void replayOn(v)} />
+      <DatePicker name="replay-date" placeholder="Pick a date" onChange={(v: string) => void replayOn(v)} />
       {replayError !== null && <Text>{replayError}</Text>}
       {replay !== null && (
         <Stack space="space.050">
