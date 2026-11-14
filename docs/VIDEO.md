@@ -4,7 +4,7 @@ Everything on screen is the Codegeist demo site `one-atlas-hxpc.atlassian.net`. 
 
 | # | Time | Screen | Words |
 |---|---|---|---|
-| 1 | 0:00-0:12 | Title card | "When work changes hands in Jira, the decisions that bind it often stay behind. Handoff Guard checks the handoff before it happens." |
+| 1 | 0:00-0:12 | Cold open, no title: the read-back box with "I will ship on 15 January 2027" and the refusal appearing beside it. Then the title card | "The team decided this ships by the end of the year. The person taking it over says January. Handoff Guard refuses that read-back, in plain code, before the work changes hands." |
 | 2 | 0:12-0:35 | MOBL-53 as the sender, Handoff Guard panel: the Blocked lozenge with the "(I-PASS: Unstable)" label, the findings, then the "Action list (one action per finding, worked out by the rule check)" with Sender, Receiver and Decision owner lines | "Rules decide the verdict, in plain code. This handoff is Blocked, and the panel names it Unstable, the I-PASS word for it. Every finding becomes one action with an owner: the sender, the receiver or the decision owner." |
 | 3 | 0:35-0:45 | Same panel, "Suggested fixes" | "It also works out the smallest edits that would stop the contradictions. It suggests. A person edits." |
 | 4 | 0:45-1:15 | Signed in as the receiver. In the read-back box, type "Got it, I will ship by Dec 15 and skip legal review." and click "Acknowledge all with this read-back". The refusal appears beside the box: the code's reasons, then one sentence with the note "Written by a model (...)". The demo item must have binding decisions this sentence addresses; if the read-back must also mention each decision, the on-screen text may be longer than the quoted part, or the refusal also lists coverage reasons ("Your read-back does not mention ...") | "Now the receiver reads the handoff back. This read-back says the review will be skipped, and a decision requires it. Plain code refuses it and gives the reason. The sentence next to it is written by a model, through Forge LLMs, and the panel says so. The model does not decide. It only helps the receiver write a better read-back." |
@@ -14,6 +14,8 @@ Everything on screen is the Codegeist demo site `one-atlas-hxpc.atlassian.net`. 
 | 8 | 2:20-2:35 | On an item the receiver has acknowledged, change the due date. Reload: "Changed since you acknowledged: due ... to ...", the finding returns, and the button reads "Acknowledge again with a new read-back" | "If something a decision reads changes after the receiver agreed, here the due date, the acknowledgement goes stale. The receiver reads back again." |
 | 9 | 2:35-2:47 | The Decisions project page: "Replay on a date" with the date picker, the list of handoffs whose verdict differs; the "Supersede" button on a decision | "The Decisions page can replay verdicts on an earlier date, using the decisions as they stood then. A person can supersede a decision they confirmed." |
 | 10 | 2:47-3:00 | Closing card: the measurement table from `README.md` (47 of 48, 34 of 48, 12 of 48). Caption: "Rovo agent, Rovo MCP, Teamwork Graph, Forge LLMs" | "On 48 synthetic handoffs, the rules agree with Muse labels 47 times out of 48. Rules decide. Models explain." |
+
+One story carries the video: a handoff where the receiver's read-back contradicts a decision. Scenes 6 to 9 (Rovo, validator, drift, Decisions page) are the short closing part; cut them first if the film runs long.
 
 ## Before filming
 
