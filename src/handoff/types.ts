@@ -33,6 +33,8 @@ export type PanelState = {
   result: HandoffResult | null;
   viewerId: string | null;
   isReceiver: boolean;
+  /** A read-back that the check accepts, built from the decisions that bind this item; empty when none bind. For the practice box. */
+  exampleReadBack: string;
   /** Whether this project still holds the demo decisions that Load sample decisions adds. */
   hasSamples: boolean;
   /** Whether the viewer may prepare this handoff (again): the sender, the assignee or a project administrator once one exists. */

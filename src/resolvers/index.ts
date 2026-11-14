@@ -10,6 +10,7 @@ import { leavingView, type LeavingView } from "../decisions/leaving";
 import { buildDecisionsPage, projectOfKey, touches, type DecisionsPageState } from "../decisions/page";
 import { acknowledge, acknowledgeAll, checkReadBack } from "../handoff/acknowledge";
 import { mayPrepare, PREPARE_DENIED } from "../handoff/prepare";
+import { exampleReadBack } from "../handoff/example";
 import { withContingency } from "../handoff/contingency";
 import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
@@ -87,6 +88,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     viewerId,
     canManage,
     hasSamples: hasSamples(decisions, item.projectKey),
+    exampleReadBack: exampleReadBack(bindingDecisions(decisions, item)),
     canPrepare: mayPrepare(record, viewerId, item.assigneeId, canManage),
     isReceiver: record !== null && viewerId !== null && viewerId === record.toId,
     // Decisions that name this project. Samples are loaded per project, so a site-wide count, or an old label

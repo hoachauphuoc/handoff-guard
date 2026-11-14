@@ -217,27 +217,34 @@ const App = () => {
                     </Text>
                   ))
                 )}
-                <Text>{PRACTICE_READBACK_HOW}</Text>
-                <TextArea name="practiceReadBack" onChange={(e) => setPracticeText(e.target.value)} />
-                <Button isDisabled={busy} onClick={() => void tryPracticeReadBack()}>
-                  {PRACTICE_READBACK_BUTTON}
-                </Button>
-                {practiceNote && <Text>{practiceNote}</Text>}
-                {practice?.accepted && <Text>{PRACTICE_READBACK_ACCEPTED}</Text>}
-                {practice && !practice.accepted && (
-                  <>
-                    <Text>{PRACTICE_READBACK_REFUSED}</Text>
-                    {practice.reasons.map((r, i) => (
-                      <Text key={i}>{r}</Text>
-                    ))}
-                    <ModelExplanation explanation={practice.explanation ?? null} />
-                  </>
-                )}
               </SectionMessage>
             )}
           </Stack>
         ))}
       {open && <Text>{GUIDE_SOURCE}</Text>}
+      {state.exampleReadBack !== "" && (
+        <SectionMessage appearance="information" title="Practice read-back">
+          <Text>{PRACTICE_READBACK_HOW}</Text>
+          <TextArea name="practiceReadBack" value={practiceText} onChange={(e) => setPracticeText(e.target.value)} />
+            <Button isDisabled={busy} onClick={() => setPracticeText(state.exampleReadBack)}>
+              Fill an example
+            </Button>
+          <Button isDisabled={busy} onClick={() => void tryPracticeReadBack()}>
+            {PRACTICE_READBACK_BUTTON}
+          </Button>
+          {practiceNote && <Text>{practiceNote}</Text>}
+          {practice?.accepted && <Text>{PRACTICE_READBACK_ACCEPTED}</Text>}
+          {practice && !practice.accepted && (
+            <>
+              <Text>{PRACTICE_READBACK_REFUSED}</Text>
+              {practice.reasons.map((r, i) => (
+                <Text key={i}>{r}</Text>
+              ))}
+              <ModelExplanation explanation={practice.explanation ?? null} />
+            </>
+          )}
+        </SectionMessage>
+      )}
       <UserPicker
         label="Receiver"
         name="receiver"
