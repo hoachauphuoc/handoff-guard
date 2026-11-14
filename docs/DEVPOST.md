@@ -60,6 +60,7 @@ Also:
 
 **Decisions over time**
 
+- **Adding a decision by hand.** On the Decisions page a project administrator writes a decision (title, where it applies, one constraint). "Check this decision" shows how many open work items would contradict it before it is saved. No Rovo is needed.
 - **Replay on a date.** The Decisions page shows which prepared handoffs would have had a different verdict on an earlier date, using the decisions and acknowledgements as they stood then.
 - **Superseding decisions.** A decision that makes older ones redundant, or moves a deadline, can be confirmed with the older ones retired (only those the confirming person may supersede); the person who confirmed a decision can also retire it from the Decisions page. A superseded decision binds nothing.
 

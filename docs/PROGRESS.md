@@ -382,3 +382,21 @@ Five ideas were kept after filtering; their outcome:
 - Practice read-back (owner's small exception to "no new features"): in the panel's practice check one account can try a read-back and see it refused or accepted; nothing is stored and no verdict is produced. Muse Code wrote it in a worktree from a brief (315 s, first try); Claude read the diff, added the hint line, and changed the accepted text after Gemini's critique ("reaches Clear the same way" claimed too much). 341 tests. Development 10.15.x; not on production.
 - Not verified on the site: the practice box was found in the development panel but not typed into (the browser pane was too small to drive it). The README's "you should see" lines for it come from the code and tests.
 - README, `docs/DEVPOST.md` and `docs/VIDEO.md` now lead with the refused read-back and a three-minute, one-account path.
+
+## 2026-11-14: product plan, phase 1 (owner's order "execute all")
+
+Seven changes, one commit each, written by Claude directly (no Muse Code brief; said in the report), on production and development, main pushed:
+
+- 31323b9 Add a decision by hand on the Decisions page, with a count of open work items it would contradict (one constraint per decision in the form).
+- 2aae0cc Project-administrator check on the server (`mypermissions`, ADMINISTER_PROJECTS, asked as the user, fails closed) for confirm, add, supersede, load and remove samples. It works with the existing scope `read:jira-work`: seen on production, the owner's account gets the form and the buttons.
+- 9847132 Preparing again only by the sender, the assignee or a project administrator, after a warning that names how many acknowledgements are cleared.
+- 830e8e3 Decisions stored per project (`decisions:<key>`, with a version). The old key `decisions` is read until a project's own key exists and is never written or deleted. Not atomic: a window of milliseconds remains.
+- 83f4128 Remove sample decisions. 9090b3b Rovo proposals are merged with those still waiting (Rovo test 7 not rerun). d2f1bc7 Practice read-back shown without help, with "Fill an example".
+- 96b0874, 9bd9a7d: found on the site. A project left with only superseded decisions (or an old site-wide label decision) lost the Load sample decisions button; it is now offered whenever no decision of the project is in force and no samples exist.
+- Docs after a Muse Wonder review of README and DEVPOST: f8742b1 (by Muse Code in a worktree, one round), 443d177.
+
+Seen on the site (built-in browser): production Decisions page of MOBL: form shown, Check ("No open work item contradicts it, among 50"), Save, Supersede. Development panel on MOBL-58: practice box with Fill an example accepted; first click of Prepare again shows "clears 2 acknowledgements" (not confirmed, record unchanged); production panel shows Load sample decisions again.
+
+Left behind on production MOBL: one superseded test decision "Test: work ships by 1 December 2026" (binds nothing; the app has no delete).
+
+Not done: the Prepare again refusal for a third person and the non-admin view need a second account; Rovo test 7 rerun; phase 2 of `research/PLAN-product.md`.

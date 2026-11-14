@@ -21,7 +21,8 @@ One story carries the video: a handoff where the receiver's read-back contradict
 
 - Two accounts: a sender and a receiver. Only the receiver can give the read-back (the panel checks it on the server), so scenes 4, 5 and 8 need both. Use a second browser profile or window.
 - The staging panel ("Handoff Guard STG") must not be installed on the site, so the filmed panel is the only one.
-- Click "Load sample decisions (demo)" on the project so decisions exist.
+- Click "Load sample decisions (demo)" on the project so decisions exist. Film with an account that is a project administrator: the button, Confirm, Supersede and "Add a decision" are hidden from anyone else.
+- The practice read-back box is now always in the panel when a decision binds the item, with "Fill an example"; the help checklist no longer needs to be open for scene 1.
 - Blocked case (suggested: MOBL-53): a description, a required label missing from the work item, a due date later than a date limit, and a prepared handoff to the receiver. For scene 4 the binding decisions must include one the quoted read-back contradicts (a required review said to be skipped).
 - Clear case (suggested: TD-1): an item that meets every binding decision, with a receiver who has already given a read-back. Prepare it before filming; scene 5 can use the same item after the fix.
 - Rovo must be enabled on the site for scene 6, and the item for "Find decisions with Rovo" needs a decision written in its description or comments.
