@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, TextArea, User, UserPicker } from "@forge/react";
+import ForgeReconciler, { Button, Heading, Label, Lozenge, SectionMessage, Stack, Text, TextArea, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
 import { MANAGE_DENIED } from "../authz";
 import { PREPARE_DENIED } from "../handoff/prepare";
@@ -34,7 +34,11 @@ const NEEDS: Record<StepNeed, string> = { teammate: "a teammate", rovo: "Rovo", 
 const ModelExplanation = ({ explanation }: { explanation: Explanation | null }) =>
   explanation ? (
     <>
-      {"text" in explanation && <Text>{explanation.text}</Text>}
+      {"text" in explanation && (
+        <Text>
+          <Lozenge appearance="new">Model-written</Lozenge> {explanation.text}
+        </Text>
+      )}
       <Text>{explanationNote(explanation)}</Text>
     </>
   ) : null;
@@ -189,6 +193,26 @@ const App = () => {
   const waiting = record && result ? result.binding.filter((d) => !record.acknowledged.includes(d.id) || state.stale.includes(d.id)) : [];
   return (
     <Stack space="space.100">
+      {/* The answer first: the verdict and its findings lead the panel; help, practice and the controls follow. */}
+      {record && result && (
+        <>
+          <Text>
+            Handoff <User accountId={record.fromId} /> to <User accountId={record.toId} />:{" "}
+            <Lozenge appearance={LOOK[result.verdict].appearance}>{LOOK[result.verdict].text}</Lozenge> ({state.severity})
+          </Text>
+          {!protocol && <Text>{BEFORE_READ_BACK}</Text>}
+          {record.origin === "reassignment" && (
+            <Text>{`Detected from a change of assignee on ${record.preparedAt.slice(0, 10)}. Prepare the handoff again to name a different receiver.`}</Text>
+          )}
+          {result.findings.map((f, i) => (
+            // The hint is panel wording beside the finding; the finding's own message is shown unchanged.
+            <Text key={i}>
+              • {f.message}
+              {open ? ` ${HINTS[f.rule]}` : ""}
+            </Text>
+          ))}
+        </>
+      )}
       <Text>
         {PATH_NAMES[path]}: {guide.doneCount} of {guide.total} steps done.
       </Text>
@@ -223,9 +247,13 @@ const App = () => {
         ))}
       {open && <Text>{GUIDE_SOURCE}</Text>}
       {state.exampleReadBack !== "" && (
-        <SectionMessage appearance="information" title="Practice read-back">
+        <Stack space="space.100">
+          <Heading as="h3" size="small">
+            Practice read-back
+          </Heading>
           <Text>{PRACTICE_READBACK_HOW}</Text>
-          <TextArea name="practiceReadBack" value={practiceText} onChange={(e) => setPracticeText(e.target.value)} />
+          <Label labelFor="practiceReadBack">Your practice read-back</Label>
+          <TextArea id="practiceReadBack" name="practiceReadBack" value={practiceText} onChange={(e) => setPracticeText(e.target.value)} />
             <Button isDisabled={busy} onClick={() => setPracticeText(state.exampleReadBack)}>
               Fill an example
             </Button>
@@ -233,17 +261,20 @@ const App = () => {
             {PRACTICE_READBACK_BUTTON}
           </Button>
           {practiceNote && <Text>{practiceNote}</Text>}
-          {practice?.accepted && <Text>{PRACTICE_READBACK_ACCEPTED}</Text>}
+          {practice?.accepted && (
+            <SectionMessage appearance="success" title="Would be accepted">
+              <Text>{PRACTICE_READBACK_ACCEPTED}</Text>
+            </SectionMessage>
+          )}
           {practice && !practice.accepted && (
-            <>
-              <Text>{PRACTICE_READBACK_REFUSED}</Text>
+            <SectionMessage appearance="error" title={PRACTICE_READBACK_REFUSED}>
               {practice.reasons.map((r, i) => (
                 <Text key={i}>{r}</Text>
               ))}
               <ModelExplanation explanation={practice.explanation ?? null} />
-            </>
+            </SectionMessage>
           )}
-        </SectionMessage>
+        </Stack>
       )}
       <UserPicker
         label="Receiver"
@@ -270,21 +301,6 @@ const App = () => {
       )}
       {record && result ? (
         <>
-          <Text>
-            Handoff <User accountId={record.fromId} /> to <User accountId={record.toId} />:{" "}
-            <Lozenge appearance={LOOK[result.verdict].appearance}>{LOOK[result.verdict].text}</Lozenge> ({state.severity})
-          </Text>
-          {!protocol && <Text>{BEFORE_READ_BACK}</Text>}
-          {record.origin === "reassignment" && (
-            <Text>{`Detected from a change of assignee on ${record.preparedAt.slice(0, 10)}. Prepare the handoff again to name a different receiver.`}</Text>
-          )}
-          {result.findings.map((f, i) => (
-            // The hint is panel wording beside the finding; the finding's own message is shown unchanged.
-            <Text key={i}>
-              • {f.message}
-              {open ? ` ${HINTS[f.rule]}` : ""}
-            </Text>
-          ))}
           {state.actions.length > 0 && (
             <SectionMessage appearance="information" title="Action list (one action per finding, worked out by the rule check)">
               <Stack space="space.050">
@@ -308,7 +324,9 @@ const App = () => {
           {isSender && (
             <>
               <Text>{`Contingency: if something goes wrong, then what (up to ${CONTINGENCY_MAX} characters).`}</Text>
+              <Label labelFor="contingency">Contingency</Label>
               <TextArea
+                id="contingency"
                 name="contingency"
                 defaultValue={state.contingency?.text ?? ""}
                 onChange={(e) => setContingency(e.target.value)}
@@ -348,15 +366,21 @@ const App = () => {
               )}
             </Stack>
           ))}
-          {ackNotes.map((n, i) => (
-            <Text key={i}>{n}</Text>
-          ))}
-          <ModelExplanation explanation={explanation} />
+          {ackNotes.length > 0 && (
+            <SectionMessage appearance="error" title="Not accepted">
+              {ackNotes.map((n, i) => (
+                <Text key={i}>{n}</Text>
+              ))}
+              <ModelExplanation explanation={explanation} />
+            </SectionMessage>
+          )}
           {protocol && record.readBack && <Text>{`Read-back from the receiver: "${record.readBack}"`}</Text>}
           {protocol && state.isReceiver && waiting.length > 0 && (
             <>
               <Text>{`Write a read-back (${READ_BACK_MIN} to ${READ_BACK_MAX} characters) that mentions each decision above by its title or by what it sets: a date, a label or a component.`}</Text>
+              <Label labelFor="readBack">Your read-back</Label>
               <TextArea
+                id="readBack"
                 name="readBack"
                 onChange={(e) => setReadBack(e.target.value)}
               />
