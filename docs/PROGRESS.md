@@ -374,3 +374,4 @@ Five ideas were kept after filtering; their outcome:
 - Fixes, one commit each, on development 10.14.0 only: d62132f, a296eab (sample decisions per project), 43de8b6 (Replay notes), 87b9290 (agent copied the example key OPS-1; Rovo test 1 now passes on development). Production needs the owner's deploy order.
 - The validator on the shared MOBL/TD workflow is the development one: its refusal on MOBL-58 named the development handoff's findings.
 - Open: Rovo test 7 listed three proposals while one was saved.
+- Owner's order "Deploy production + Push": production is 3.7.0 with the four fixes above; main pushed. Rovo test 1 can now be rerun on production.
