@@ -1,15 +1,17 @@
 # Handoff Guard
 
-A Forge app for Jira. When a work item is handed to someone else, the receiver restates each recorded decision that binds it, and plain code refuses a restatement that contradicts one, such as a ship date after the agreed limit. Rules also check what is missing from the work item. The verdict (Clear, Needs info, Blocked) always comes from plain code (`checkHandoff()`); Rovo only explains it and proposes decisions that a person must confirm.
+A Forge app for Jira. When a work item is handed to someone else, the receiver restates each recorded decision that binds it, and plain code refuses a restatement that contradicts one in ways it can detect, for example a date after a recorded limit or a required label described as skipped. It does not catch every contradiction or prove understanding. Rules also check what is missing from the work item. The verdict (Clear, Needs info, Blocked) always comes from plain code (`checkHandoff()`); Rovo only explains it and proposes decisions that a person must confirm.
 
 ## Try it in 3 minutes (one account)
 
+Use an account that is a project administrator of the Jira project. Load sample decisions, confirming, adding and superseding a decision need Jira's "Administer projects" permission.
+
 1. Install from the installation link in the Devpost submission and open any work item. Click the apps icon under the summary ("View app actions"), then **Handoff Guard**. You should see a checklist headed "Handing over this work".
 2. Click **Load sample decisions (demo)**. You should see "4 stored decisions for this project". Nothing is written to Jira.
-3. Under "Practice check", type `Work ships by the end of 2026: I will ship on 15 January 2027. Stop using the legacy billing component: understood.` and click **Try a read-back (practice, nothing is saved)**. You should see "This read-back would be refused:", the code's reason about the 2026-12-31 limit, and one sentence labelled as written by a model.
+3. Under "Practice read-back", type `Work ships by the end of 2026: I will ship on 15 January 2027. Stop using the legacy billing component: understood.` and click **Try a read-back (practice, nothing is saved)**. You should see "This read-back would be refused:", the code's reason about the 2026-12-31 limit, and one sentence labelled as written by a model.
 4. Change the date to `15 December 2026` and click again. You should see "This read-back would be accepted."
 
-That refusal is the point of the app: the receiver restates each decision, and plain code refuses a restatement that contradicts one. The practice check stores nothing and gives no verdict. A real handoff, with a second user as receiver, reaches Clear through the same check; the 10-minute path is in `docs/DEVPOST.md`.
+That refusal is the point of the app: the receiver restates each decision, and plain code refuses a restatement that contradicts one in ways it can detect. It does not catch every contradiction or prove understanding. The practice check stores nothing and gives no verdict. A real handoff, with a second user as receiver, reaches Clear through the same check; the 10-minute path is in `docs/DEVPOST.md`.
 
 ## Install (for judges)
 
@@ -90,7 +92,7 @@ The four rules-versus-people disagreements are all samples with no due date: the
 
 - "Leaving the project" covers only the open work items of that project that you can see, up to the page's limit, and it does not know whether a person has left: someone picks the name.
 - Decisions are stored under one storage key per project, and a save is refused when another save landed first. Forge storage has no atomic compare-and-set here, so a window of a few milliseconds remains, and a project with a very large number of decisions would still hit the size limit of its value.
-- The workflow validator checks that the prepared handoff is Clear, not that its receiver is the current assignee; the panel shows a mismatch as advice.
+- The workflow validator checks that the prepared handoff is Clear for the handoff's recorded receiver. It does not compare that receiver with the current assignee; the panel shows a mismatch as advice.
 - Confirming, adding and superseding a decision, and loading or removing sample decisions, need a project administrator (Jira's own "Administer projects" permission, asked as the person). If Jira cannot answer, the app treats the person as not an administrator. Once a handoff is prepared, only its sender, the assignee or a project administrator can prepare it again.
 - A proposed decision is kept only if its quote is in the work item's text; that does not prove the constraint follows from the quote. Read both before confirming.
 - A decision scoped to a label binds only the project it was confirmed in.
@@ -98,7 +100,7 @@ The four rules-versus-people disagreements are all samples with no due date: the
 - The read-back checks that each decision is addressed, not that it was understood.
 - Teach-back catches only a fixed list of patterns: late dates, negation or "optional" wording around a required label or component, and adding wording before a forbidden one. It can miss other contradictions, and can misread a nearby negation about something else (the receiver then rewrites the read-back). A full date anywhere in the read-back is read as the delivery date; a month alone ("Jan 2027") or a numeric date ("01/10/2027") is read only right after by, in, on, until, before, after or to. Loose dates ("early January") and indirect wording are among what it misses.
 - The model sentence beside a teach-back refusal is sent the read-back and the code's reasons. Its wording varies between attempts.
-- Only the person who confirmed a decision can supersede it from the Decisions page (decisions with no recorded confirmer, such as the samples, can be superseded by anyone signed in). "Confirm and supersede" in the panel retires the older decisions the new one makes redundant that you may supersede (the ones you confirmed, or with no recorded confirmer); a decision someone else confirmed stays in force and the panel names it.
+- Superseding a decision from the Decisions page needs a project administrator. A decision with a recorded confirmer can be superseded only by that confirmer. "Confirm and supersede" in the panel retires the older decisions the new one makes redundant that you may supersede (you are a project administrator, and you confirmed them or they have no recorded confirmer); a decision someone else confirmed stays in force and the panel names it.
 - Reassigning a work item to a different person starts a new handoff record: the earlier acknowledgements, read-back and contingency are not carried over.
 - A handoff prepared before read-back existed keeps one acknowledgement per decision, and the panel says that no read-back was checked.
 

@@ -6,7 +6,7 @@ Owner submits. Category: Apps for Software Teams. Bonus prizes: Best Agents (rov
 
 A Jira handoff goes through only when the receiver's own read-back agrees with the decisions the team recorded.
 
-A task is handed over on Friday. The team decided it ships by the end of the year, but nobody told the receiver. With Handoff Guard the receiver restates each recorded decision before taking the work, and plain code refuses a restatement that contradicts one, such as a ship date in January.
+A task is handed over on Friday. The team decided it ships by the end of the year, but nobody told the receiver. With Handoff Guard the receiver restates each recorded decision before taking the work, and plain code refuses a restatement that contradicts one in ways it can detect, for example a date after a recorded limit or a required label described as skipped. It does not catch every contradiction or prove understanding.
 
 ## Who it is for
 
@@ -30,9 +30,9 @@ When a work item changes hands, the decisions that bind it (a deadline, a requir
 | Applies recorded decisions to the work item being handed over | No | No | No | Yes, in plain code |
 | Refuses a receiver's read-back that contradicts a decision | No | No | No | Yes, in plain code |
 | Makes an acknowledgement stale when the item changes afterwards | No | No | No | Yes |
-| Blocks the workflow transition until the handoff is Clear | No | Some | Yes | Yes, on transitions where an admin adds the validator |
+| Blocks the workflow transition until the handoff is Clear | No | Some | Yes | Yes, on transitions where an admin adds the validator, for the handoff's recorded receiver; it does not compare that receiver with the current assignee (the panel shows a mismatch as advice) |
 
-The comparison is by category, from public listings. The row no category covers is a read-back checked against recorded decisions. In Handoff Guard a model never decides: the verdict and every refusal come from rules, and model-written text is labelled.
+The comparison is from the public listings reviewed, by category. None of those described a receiver read-back refused for contradicting a recorded decision. In Handoff Guard a model never decides: the verdict and every refusal come from rules, and model-written text is labelled.
 
 ## What it does
 
@@ -40,7 +40,7 @@ Core:
 
 - **Handoff check.** The panel on a work item records a handoff to a named receiver and runs plain rules: the item must have a description and a due date, must not contradict any recorded decision, and the receiver must acknowledge every decision that binds it. The verdict is Clear, Needs info or Blocked.
 - **Read-back with teach-back.** The receiver acknowledges with one read-back that must address each binding decision. A read-back that addresses a decision but contradicts it (a date past the limit, a required label said to be skipped, a forbidden one said to be added) is refused by plain code. One sentence beside the refusal, telling the receiver what to write instead, is written by a model through Forge LLMs and labelled as model-written; it never makes or lifts a refusal.
-- **Workflow validator.** A transition with the validator only goes through when the handoff is Clear.
+- **Workflow validator.** A transition with the validator only goes through when the handoff is Clear for the handoff's recorded receiver. The validator does not compare that receiver with the current assignee; the panel shows a mismatch as advice.
 
 Also:
 
@@ -69,7 +69,7 @@ Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Fo
 
 ## Measurement
 
-48 synthetic handoffs, labeled by a model (Muse). Agreement with Muse labels: 47 of 48 with recorded decisions, 34 of 48 with the rules alone, 12 of 48 with no check. This is agreement with model-written labels, not accuracy. The samples and labels are synthetic and model-written from our own specification, so the figure shows that the code matches the specification, not that the specification is right.
+48 synthetic handoffs, labeled by a model (Muse). Agreement with Muse labels: 47 of 48 with recorded decisions, 34 of 48 with the rules alone, 12 of 48 with no check. With human-decided labels: 36 of 40 where two human experts agreed, with recorded decisions. Both figures are agreement with labels, not accuracy on real handoffs. The samples and labels are synthetic and model-written from our own specification, so the figures show that the code matches the specification, not that the specification is right.
 
 ## Challenges
 
@@ -83,9 +83,9 @@ Pilot with one team and measure handoffs that are reopened or bounced back, whic
 
 ## Testing instructions (for judges)
 
-About 10 minutes on a Jira site where you are a site admin. With one account you see a refused read-back and an accepted one. Reaching Clear needs a second user as receiver: if you pick yourself, the handoff stays Blocked with "Sender and receiver are the same person", which is the rule working.
+Use an account that is a project administrator of the Jira project. Load sample decisions, confirming, adding and superseding a decision need Jira's "Administer projects" permission. About 10 minutes on a Jira site where you are a site admin. With one account you see a refused read-back and an accepted one. Reaching Clear needs a second user as receiver: if you pick yourself, the handoff stays Blocked with "Sender and receiver are the same person", which is the rule working.
 
-**Three minutes, one account.** After steps 1 to 3 below, type the read-back of step 5 into the box under "Practice check" and click **Try a read-back (practice, nothing is saved)**: it is refused, with the code's reason. Type the read-back of step 6: it "would be accepted". The practice check stores nothing and gives no verdict; steps 4 to 7 are the real handoff.
+**Three minutes, one account.** After steps 1 to 3 below, type the read-back of step 5 into the box under "Practice read-back" and click **Try a read-back (practice, nothing is saved)**: it is refused, with the code's reason. Type the read-back of step 6: it "would be accepted". The practice check stores nothing and gives no verdict; steps 4 to 7 are the real handoff.
 
 The panel can take several seconds to load the first time.
 
@@ -96,7 +96,7 @@ The panel can take several seconds to load the first time.
 5. As the receiver, open the same work item and the panel. In the read-back box write: `Work ships by the end of 2026: I will ship on 15 January 2027. Stop using the legacy billing component: understood.` Click **Acknowledge all with this read-back**. It is refused, with the code's reason and one sentence labelled as written by a model.
 6. Replace the read-back with: `Work ships by the end of 2026: I will ship by 15 December 2026. Stop using the legacy billing component: understood.` It is accepted and both decisions read "Acknowledged." With a second user as receiver the verdict becomes Clear.
 7. Drift: change the due date of the work item and reload the panel. The acknowledgement is stale and the receiver is asked to read back again.
-8. Optional, Jira admin: in the workflow editor, add the **Handoff Guard** validator to a transition (edit the transition, then Validators). A work item whose handoff is not Clear is refused on that transition. The refusal says "Prepare the handoff in the Handoff Guard panel first." both when the status is changed from the work item view and when a card is dragged on a board (seen on the demo site, 2026-11-14).
+8. Optional, Jira admin: in the workflow editor, add the **Handoff Guard** validator to a transition (edit the transition, then Validators). A work item whose handoff is not Clear for the handoff's recorded receiver is refused on that transition. The validator does not compare that receiver with the current assignee; the panel shows a mismatch as advice. The refusal says "Prepare the handoff in the Handoff Guard panel first." both when the status is changed from the work item view and when a card is dragged on a board (seen on the demo site, 2026-11-14).
 
 Steps 9 and 10 need Rovo enabled on the site. Without Rovo the panel says so.
 
