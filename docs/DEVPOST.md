@@ -18,6 +18,7 @@ When a work item changes hands, the decisions that bind it (a deadline, a requir
 
 - Reassignment is common and it costs time: in Mozilla and Eclipse, 37-44% of bug reports were reassigned, and reassignment increased the time to fix (Jeong, Kim, Zimmermann, ESEC/FSE 2009). Not every reassignment is bad; some are how work finds the right owner (Guo et al., CSCW 2011).
 - Decisions do not travel well: Atlassian's State of Teams 2025, as cited on Atlassian's blog, found that only 20% of knowledge workers are confident in their team's process for sharing decisions that affect each other's work.
+- Jira users say the same in their own words: on the Atlassian Community a programme lead asks how to track key decisions because they end up scattered across comments, work items and pages ([thread](https://community.atlassian.com/forums/discussion/3195026/best-practice-for-tracking-key-decisions-and-major-changes-in-jira-cloud)), and Atlassian's own knowledge base explains how to tell the previous assignee when a work item is reassigned, because Jira does not by default ([article](https://support.atlassian.com/jira/kb/send-notification-to-previous-assignee-when-assignee-changes-on-a-jira-issue)).
 - We borrow the receiver's read-back from I-PASS, a hospital handoff protocol linked to fewer medical errors (Starmer et al., N Engl J Med 2014); that hospital result says nothing about Jira, and we have not measured errors here.
 
 ## What is different
