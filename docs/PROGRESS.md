@@ -375,3 +375,10 @@ Five ideas were kept after filtering; their outcome:
 - The validator on the shared MOBL/TD workflow is the development one: its refusal on MOBL-58 named the development handoff's findings.
 - Open: Rovo test 7 listed three proposals while one was saved.
 - Owner's order "Deploy production + Push": production is 3.7.0 with the four fixes above; main pushed. Rovo test 1 can now be rerun on production.
+
+## 2026-11-14: survey of public Codegeist repositories, and the practice read-back
+
+- Survey (owner's order): 380 public READMEs read with Tavily extract (found by GitHub search, topic pages and 77 Tavily searches); one card per README by Gemini (8 batches) and Muse Spark (30 batches). Findings and shortlist: `docs/IDEAS.md` section (h). Raw pages and cards are in `research/` (ignored by git). In 2026 about 13 entries are handoff or handover packs and about 29 are decision memories; none shows a receiver read-back that code refuses.
+- Practice read-back (owner's small exception to "no new features"): in the panel's practice check one account can try a read-back and see it refused or accepted; nothing is stored and no verdict is produced. Muse Code wrote it in a worktree from a brief (315 s, first try); Claude read the diff, added the hint line, and changed the accepted text after Gemini's critique ("reaches Clear the same way" claimed too much). 341 tests. Development 10.15.x; not on production.
+- Not verified on the site: the practice box was found in the development panel but not typed into (the browser pane was too small to drive it). The README's "you should see" lines for it come from the code and tests.
+- README, `docs/DEVPOST.md` and `docs/VIDEO.md` now lead with the refused read-back and a three-minute, one-account path.
