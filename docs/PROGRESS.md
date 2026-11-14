@@ -349,3 +349,12 @@ The owner chose to build this despite the feature freeze, to be done by 2026-12-
 - `scripts/measure.ts` now reports a `human` section and `--check-readme` checks the human table. 40 of 48 decided; rules 36/40, Muse 35/40.
 - The 4 rules-vs-people disagreements all have a null due date. The expert brief did not say a missing due date counts as missing: a gap in the brief, not a verdict on the rules. Not rerun (cost); the README says so.
 - Checked 2026-11-14: 7 samples use a work-item-scoped decision, which the expert brief left out (fixed in the repo during the pilot, `f68f1d6`); 3 of the 8 unresolved samples are among them. Said in the README beside the due-date gap.
+
+## 2026-11-14: polish from a Tavily search
+
+Five ideas were kept after filtering; their outcome:
+- Rovo regression prompts: `docs/ROVO-TESTS.md`, 10 manual prompts for rules 1, 2, 3, 5, 7, 8, 9, 12, 17 and 18 (written by Gemini, read by Claude). Not run yet.
+- Devpost "Also" list grouped into three headings, same bullets (Gemini).
+- Teamwork Graph: a failed read is retried once; if every query fails the status is `error` ("could not be read just now"), if one fails the note says some results could not be read. Before, a failure looked the same as "returned nothing" (principle 3). Muse Code wrote the tests but timed out twice (1500 s, 900 s) without changing the source, so Claude wrote the source change directly. Rovo prompt rule 13 names the new status. Development 10.6.0.
+- `kvs.transact()` for the decisions key: dropped. It only takes conditions on custom entities, so it cannot guard the single `decisions` key; the lost-update limit stays in the README.
+- Workflow validator on a board drag: left for the owner to look at on the site (the message is already "Prepare the handoff in the Handoff Guard panel first.").
