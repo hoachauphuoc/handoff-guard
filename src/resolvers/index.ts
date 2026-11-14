@@ -5,6 +5,7 @@ import { confirmProposal, dismissProposal, inProject } from "../decisions/confir
 import { canSupersede, splitOverlap, supersede } from "../decisions/supersede";
 import { unrecordedMarked, type MarkedState } from "../decisions/marked";
 import { hypothetical } from "../decisions/hypothetical";
+import { buildManualDecision, readManualInput } from "../decisions/manual";
 import { leavingView, type LeavingView } from "../decisions/leaving";
 import { buildDecisionsPage, touches, type DecisionsPageState } from "../decisions/page";
 import { acknowledge, acknowledgeAll, checkReadBack } from "../handoff/acknowledge";
@@ -305,6 +306,32 @@ resolver.define("supersedeDecision", async ({ context, payload }) => {
   if (!target) throw new Error("That decision is not in force. Reload the page.");
   if (!canSupersede(target, accountId)) throw new Error("Only the person who confirmed this decision can supersede it.");
   await putDecisions(supersede(decisions, [id], new Date().toISOString()));
+});
+
+// Adding a decision by hand: the preview counts the open work items it would contradict, the add stores it.
+// Both run the same build, so the number shown is the number of the decision that gets saved.
+async function manualDecision(ctx: { accountId?: string; extension: { project: { key: string } } }, payload: unknown) {
+  if (!ctx.accountId) throw new Error("Adding a decision needs a signed-in person.");
+  const input = readManualInput(payload);
+  if (typeof input === "string") throw new Error(input);
+  const projectKey = String(ctx.extension.project.key);
+  const stored = await getDecisions();
+  const built = buildManualDecision(input, projectKey, stored, ctx.accountId, new Date().toISOString());
+  if (!built.ok) throw new Error(built.reason);
+  return { projectKey, stored, decision: built.decision };
+}
+
+resolver.define("previewDecision", async ({ context, payload }) => {
+  const ctx = context as Parameters<typeof manualDecision>[0];
+  const { projectKey, decision } = await manualDecision(ctx, payload);
+  const open = await openItemsAsUser(projectKey);
+  const hit = impactOf(decision, open.items.map((i) => i.item));
+  return { count: hit.length, keys: hit.slice(0, 10).map((h) => h.key), scanned: open.items.length, capped: open.capped };
+});
+
+resolver.define("addDecision", async ({ context, payload }) => {
+  const { stored, decision } = await manualDecision(context as Parameters<typeof manualDecision>[0], payload);
+  await putDecisions(mergeDecisions(stored, [decision]));
 });
 
 export const handler = resolver.getDefinitions();

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, DatePicker, Lozenge, SectionMessage, Stack, Text, User, UserPicker } from "@forge/react";
+import ForgeReconciler, { Button, DatePicker, Lozenge, SectionMessage, Select, Stack, Text, Textfield, User, UserPicker } from "@forge/react";
 import { invoke } from "@forge/bridge";
 import type { LeavingView } from "../decisions/leaving";
 import type { DecisionsPageState } from "../decisions/page";
@@ -9,7 +9,25 @@ import type { ReplayState } from "../resolvers";
 
 const VERDICT = { blocked: { text: "Blocked", appearance: "removed" }, needs_info: { text: "Needs info", appearance: "moved" } } as const;
 
+type Preview = { count: number; keys: string[]; scanned: number; capped: boolean };
+const SCOPES = [
+  { label: "The whole project", value: "project" },
+  { label: "Work items with a label", value: "label" },
+  { label: "One work item", value: "workItem" },
+];
+const RULES = [
+  { label: "Due date no later than", value: "dueNotAfter" },
+  { label: "Must carry the label", value: "labelRequired" },
+  { label: "Must not carry the label", value: "labelForbidden" },
+  { label: "Must have the component", value: "componentRequired" },
+  { label: "Must not have the component", value: "componentForbidden" },
+];
+const EMPTY_FORM = { title: "", scope: "project", scopeValue: "", constraint: "dueNotAfter", constraintValue: "" };
+
 const App = () => {
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [preview, setPreview] = useState<Preview | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [state, setState] = useState<DecisionsPageState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [replay, setReplay] = useState<ReplayState | null>(null);
@@ -56,6 +74,30 @@ const App = () => {
       (e) => setError(String(e)),
     );
 
+  // Any edit clears the preview, so the number on screen is always for the decision as it is now written.
+  const edit = (patch: Partial<typeof EMPTY_FORM>) => {
+    setForm({ ...form, ...patch });
+    setPreview(null);
+    setFormError(null);
+  };
+  const checkForm = () =>
+    invoke<Preview>("previewDecision", form).then(
+      (p) => {
+        setPreview(p as Preview);
+        setFormError(null);
+      },
+      (e) => setFormError(plainError(e)),
+    );
+  const saveForm = () =>
+    invoke("addDecision", form).then(
+      () => {
+        setForm(EMPTY_FORM);
+        setPreview(null);
+        return load();
+      },
+      (e) => setFormError(plainError(e)),
+    );
+
   if (error) {
     return (
       <SectionMessage appearance="error" title="Handoff Guard could not read this project">
@@ -77,7 +119,7 @@ const App = () => {
         }. Nothing here changes Jira.`}
       </Text>
       <Text>Decisions</Text>
-      {state.rows.length === 0 && <Text>No decision applies to this project yet. Confirm one from the Handoff Guard panel on a work item.</Text>}
+      {state.rows.length === 0 && <Text>No decision applies to this project yet. Add one below, or confirm one from the Handoff Guard panel on a work item.</Text>}
       {state.rows.map((d) => (
         <Stack key={d.id} space="space.050">
           <Text>
@@ -109,6 +151,45 @@ const App = () => {
           )}
         </Stack>
       ))}
+      <Text>Add a decision</Text>
+      <Text>
+        Write a decision the team made. Check shows how many open work items it would contradict before you save it. It binds work items only after
+        you save it; nothing here changes Jira.
+      </Text>
+      <Textfield name="decision-title" placeholder="Title, up to 120 characters" value={form.title} onChange={(e: { target: { value?: string } }) => edit({ title: e.target.value ?? "" })} />
+      <Select
+        name="decision-scope"
+        options={SCOPES}
+        defaultValue={SCOPES[0]}
+        onChange={(o: { value: string }) => edit({ scope: o.value, scopeValue: "" })}
+      />
+      {form.scope !== "project" && (
+        <Textfield
+          name="decision-scope-value"
+          placeholder={form.scope === "label" ? "Label" : `Work item key, for example ${state.projectKey}-12`}
+          value={form.scopeValue}
+          onChange={(e: { target: { value?: string } }) => edit({ scopeValue: e.target.value ?? "" })}
+        />
+      )}
+      <Select name="decision-rule" options={RULES} defaultValue={RULES[0]} onChange={(o: { value: string }) => edit({ constraint: o.value, constraintValue: "" })} />
+      <Textfield
+        name="decision-rule-value"
+        placeholder={form.constraint === "dueNotAfter" ? "Date, YYYY-MM-DD" : form.constraint.startsWith("label") ? "Label" : "Component"}
+        value={form.constraintValue}
+        onChange={(e: { target: { value?: string } }) => edit({ constraintValue: e.target.value ?? "" })}
+      />
+      <Button onClick={() => void checkForm()}>Check this decision</Button>
+      {formError !== null && <Text>{formError}</Text>}
+      {preview !== null && (
+        <Stack space="space.050">
+          <Text>
+            {preview.count === 0
+              ? `No open work item contradicts it, among ${count(preview.scanned, "open work item")}${preview.capped ? " (list cut at 100)" : ""}.`
+              : `${count(preview.count, "open work item")} would contradict it: ${preview.keys.join(", ")}${preview.count > preview.keys.length ? ", …" : ""}.`}
+          </Text>
+          <Button onClick={() => void saveForm()}>Save decision</Button>
+        </Stack>
+      )}
       <Text>Replay on a date</Text>
       <Text>
         Pick a date to see which prepared handoffs would have had a different verdict then. Only decisions and acknowledgements are replayed;
