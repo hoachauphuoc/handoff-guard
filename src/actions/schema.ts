@@ -17,7 +17,7 @@ export const CheckHandoffInputSchema = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   type: "object",
   properties: {
-    issueKey: { type: "string", description: "Work item key such as OPS-1. Defaults to the work item the chat was opened from." },
+    issueKey: { type: "string", description: "The work item key the user gave. Leave empty when none was given; the work item the chat was opened from is then used. Never invent a key." },
     receiverAccountId: { type: "string", description: "Atlassian account id of the person who would receive the work item." },
   },
   additionalProperties: false,
@@ -27,7 +27,7 @@ export const ListBindingInputSchema = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   type: "object",
   properties: {
-    issueKey: { type: "string", description: "Work item key such as OPS-1. Defaults to the work item the chat was opened from." },
+    issueKey: { type: "string", description: "The work item key the user gave. Leave empty when none was given; the work item the chat was opened from is then used. Never invent a key." },
   },
   additionalProperties: false,
 } as const;
@@ -39,7 +39,7 @@ export const ProposeInputSchema = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   type: "object",
   properties: {
-    issueKey: { type: "string", description: "Work item key such as OPS-1. Defaults to the work item the chat was opened from." },
+    issueKey: { type: "string", description: "The work item key the user gave. Leave empty when none was given; the work item the chat was opened from is then used. Never invent a key." },
     candidates: {
       type: "string",
       description:

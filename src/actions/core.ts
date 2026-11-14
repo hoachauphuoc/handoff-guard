@@ -47,7 +47,7 @@ const CANDIDATES_SHAPE =
 
 // Over MCP there is no work item context, so the key always comes from the input and every bad_input
 // message has to say what a valid key looks like.
-const KEY_FORMAT = "A work item key has the form PROJECT-123, for example OPS-1.";
+const KEY_FORMAT = "A work item key is a project key, a hyphen and a number, such as PROJECT-123.";
 const KEY = /^[A-Z][A-Z0-9_]+-\d+$/;
 const VERDICT_TEXT: Record<Verdict, "Clear" | "Needs info" | "Blocked"> = {
   clear: "Clear",
@@ -63,7 +63,7 @@ function parse(payload: unknown, wantReceiver: boolean): Parsed {
   const p = (payload && typeof payload === "object" ? payload : {}) as Record<string, unknown>;
   const ctxKey = (p.context as { jira?: { issueKey?: unknown } } | undefined)?.jira?.issueKey;
   const raw = [p.issueKey, ctxKey].find((v) => typeof v === "string" && v.trim() !== "");
-  if (typeof raw !== "string") return { ok: false, message: "No work item key was given." };
+  if (typeof raw !== "string") return { ok: false, message: "No work item key was given and the chat was not opened from a work item. Ask the user which work item." };
   const key = raw.trim().toUpperCase();
   if (!KEY.test(key)) return { ok: false, message: `"${raw.trim()}" is not a work item key.` };
   let receiver: string | null = null;

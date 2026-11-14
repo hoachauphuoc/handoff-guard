@@ -130,7 +130,7 @@ modules:
           title: Work item key
           type: string
           required: false
-          description: Work item key such as OPS-1. Defaults to the work item the chat was opened from.
+          description: The work item key the user gave. Leave empty when none was given; the work item the chat was opened from is then used. Never invent a key.
         receiverAccountId:
           title: Receiver account id
           type: string
@@ -146,7 +146,7 @@ modules:
           title: Work item key
           type: string
           required: false
-          description: Work item key such as OPS-1. Defaults to the work item the chat was opened from.
+          description: The work item key the user gave. Leave empty when none was given; the work item the chat was opened from is then used. Never invent a key.
     - key: read-decision-source
       name: Read decision source
       function: read-source-fn
@@ -157,7 +157,7 @@ modules:
           title: Work item key
           type: string
           required: false
-          description: Work item key such as OPS-1. Defaults to the work item the chat was opened from.
+          description: The work item key the user gave. Leave empty when none was given; the work item the chat was opened from is then used. Never invent a key.
     - key: propose-decisions
       name: Propose decisions
       function: propose-fn
@@ -168,7 +168,7 @@ modules:
           title: Work item key
           type: string
           required: false
-          description: Work item key such as OPS-1. Defaults to the work item the chat was opened from.
+          description: The work item key the user gave. Leave empty when none was given; the work item the chat was opened from is then used. Never invent a key.
         candidates:
           title: Candidate decisions
           type: string
@@ -184,7 +184,7 @@ modules:
           title: Work item key
           type: string
           required: false
-          description: Work item key such as OPS-1. Defaults to the work item the chat was opened from.
+          description: The work item key the user gave. Leave empty when none was given; the work item the chat was opened from is then used. Never invent a key.
   function:
     - key: resolver
       handler: index.handler
