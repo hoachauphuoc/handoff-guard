@@ -268,7 +268,10 @@ resolver.define("replayOn", async ({ context, payload }): Promise<ReplayState> =
   const now = new Date();
   const thenIso = replayInstant(date, now.toISOString());
   if (thenIso === null) throw new Error("Pick a date that is today or earlier.");
-  const [open, decisions] = await Promise.all([openItemsAsUser(projectKey), getDecisions()]);
+  const [open, stored] = await Promise.all([openItemsAsUser(projectKey), getDecisions()]);
+  // Only this project's decisions: another project's cannot bind these items, and its undated titles would
+  // otherwise be listed in the notes here.
+  const decisions = stored.filter((d) => touches(d, projectKey));
   const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
   const inputs = open.items.flatMap((i, n) => {
     const r = records[n];
