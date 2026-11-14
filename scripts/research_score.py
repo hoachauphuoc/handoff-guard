@@ -97,10 +97,11 @@ def tavily(query: str) -> dict:
     }
 
 
-def search_full(query: str) -> dict:
+def search_full(query: str, domains: list | None = None, max_results: int = 8) -> dict:
     """Like tavily() but keeps each snippet whole, for rounds where the session reads the results itself."""
     out = http("https://api.tavily.com/search", {
-        "query": query, "search_depth": "advanced", "max_results": 8, "include_answer": True,
+        "query": query, "search_depth": "advanced", "max_results": max_results, "include_answer": True,
+        **({"include_domains": domains} if domains else {}),
     }, read_key("tavily_api_key.txt"), timeout=120)
     return {"query": query, "answer": out.get("answer"),
             "results": [{"title": r.get("title"), "url": r.get("url"), "content": r.get("content") or ""} for r in out.get("results", [])]}
@@ -158,6 +159,8 @@ def main() -> None:
     s = sub.add_parser("search", help="--queries is a JSON list of strings; results are appended to --out")
     s.add_argument("--queries", required=True)
     s.add_argument("--out", required=True)
+    s.add_argument("--domains", help="comma-separated domains the search is limited to, e.g. github.com")
+    s.add_argument("--max-results", type=int, default=8)
     e = sub.add_parser("extract", help="--urls is a JSON list of URLs; full page text is appended to --out")
     e.add_argument("--urls", required=True)
     e.add_argument("--out", required=True)
@@ -187,7 +190,8 @@ def main() -> None:
     elif a.cmd == "search":
         qs = json.loads(pathlib.Path(a.queries).read_text(encoding="utf-8"))
         with concurrent.futures.ThreadPoolExecutor(4) as pool:
-            rows = list(pool.map(search_full, qs))
+            domains = a.domains.split(",") if a.domains else None
+            rows = list(pool.map(lambda q: search_full(q, domains, a.max_results), qs))
         print(f"{len(qs)} Tavily searches; {append_json(pathlib.Path(a.out), rows)} stored in {a.out}")
     elif a.cmd == "extract":
         urls = json.loads(pathlib.Path(a.urls).read_text(encoding="utf-8"))

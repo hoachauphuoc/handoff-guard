@@ -6,6 +6,8 @@ node_modules/
 dist/
 __pycache__/
 demo/
+# Raw pages and notes about other teams' public projects (research only, kept local)
+research/
 
 # Local dev skills (third-party, not shipped)
 .claude/
