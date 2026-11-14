@@ -33,6 +33,8 @@ export type PanelState = {
   result: HandoffResult | null;
   viewerId: string | null;
   isReceiver: boolean;
+  /** Whether the viewer may prepare this handoff (again): the sender, the assignee or a project administrator once one exists. */
+  canPrepare: boolean;
   /** Whether the viewer is an administrator of the project, so may confirm, add and retire decisions and load samples. */
   canManage: boolean;
   /** Stored decisions that reach this work item's project, in force or not. */

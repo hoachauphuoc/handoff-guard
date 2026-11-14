@@ -9,6 +9,7 @@ import { buildManualDecision, readManualInput } from "../decisions/manual";
 import { leavingView, type LeavingView } from "../decisions/leaving";
 import { buildDecisionsPage, touches, type DecisionsPageState } from "../decisions/page";
 import { acknowledge, acknowledgeAll, checkReadBack } from "../handoff/acknowledge";
+import { mayPrepare, PREPARE_DENIED } from "../handoff/prepare";
 import { withContingency } from "../handoff/contingency";
 import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
@@ -71,7 +72,7 @@ function overlapFor(proposals: Proposal[], decisions: Decision[], viewerId: stri
 
 async function panelState(ctx: Ctx): Promise<PanelState> {
   const { item, issueId } = await readItem(ctx.extension.issue.key);
-  const [decisions, record, stored] = await Promise.all([getDecisions(), getRecord(issueId), getProposals(issueId)]);
+  const [decisions, record, stored, canManage] = await Promise.all([getDecisions(), getRecord(issueId), getProposals(issueId), isProjectAdminAsUser(item.projectKey)]);
   const proposals = inProject(stored, item.projectKey);
   const viewerId = ctx.accountId ?? null;
   const result = record ? checkHandoff(handoffFrom(item, record, decisions), decisions) : null;
@@ -84,7 +85,8 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     record,
     result,
     viewerId,
-    canManage: await isProjectAdminAsUser(item.projectKey),
+    canManage,
+    canPrepare: mayPrepare(record, viewerId, item.assigneeId, canManage),
     isReceiver: record !== null && viewerId !== null && viewerId === record.toId,
     // Decisions that name this project. Samples are loaded per project, so a site-wide count, or an old label
     // decision stored before labels carried a project, would hide the sample button here.
@@ -115,7 +117,8 @@ resolver.define("prepareHandoff", async ({ context, payload }) => {
   const ctx = context as Ctx;
   const toId = String((payload as { toId?: string }).toId ?? "");
   if (!ctx.accountId || !toId) throw new Error("Pick a receiver first.");
-  const { issueId } = await readItem(ctx.extension.issue.key);
+  const { item, issueId } = await readItem(ctx.extension.issue.key);
+  if (!mayPrepare(await getRecord(issueId), ctx.accountId, item.assigneeId, await isProjectAdminAsUser(item.projectKey))) throw new Error(PREPARE_DENIED);
   // Preparing again replaces the record, so earlier acknowledgements never carry over to a new receiver.
   const record: HandoffRecord = {
     fromId: ctx.accountId,

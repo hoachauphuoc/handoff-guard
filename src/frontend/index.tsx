@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, Lozenge, SectionMessage, Stack, Text, TextArea, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
 import { MANAGE_DENIED } from "../authz";
+import { PREPARE_DENIED } from "../handoff/prepare";
 import { plainError } from "../errors";
 import type { GatherOutput } from "../actions/schema";
 import type { MarkedState } from "../decisions/marked";
@@ -50,6 +51,7 @@ const App = () => {
   const [state, setState] = useState<PanelState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
+  const [confirmAgain, setConfirmAgain] = useState(false);
   const [busy, setBusy] = useState(false);
   const [brief, setBrief] = useState<GatherOutput | null>(null);
   const [rovoNote, setRovoNote] = useState<string | null>(null);
@@ -241,13 +243,24 @@ const App = () => {
         name="receiver"
         onChange={(u: { id: string } | null | undefined) => setPicked(u?.id ?? null)}
       />
-      <Button
-        appearance="primary"
-        isDisabled={busy || picked === null}
-        onClick={() => call("prepareHandoff", { toId: picked })}
-      >
-        Prepare handoff
-      </Button>
+      {!state.canPrepare && <Text>{PREPARE_DENIED}</Text>}
+      {state.canPrepare && record && confirmAgain && (
+        <Text>{`Preparing again clears ${count(record.acknowledged.length, "acknowledgement")} by the receiver and starts over with the receiver you picked.`}</Text>
+      )}
+      {state.canPrepare && (
+        <Button
+          appearance="primary"
+          isDisabled={busy || picked === null}
+          onClick={() => {
+            // A prepared handoff holds the receiver's work, so the first click only warns.
+            if (record && !confirmAgain) return setConfirmAgain(true);
+            setConfirmAgain(false);
+            return call("prepareHandoff", { toId: picked });
+          }}
+        >
+          {record ? (confirmAgain ? "Yes, prepare again" : "Prepare again") : "Prepare handoff"}
+        </Button>
+      )}
       {record && result ? (
         <>
           <Text>
