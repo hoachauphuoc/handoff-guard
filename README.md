@@ -89,9 +89,9 @@ The four rules-versus-people disagreements are all samples with no due date: the
 ## Limits
 
 - "Leaving the project" covers only the open work items of that project that you can see, up to the page's limit, and it does not know whether a person has left: someone picks the name.
-- All decisions are stored under one storage key, so two people confirming or superseding at the same moment can lose one of the two changes. That stored value also has a size limit, so a very large number of decisions would fail to save.
+- Decisions are stored under one storage key per project, and a save is refused when another save landed first. Forge storage has no atomic compare-and-set here, so a window of a few milliseconds remains, and a project with a very large number of decisions would still hit the size limit of its value.
 - The workflow validator checks that the prepared handoff is Clear, not that its receiver is the current assignee; the panel shows a mismatch as advice.
-- There is no project-admin check: anyone signed in who can open a work item can prepare its handoff again (clearing earlier acknowledgements) and can confirm a proposed decision for the whole project.
+- Confirming, adding and superseding a decision, and loading or removing sample decisions, need a project administrator (Jira's own "Administer projects" permission, asked as the person). If Jira cannot answer, the app treats the person as not an administrator. Once a handoff is prepared, only its sender, the assignee or a project administrator can prepare it again.
 - A proposed decision is kept only if its quote is in the work item's text; that does not prove the constraint follows from the quote. Read both before confirming.
 - A decision scoped to a label binds only the project it was confirmed in.
 - An agent can be the receiver of a handoff, by assigning it in the Assignee field, but it cannot acknowledge, so that handoff stays Needs info until a person changes the receiver.
