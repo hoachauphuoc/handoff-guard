@@ -1,7 +1,7 @@
 import { inProject } from "../decisions/confirm";
 import type { DecisionSource, Proposal } from "../decisions/types";
 import { projectOfKey } from "../decisions/page";
-import { REASON_TEXT, validateCandidates } from "../decisions/validate";
+import { MAX_CANDIDATES, REASON_TEXT, validateCandidates } from "../decisions/validate";
 import { handoffFrom, previewHandoff } from "../handoff/build";
 import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass";
 import type { HandoffRecord } from "../handoff/types";
@@ -282,11 +282,14 @@ export async function runProposeDecisions(payload: unknown, deps: Deps): Promise
       deps.now(),
     );
     const rejected = raw.map((r) => ({ ...r, message: REASON_TEXT[r.reason] }));
+    let waiting: Proposal[] | null = null;
     if (kept.length > 0) {
-      // Replaces the saved set (it is capped at 5). A proposal seen before keeps its first proposedAt, so
-      // asking twice leaves identical state. All-rejected input writes nothing and keeps what is there.
+      // Merged into the saved set (capped at 5), newest first, so a second call adds to what a person has not
+      // yet confirmed instead of erasing it. A proposal seen before keeps its first proposedAt, so asking
+      // twice leaves identical state. All-rejected input writes nothing and keeps what is there.
       const before = inProject(await deps.getProposals(src.issueId), src.projectKey);
-      await deps.putProposals(src.issueId, kept.map((p) => before.find((b) => b.id === p.id) ?? p));
+      waiting = [...kept.map((p) => before.find((b) => b.id === p.id) ?? p), ...before.filter((b) => !kept.some((k) => k.id === b.id))].slice(0, MAX_CANDIDATES);
+      await deps.putProposals(src.issueId, waiting);
     }
     return {
       schema,
@@ -295,7 +298,7 @@ export async function runProposeDecisions(payload: unknown, deps: Deps): Promise
       issueKey: key,
       proposed: kept.map(({ id, title, scope, constraints, evidence }) => ({ id, title, scope, constraints, evidence })),
       rejected,
-      quote: `Handoff Guard saved ${count(kept.length, "proposed decision")} for ${key} and rejected ${rejected.length}${
+      quote: `Handoff Guard saved ${count(kept.length, "proposed decision")} for ${key}${waiting === null ? "" : ` (${count(waiting.length, "proposed decision")} now waiting for a person to confirm)`} and rejected ${rejected.length}${
         rejected.length > 0 ? ` (${rejected.map((r) => `#${r.index + 1}: ${r.message}`).join(" ")})` : ""
       }. Proposed decisions do not bind anything until a person confirms them in the Handoff Guard panel.`,
     };

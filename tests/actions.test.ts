@@ -215,7 +215,7 @@ describe("propose-decisions", () => {
       expect(out.rejected).toMatchObject([{ index: 1, reason: "evidence_not_in_source" }]);
       expect(out.rejected[0]?.message).toContain("word for word");
       expect(out.quote).toBe(
-        "Handoff Guard saved 1 proposed decision for OPS-1 and rejected 1 (#2: evidence.quote was not found word for word in the work item text; copy it exactly from read-decision-source.). Proposed decisions do not bind anything until a person confirms them in the Handoff Guard panel.",
+        "Handoff Guard saved 1 proposed decision for OPS-1 (1 proposed decision now waiting for a person to confirm) and rejected 1 (#2: evidence.quote was not found word for word in the work item text; copy it exactly from read-decision-source.). Proposed decisions do not bind anything until a person confirms them in the Handoff Guard panel.",
       );
     }
   });
@@ -351,6 +351,17 @@ describe("count", () => {
     const second = { ...good, title: "Another", scope: { kind: "project" }, evidence: { quote: "Decision: all launch work needs the legal-reviewed label" } };
     const out = await runProposeDecisions({ issueKey: "OPS-1", candidates: JSON.stringify([good, second]) }, d);
     if (out.ok) expect(out.quote).toContain("saved 2 proposed decisions for OPS-1");
+  });
+});
+
+describe("a second propose call", () => {
+  it("adds to the proposals still waiting instead of replacing them, and says how many wait", async () => {
+    const { d, stored } = proposeDeps();
+    await runProposeDecisions({ issueKey: "OPS-1", candidates: JSON.stringify([good]) }, d);
+    const second = { ...good, title: "Launch work needs legal review (second wording)" };
+    const out = await runProposeDecisions({ issueKey: "OPS-1", candidates: JSON.stringify([second]) }, d);
+    expect(stored().map((p) => p.title)).toEqual([second.title, good.title]);
+    if (out.ok) expect(out.quote).toContain("2 proposed decisions now waiting");
   });
 });
 
