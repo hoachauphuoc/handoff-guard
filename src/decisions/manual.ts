@@ -1,7 +1,8 @@
 import { isIsoDate } from "../rules/checkHandoff";
 import type { Constraint, Decision, DecisionScope } from "../rules/types";
 import { fnv1a } from "./hash";
-import { relate } from "./supersede";
+import { clashText } from "./confirm";
+import { canSupersede, clashes, relate } from "./supersede";
 import { MAX_TITLE } from "./validate";
 
 export type ManualInput = {
@@ -10,9 +11,11 @@ export type ManualInput = {
   scopeValue: string;
   constraint: Constraint["kind"];
   constraintValue: string;
+  /** The person chose to retire the decisions in force that this one clashes with. */
+  supersede: boolean;
 };
 
-export type ManualResult = { ok: true; decision: Decision } | { ok: false; reason: string };
+export type ManualResult = { ok: true; decision: Decision; retire: string[] } | { ok: false; reason: string };
 
 const KINDS: Constraint["kind"][] = ["dueNotAfter", "labelRequired", "labelForbidden", "componentRequired", "componentForbidden"];
 
@@ -25,7 +28,7 @@ export function readManualInput(raw: unknown): ManualInput | string {
   const constraint = r.constraint;
   if (scope !== "project" && scope !== "label" && scope !== "workItem") return "Pick where the decision applies.";
   if (typeof constraint !== "string" || !KINDS.includes(constraint as Constraint["kind"])) return "Pick what the decision requires.";
-  return { title: text(r.title), scope, scopeValue: text(r.scopeValue), constraint: constraint as Constraint["kind"], constraintValue: text(r.constraintValue) };
+  return { title: text(r.title), scope, scopeValue: text(r.scopeValue), constraint: constraint as Constraint["kind"], constraintValue: text(r.constraintValue), supersede: r.supersede === true };
 }
 
 function scopeOf(input: ManualInput, projectKey: string): DecisionScope | string {
@@ -61,8 +64,12 @@ export function buildManualDecision(input: ManualInput, projectKey: string, stor
   if (relate(stored, scope, [constraint])?.kind === "already_decided") {
     return { ok: false, reason: "A decision in force already says this for the same work or wider. Nothing was added." };
   }
+  const clash = clashes(stored, scope, [constraint]);
+  const mayRetire = clash.every((d) => canSupersede(d, who));
+  if (clash.length > 0 && (!input.supersede || !mayRetire)) return { ok: false, reason: clashText(clash.map((d) => d.title), mayRetire) };
   return {
     ok: true,
+    retire: clash.map((d) => d.id),
     decision: {
       id: "d-m-" + fnv1a([input.title, JSON.stringify(scope), JSON.stringify(constraint)].join("|")),
       title: input.title,

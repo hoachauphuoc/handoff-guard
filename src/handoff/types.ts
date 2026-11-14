@@ -60,6 +60,8 @@ export type PanelState = {
   supersedes: Record<string, { id: string; title: string }[]>;
   /** Per proposal: the same kind of decisions that only their confirmer may supersede, so confirming leaves them in force. */
   supersedeBlocked: Record<string, { id: string; title: string }[]>;
+  /** Per proposal: decisions in force that say the opposite for the same work. With any, plain Confirm is refused. */
+  clash: Record<string, { id: string; title: string }[]>;
   /** Decision ids whose acknowledgement went stale because a field the decision reads changed. */
   stale: string[];
   /** Per acknowledged decision: everything that changed on the work item since it was acknowledged. */

@@ -1,8 +1,8 @@
 import Resolver from "@forge/resolver";
 import { runGatherHandoffContext } from "../actions/core";
 import { depsFor } from "../actions/deps";
-import { confirmProposal, dismissProposal, inProject } from "../decisions/confirm";
-import { canSupersede, splitOverlap, supersede } from "../decisions/supersede";
+import { clashText, confirmProposal, dismissProposal, inProject } from "../decisions/confirm";
+import { canSupersede, clashes, splitOverlap, storedClashes, supersede } from "../decisions/supersede";
 import { unrecordedMarked, type MarkedState } from "../decisions/marked";
 import { hypothetical } from "../decisions/hypothetical";
 import { buildManualDecision, readManualInput } from "../decisions/manual";
@@ -67,12 +67,13 @@ async function impactFor(projectKey: string, proposals: Proposal[]): Promise<Pan
   }
 }
 
-function overlapFor(proposals: Proposal[], decisions: Decision[], viewerId: string | null): Pick<PanelState, "supersedes" | "supersedeBlocked"> {
+function overlapFor(proposals: Proposal[], decisions: Decision[], viewerId: string | null): Pick<PanelState, "supersedes" | "supersedeBlocked" | "clash"> {
   const named = (ds: Decision[]) => ds.map((d) => ({ id: d.id, title: d.title }));
   const split = proposals.map((p) => [p.id, splitOverlap(decisions, p.scope, p.constraints, viewerId ?? "")] as const);
   return {
     supersedes: Object.fromEntries(split.map(([id, s]) => [id, named(s.retirable)])),
     supersedeBlocked: Object.fromEntries(split.map(([id, s]) => [id, named(s.kept)])),
+    clash: Object.fromEntries(proposals.map((p) => [p.id, named(clashes(decisions, p.scope, p.constraints))])),
   };
 }
 
@@ -242,13 +243,18 @@ resolver.define("confirmProposal", async ({ context, payload }) => {
   const proposals = inProject(await getProposals(issueId), item.projectKey);
   const retire = (payload as { supersede?: boolean }).supersede === true;
   let remaining: Proposal[] | null = null;
+  let refused: string | null = null;
   // Worked out from the decisions as they are at the moment of saving, not from an earlier read.
   await updateDecisions(item.projectKey, (current) => {
     const out = confirmProposal(proposals, current, id, ctx.accountId as string, new Date().toISOString(), retire);
-    if (!out.ok) return current;
+    if (!out.ok) {
+      if (out.reason === "clash") refused = clashText(out.with.map((d) => d.title), out.with.every((d) => canSupersede(d, ctx.accountId as string)));
+      return current;
+    }
     remaining = out.proposals;
     return out.decisions;
   });
+  if (refused !== null) throw new Error(refused);
   if (remaining === null) throw new Error("That proposal is no longer there. Reload the page to see the current list.");
   // The decision is saved first: if the second write fails the proposal is still listed and confirming
   // again changes nothing, whereas the other order could lose the decision.
@@ -290,7 +296,7 @@ resolver.define("getMarked", async ({ context }): Promise<MarkedState> => {
 // may see, and the page says when the cap cut the list. Nothing is written.
 const ACTIVITY_SHOWN = 20;
 
-export type DecisionsPageView = DecisionsPageState & { activity: AuditEvent[]; counts: MonthCounts[] };
+export type DecisionsPageView = DecisionsPageState & { activity: AuditEvent[]; counts: MonthCounts[]; clashes: { a: string; b: string }[] };
 
 resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageView> => {
   const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
@@ -308,6 +314,7 @@ resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageVi
       viewerId,
       canManage,
     ),
+    clashes: storedClashes(decisions.filter((d) => touches(d, projectKey))).map((c) => ({ a: c.a.title, b: c.b.title })),
     activity: audit.slice(0, ACTIVITY_SHOWN),
     counts: monthCounts(audit),
   };
@@ -377,21 +384,29 @@ async function manualDecision(ctx: { accountId?: string; extension: { project: {
   const stored = await getDecisions(projectKey);
   const built = buildManualDecision(input, projectKey, stored, ctx.accountId, new Date().toISOString());
   if (!built.ok) throw new Error(built.reason);
-  return { projectKey, decision: built.decision };
+  return { projectKey, stored, decision: built.decision, retire: built.retire };
 }
 
 resolver.define("previewDecision", async ({ context, payload }) => {
   const ctx = context as Parameters<typeof manualDecision>[0];
-  const { projectKey, decision } = await manualDecision(ctx, payload);
+  // The preview is built as if the person had agreed to supersede, so it can name what saving would retire.
+  const { projectKey, decision, stored } = await manualDecision(ctx, { ...(payload as object), supersede: true });
   const open = await openItemsAsUser(projectKey);
   const hit = impactOf(decision, open.items.map((i) => i.item));
-  return { count: hit.length, keys: hit.slice(0, 10).map((h) => h.key), scanned: open.items.length, capped: open.capped };
+  return {
+    count: hit.length,
+    keys: hit.slice(0, 10).map((h) => h.key),
+    scanned: open.items.length,
+    capped: open.capped,
+    clash: clashes(stored, decision.scope, decision.constraints).map((d) => d.title),
+  };
 });
 
 resolver.define("addDecision", async ({ context, payload }) => {
   const ctx = context as Parameters<typeof manualDecision>[0];
-  const { projectKey, decision } = await manualDecision(ctx, payload);
-  await updateDecisions(projectKey, (current) => mergeDecisions(current, [decision]));
+  const { projectKey, decision, retire } = await manualDecision(ctx, payload);
+  const nowIso = new Date().toISOString();
+  await updateDecisions(projectKey, (current) => mergeDecisions(supersede(current, retire, nowIso, decision.id), [decision]));
   await log(projectKey, ctx.accountId, "decision_added", decision.id);
 });
 

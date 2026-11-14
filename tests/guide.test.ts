@@ -24,6 +24,7 @@ const state = (over: Partial<PanelState> = {}): PanelState => ({
   canManage: true,
   canPrepare: true,
   hasSamples: false,
+  clash: {},
   inForceCount: 0,
   exampleReadBack: "",
   decisionCount: 0,

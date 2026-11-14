@@ -94,7 +94,8 @@ describe("rule keys tell requiring from forbidding", () => {
   it("does not treat a required label and the same label forbidden as the same rule", () => {
     const stored: Decision = { ...other, id: "d-req", status: "decided", scope: proposal.scope, constraints: [{ kind: "labelRequired", label: "x" }] };
     const out = confirmProposal([{ ...proposal, constraints: [{ kind: "labelForbidden", label: "x" }] }], [stored], proposal.id, "u", NOW);
-    expect(out.ok && out.decisions).toHaveLength(2);
+    // Not "already decided": it is the opposite rule, so it is refused as a clash until the older one is superseded with it.
+    expect(out).toMatchObject({ ok: false, reason: "clash" });
   });
 });
 

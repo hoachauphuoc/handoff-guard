@@ -10,7 +10,7 @@ import type { DecisionsPageView, ReplayState } from "../resolvers";
 
 const VERDICT = { blocked: { text: "Blocked", appearance: "removed" }, needs_info: { text: "Needs info", appearance: "moved" } } as const;
 
-type Preview = { count: number; keys: string[]; scanned: number; capped: boolean };
+type Preview = { count: number; keys: string[]; scanned: number; capped: boolean; clash: string[] };
 const SCOPES = [
   { label: "The whole project", value: "project" },
   { label: "Work items with a label", value: "label" },
@@ -92,8 +92,8 @@ const App = () => {
       },
       (e) => setFormError(plainError(e)),
     );
-  const saveForm = () =>
-    invoke("addDecision", form).then(
+  const saveForm = (supersede: boolean) =>
+    invoke("addDecision", { ...form, supersede }).then(
       () => {
         setForm(EMPTY_FORM);
         setPreview(null);
@@ -182,6 +182,13 @@ const App = () => {
       {!state.canManage && <Text>{`Add a decision: ${MANAGE_DENIED}`}</Text>}
       {state.canManage && (
         <Stack space="space.100">
+        {state.clashes.length > 0 && (
+          <SectionMessage appearance="warning" title="Decisions in force that say opposite things">
+            {state.clashes.map((c, i) => (
+              <Text key={i}>{`"${c.a}" and "${c.b}" bind the same work and cannot both be met. Supersede one of them above.`}</Text>
+            ))}
+          </SectionMessage>
+        )}
         <Text>Add a decision</Text>
           <Text>
             Write a decision the team made. Check shows how many open work items it would contradict before you save it. It binds work items only after
@@ -218,7 +225,12 @@ const App = () => {
                   ? `No open work item contradicts it, among ${count(preview.scanned, "open work item")}${preview.capped ? " (list cut at 100)" : ""}.`
                   : `${count(preview.count, "open work item")} would contradict it: ${preview.keys.join(", ")}${preview.count > preview.keys.length ? ", …" : ""}.`}
               </Text>
-              <Button onClick={() => void saveForm()}>Save decision</Button>
+              {preview.clash.length > 0 && (
+            <Text>{`It says the opposite of ${preview.clash.map((t) => `"${t}"`).join(", ")}, in force for the same work. Both cannot be in force, so saving it supersedes the older one.`}</Text>
+          )}
+          <Button onClick={() => void saveForm(preview.clash.length > 0)}>
+            {preview.clash.length > 0 ? `Save and supersede ${preview.clash.map((t) => `"${t}"`).join(", ")}` : "Save decision"}
+          </Button>
             </Stack>
           )}
         </Stack>

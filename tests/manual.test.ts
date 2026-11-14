@@ -3,7 +3,7 @@ import { buildManualDecision, readManualInput, type ManualInput } from "../src/d
 import type { Decision } from "../src/rules/types";
 
 const NOW = "2026-11-14T00:00:00.000Z";
-const base: ManualInput = { title: "Ship by year end", scope: "project", scopeValue: "", constraint: "dueNotAfter", constraintValue: "2026-12-31" };
+const base: ManualInput = { title: "Ship by year end", scope: "project", scopeValue: "", constraint: "dueNotAfter", constraintValue: "2026-12-31", supersede: false };
 const build = (over: Partial<ManualInput> = {}, stored: Decision[] = []) => buildManualDecision({ ...base, ...over }, "OPS", stored, "u1", NOW);
 
 describe("buildManualDecision", () => {

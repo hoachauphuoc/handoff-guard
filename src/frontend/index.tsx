@@ -427,14 +427,17 @@ const App = () => {
                 </Text>
                 <Text>{`Evidence: "${p.evidence.quote}" (${p.evidence.from})`}</Text>
                 {!state.canManage && <Text>{MANAGE_DENIED}</Text>}
-                {state.canManage && (
+                {(state.clash[p.id] ?? []).length > 0 && (
+                  <Text>{`It says the opposite of ${(state.clash[p.id] ?? []).map((d) => `"${d.title}"`).join(", ")}, in force for the same work. Both cannot be in force: it can only be confirmed together with superseding the older one.`}</Text>
+                )}
+                {state.canManage && (state.clash[p.id] ?? []).length === 0 && (
                   <Button isDisabled={busy} onClick={() => call("confirmProposal", { proposalId: p.id }).then(() => void readMarked())}>
                     Confirm
                   </Button>
                 )}
                 {state.canManage && (state.supersedes[p.id] ?? []).length > 0 && (
                   <>
-                    <Text>{`It overlaps ${(state.supersedes[p.id] ?? []).map((d) => `"${d.title}"`).join(", ")}; confirming it alone leaves both in force.`}</Text>
+                    <Text>{`It overlaps ${(state.supersedes[p.id] ?? []).map((d) => `"${d.title}"`).join(", ")}${(state.clash[p.id] ?? []).length > 0 ? "." : "; confirming it alone leaves both in force."}`}</Text>
                     <Button
                       isDisabled={busy}
                       onClick={() => call("confirmProposal", { proposalId: p.id, supersede: true }).then(() => void readMarked())}

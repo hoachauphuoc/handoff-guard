@@ -45,6 +45,26 @@ const opposes = (a: Constraint, b: Constraint): boolean => OPPOSITE[a.kind] === 
 // decision a looser date changes nothing, since the wider limit still binds, so this is only for equal reach.
 const movesLimit = (a: Constraint, b: Constraint): boolean => a.kind === "dueNotAfter" && b.kind === "dueNotAfter" && a.date.trim() !== b.date.trim();
 
+/**
+ * Decisions in force that a candidate cannot stand beside: the opposite rule for exactly the same reach, or
+ * another date limit for it. Two such decisions in force at once would make every handoff they bind wrong
+ * one way or the other, so saving the candidate has to retire these.
+ */
+export function clashes(decisions: Decision[], scope: DecisionScope, constraints: Constraint[]): Decision[] {
+  return decisions.filter(
+    (d) =>
+      d.status === "decided" &&
+      reachKey(scope) === reachKey(d.scope) &&
+      constraints.some((c) => d.constraints.some((sc) => opposes(c, sc) || movesLimit(c, sc))),
+  );
+}
+
+/** Pairs already stored that clash with each other (saved before clashes were refused), each pair once. */
+export function storedClashes(decisions: Decision[]): { a: Decision; b: Decision }[] {
+  const live = decisions.filter((d) => d.status === "decided");
+  return live.flatMap((a, i) => clashes(live.slice(i + 1), a.scope, a.constraints).map((b) => ({ a, b })));
+}
+
 export type Relation = { kind: "already_decided"; by: Decision[] } | { kind: "supersedes"; old: Decision[] } | null;
 
 /**
@@ -63,11 +83,11 @@ export function relate(decisions: Decision[], scope: DecisionScope, constraints:
   if (constraints.every((c) => wider.some((d) => met(c, d, false)) || same.some((d) => met(c, d, true)))) {
     return { kind: "already_decided", by: [...wider, ...same].filter((d) => constraints.some((c) => met(c, d, reachKey(d.scope) === reachKey(scope)))) };
   }
+  const clashing = clashes(live, scope, constraints);
   const old = live.filter(
     (d) =>
       d.constraints.length > 0 &&
-      ((reachCovers(scope, d.scope) && d.constraints.every((sc) => constraints.some((c) => implies(c, sc)))) ||
-        (reachKey(scope) === reachKey(d.scope) && constraints.some((c) => d.constraints.some((sc) => opposes(c, sc) || movesLimit(c, sc))))),
+      ((reachCovers(scope, d.scope) && d.constraints.every((sc) => constraints.some((c) => implies(c, sc)))) || clashing.includes(d)),
   );
   return old.length > 0 ? { kind: "supersedes", old } : null;
 }

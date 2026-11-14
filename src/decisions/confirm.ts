@@ -1,7 +1,7 @@
 import type { Decision } from "../rules/types";
 import { mergeDecisions } from "../samples/decisions";
 import { fnv1a } from "./hash";
-import { relate, splitOverlap, supersede } from "./supersede";
+import { canSupersede, clashes, relate, splitOverlap, supersede } from "./supersede";
 import type { Proposal } from "./types";
 
 const sourceOf = (from: string): Decision["source"] => ({ kind: "jira", ref: from.replace(/ description$/, "") });
@@ -16,7 +16,13 @@ export function inProject(proposals: Proposal[], projectKey: string): Proposal[]
 
 export type ConfirmResult =
   | { ok: true; proposals: Proposal[]; decisions: Decision[] }
-  | { ok: false; reason: "not_found" };
+  | { ok: false; reason: "not_found" }
+  | { ok: false; reason: "clash"; with: Decision[] };
+
+export const clashText = (titles: string[], mayRetire: boolean): string =>
+  `This clashes with ${titles.map((t) => `"${t}"`).join(", ")}, which ${titles.length === 1 ? "is" : "are"} in force for the same work. ${
+    mayRetire ? "Save it together with superseding the older one, or leave it." : "Only the person who confirmed the older one can supersede it, so this cannot be saved."
+  }`;
 
 /**
  * Turns one proposal into a decision. The decision id comes from the proposal id, so confirming again
@@ -37,6 +43,9 @@ export function confirmProposal(
   // A proposal saved before its twin was confirmed would otherwise store the same rule twice.
   const relation = relate(decisions, p.scope, p.constraints);
   if (relation?.kind === "already_decided") return { ok: true, proposals: rest, decisions };
+  // Two opposite rules for the same work must not both be in force: confirm only together with retiring the older.
+  const clash = clashes(decisions, p.scope, p.constraints);
+  if (clash.length > 0 && (!retire || clash.some((d) => !canSupersede(d, who)))) return { ok: false, reason: "clash", with: clash };
   const decision: Decision = {
     id: "d-" + fnv1a(p.id),
     title: p.title,
