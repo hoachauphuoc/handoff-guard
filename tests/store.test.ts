@@ -49,3 +49,13 @@ describe("per-project decisions", () => {
     ).rejects.toThrow("Someone else changed");
   });
 });
+
+describe("purgeLegacyDecisions", () => {
+  it("removes only this project's decisions from the old key and keeps an old site-wide label decision", async () => {
+    const { purgeLegacyDecisions } = await import("../src/store");
+    const siteWide: Decision = { ...dec("l", "OPS"), scope: { kind: "label", label: "launch" } };
+    data.set("decisions", [dec("a", "OPS"), dec("b", "HR"), siteWide]);
+    expect(await purgeLegacyDecisions("ops")).toBe(1);
+    expect((data.get("decisions") as Decision[]).map((d) => d.id)).toEqual(["b", "l"]);
+  });
+});

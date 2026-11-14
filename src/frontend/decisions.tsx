@@ -352,7 +352,7 @@ const App = () => {
             onChange={(e: { target: { value?: string } }) => setDeleteKey(e.target.value ?? "")}
           />
           <Button appearance="danger" onClick={() => void deleteData()}>
-            Delete this project's app data
+            Delete decisions, activity and open items' handoffs
           </Button>
           {dataNote !== null && <Text>{dataNote}</Text>}
         </Stack>

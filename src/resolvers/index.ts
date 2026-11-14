@@ -29,7 +29,7 @@ import type { Proposal } from "../decisions/types";
 import type { Decision, Finding } from "../rules/types";
 import { hasSamples, mergeDecisions, sampleDecisions, withoutSamples } from "../samples/decisions";
 import { readSourceAsUser } from "../source";
-import { addAudit, deleteItemData, getAudit, getDecisions, getProposals, getRecord, putProposals, putRecord, resetAudit, updateDecisions } from "../store";
+import { addAudit, deleteItemData, getAudit, getDecisions, getProposals, getRecord, putProposals, purgeLegacyDecisions, putRecord, resetAudit, updateDecisions } from "../store";
 
 const resolver = new Resolver();
 
@@ -418,6 +418,7 @@ resolver.define("deleteProjectData", async ({ context, payload }) => {
   const open = await openItemsAsUser(projectKey);
   await Promise.all(open.items.map((i) => deleteItemData(i.issueId)));
   await updateDecisions(projectKey, () => []);
+  await purgeLegacyDecisions(projectKey);
   await resetAudit(projectKey, { at: new Date().toISOString(), who: ctx.accountId ?? "unknown", action: "data_deleted", ref: projectKey });
   return { items: open.items.length, capped: open.capped };
 });

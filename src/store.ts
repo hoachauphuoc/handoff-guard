@@ -8,8 +8,7 @@ import type { Decision } from "./rules/types";
 
 // Only get/set: kvs queries are eventually consistent, and a panel that just saved must read its own write.
 // Decisions are stored per project, so a save in one project can not overwrite another's and no single value
-// grows with the whole site. The old site-wide key is only read, never written or deleted: it stays as the
-// backup until the owner confirms the per-project keys work.
+// grows with the whole site. The old site-wide key is only read; nothing writes it except "Delete this project's app data".
 const LEGACY_DECISIONS = "decisions";
 const decisionsKey = (projectKey: string) => `decisions:${projectKey.toLowerCase()}`;
 type Stored = { version: number; decisions: Decision[] };
@@ -78,6 +77,23 @@ export async function addAudit(projectKey: string, event: AuditEvent): Promise<v
 // would make the next read fall back to the old site-wide key and bring the decisions back.
 export async function deleteItemData(issueId: string): Promise<void> {
   await Promise.all([kvs.delete(recordKey(issueId)), kvs.delete(proposalsKey(issueId))]);
+}
+
+// Delete is the one place that writes the old site-wide key: it takes this project's decisions out of it, so
+// nothing of the project is left behind. An old label decision with no project belongs to every project and
+// stays. Returns how many were removed.
+export async function purgeLegacyDecisions(projectKey: string): Promise<number> {
+  const legacy = (await kvs.get<Decision[]>(LEGACY_DECISIONS)) ?? [];
+  const p = projectKey.toLowerCase();
+  const names = (d: Decision): boolean =>
+    d.scope.kind === "project"
+      ? d.scope.projectKey.toLowerCase() === p
+      : d.scope.kind === "workItem"
+        ? d.scope.key.toLowerCase().startsWith(`${p}-`)
+        : d.scope.projectKey?.toLowerCase() === p;
+  const kept = legacy.filter((d) => !names(d));
+  if (kept.length !== legacy.length) await kvs.set(LEGACY_DECISIONS, kept);
+  return legacy.length - kept.length;
 }
 
 export async function resetAudit(projectKey: string, first: AuditEvent): Promise<void> {
