@@ -76,6 +76,9 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
   const [decisions, record, stored, canManage] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId), getProposals(issueId), isProjectAdminAsUser(item.projectKey)]);
   const proposals = inProject(stored, item.projectKey);
   const viewerId = ctx.accountId ?? null;
+  // Decisions that name this project. Samples are loaded per project, so a site-wide count, or an old label
+  // decision stored before labels carried a project, would hide the sample button here.
+  const own = decisions.filter((d) => touches(d, item.projectKey) && !(d.scope.kind === "label" && d.scope.projectKey === undefined));
   const result = record ? checkHandoff(handoffFrom(item, record, decisions), decisions) : null;
   const practice = checkHandoff(
     walkthroughHandoff(item, viewerId, bindingDecisions(decisions, item).map((d) => d.id)),
@@ -87,14 +90,12 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     result,
     viewerId,
     canManage,
-    inForceCount: decisions.filter((d) => d.status === "decided" && touches(d, item.projectKey)).length,
+    inForceCount: own.filter((d) => d.status === "decided").length,
     hasSamples: hasSamples(decisions, item.projectKey),
     exampleReadBack: exampleReadBack(bindingDecisions(decisions, item)),
     canPrepare: mayPrepare(record, viewerId, item.assigneeId, canManage),
     isReceiver: record !== null && viewerId !== null && viewerId === record.toId,
-    // Decisions that name this project. Samples are loaded per project, so a site-wide count, or an old label
-    // decision stored before labels carried a project, would hide the sample button here.
-    decisionCount: decisions.filter((d) => touches(d, item.projectKey) && !(d.scope.kind === "label" && d.scope.projectKey === undefined)).length,
+    decisionCount: own.length,
     proposals,
     practiceFindings: practice.findings.filter((f) => PRACTICE_RULES.includes(f.rule)),
     // Computed from confirmed decisions only; proposals never reach it.
