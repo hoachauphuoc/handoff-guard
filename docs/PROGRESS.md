@@ -342,3 +342,9 @@ Muse Code's diff was kept. Muse Code runs on the API key (`muse usage` reports n
 ## 2026-11-14: three guided paths and "Leaving the project"
 
 The owner chose to build this despite the feature freeze, to be done by 2026-12-04. Muse Code with `muse-spark-1.3-contributor` wrote both parts test-first from two briefs of about 13 lines, each in its own worktree (293 s and 361 s, no rework round). Part A: the panel checklist has three paths (new to the project, handing over, leaving); the handover path is the old seven steps unchanged. Part B: a read-only "Leaving the project" section on the Decisions page lists a person's open work items with each handoff's state, handoffs they have not acknowledged, and decisions only they can supersede. Claude read both diffs and changed two things directly: a handoff that made the person the receiver is not counted as handing the work over, and the row shows how many decisions wait. No new scope or module; `src/rules/` untouched; 328 tests, measure unchanged. Not yet seen on a site.
+
+## 2026-11-14: Toloka human labels
+
+- Pilot ran 2026-11-13/14: 48 cases, 2 experts each, USD 49.81 charged (forecast 32.42, limit 45). Export: `data/toloka/raw/export.json`; imported by `scripts/import_human_labels.py` into `data/human_labels.json` (strict majority, else `unresolved`).
+- `scripts/measure.ts` now reports a `human` section and `--check-readme` checks the human table. 40 of 48 decided; rules 36/40, Muse 35/40.
+- The 4 rules-vs-people disagreements all have a null due date. The expert brief did not say a missing due date counts as missing: a gap in the brief, not a verdict on the rules. Not rerun (cost); the README says so.

@@ -48,8 +48,8 @@ In hospitals, I-PASS was linked to fewer medical errors and preventable adverse 
 ## Honesty notes
 
 - The samples used to measure the rules are synthetic.
-- The labels on those samples are written by a model (Muse), not by people.
-- The measured figure is "agreement with Muse labels", not accuracy. Every number below comes from `npm run measure` (2026-11-12).
+- The labels on those samples are written by a model (Muse). A second set of labels was written by people: paid experts on Toloka, two per sample, one pilot, 2026-11-13.
+- The measured figures are "agreement with Muse labels" and "agreement with human-decided labels", not accuracy. Every number below comes from `npm run measure`.
 - The labelling instructions given to Muse (`scripts/label_samples.py`) restate the app's rules in prose, so the agreement figure mostly measures whether Muse applied that specification the same way the code does, not whether the rules are the right rules. Of the 48 samples, 38 were written by Muse itself, which also labeled them; the other 10 are adversarial cases written by Claude Sonnet.
 
 ## Measurement
@@ -63,6 +63,19 @@ In hospitals, I-PASS was linked to fewer medical errors and preventable adverse 
 | No check (every handoff passes) | 12 of 48 (25.0%) |
 
 The one disagreement: a description that is only filler ("tbd see above"). Muse wants more information; the rules pass it, because filler is a choice the rules leave to people (see "Rule decisions" in `docs/PROGRESS.md`).
+
+### Human labels
+
+The same 48 handoffs were also labeled by people on Toloka: two independent experts per sample, each choosing a verdict and writing a short reason. A sample counts only when both gave the same answer. 40 of 48 did; the other 8 are left out and are not settled by the rules or by Muse. The pilot cost USD 49.81, above the USD 45 limit set for it (Toloka's forecast was USD 32.42; the extra came from answers sent back for a replacement).
+
+| Check | Agreement with human-decided labels |
+|---|---|
+| Human: Handoff Guard rules with recorded decisions | 36 of 40 (90.0%) |
+| Human: the same rules without decisions | 25 of 40 (62.5%) |
+| Human: no check (every handoff passes) | 17 of 40 (42.5%) |
+| Human: Muse labels | 35 of 40 (87.5%) |
+
+The four rules-versus-people disagreements are all samples with no due date: the rules ask for more information, the people said clear. The instructions given to the experts said a due date must be valid, not that a missing one counts as missing, so this is at least partly a gap in those instructions, not proof the rules are wrong. Two experts per sample is a small panel; no figure here is an error rate of the app.
 
 ## Limits
 

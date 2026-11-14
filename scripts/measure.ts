@@ -15,7 +15,10 @@ type Label = { id: string; note: string; case: string; verdict: Verdict | null; 
 const ROOT = join(import.meta.dirname, "..");
 const SAMPLES = join(ROOT, "data", "samples");
 const LABELS = join(ROOT, "data", "labels.json");
+const HUMAN = join(ROOT, "data", "human_labels.json");
 const VERDICTS: Verdict[] = ["clear", "needs_info", "blocked"];
+// Written by scripts/import_human_labels.py. "unresolved" means the annotators had no strict majority.
+type HumanLabel = { id: string; verdict: Verdict | "unresolved" };
 
 function loadSamples(): Map<string, Sample> {
   const out = new Map<string, Sample>();
@@ -89,16 +92,48 @@ if (process.argv.includes("--init")) {
     },
     rulesWithoutDecisions: { agree: noDecisionsAgree, agreement: rate(noDecisionsAgree) },
   };
+  // Human labels are a second source. Unresolved cases are left out: neither the rules nor Muse settle them.
+  const humanLabels: HumanLabel[] = existsSync(HUMAN) ? JSON.parse(readFileSync(HUMAN, "utf8")).labels : [];
+  const humanDecided = humanLabels.filter((l) => l.verdict !== "unresolved" && samples.has(l.id));
+  const museById = new Map(labels.map((l) => [l.id, l.verdict]));
+  const humanAgreeing = (verdictOf: (s: Sample, id: string) => Verdict | null) =>
+    humanDecided.filter((l) => verdictOf(samples.get(l.id)!, l.id) === l.verdict).length;
+  const human = {
+    cases: humanLabels.length,
+    decided: humanDecided.length,
+    unresolved: humanLabels.length - humanDecided.length,
+    agree: {
+      rules: humanAgreeing((s) => checkHandoff(s.handoff, s.decisions).verdict),
+      rulesWithoutDecisions: humanAgreeing((s) => checkHandoff(s.handoff, []).verdict),
+      noCheck: humanAgreeing(() => "clear"),
+      muse: humanAgreeing((_, id) => museById.get(id) ?? null),
+    },
+    // Cases where the rules and the people differ; read them before trusting either side.
+    disagreements: humanDecided
+      .map((l) => ({ id: l.id, human: l.verdict, rules: checkHandoff(samples.get(l.id)!.handoff, samples.get(l.id)!.decisions).verdict }))
+      .filter((r) => r.human !== r.rules),
+  };
   // Principle 5: README figures come only from this script, so check.ps1 fails when the table drifts from it.
   if (process.argv.includes("--check-readme")) {
     const readme = readFileSync(join(ROOT, "README.md"), "utf8");
-    const cell = (n: number) => `${n} of ${labeled.length} (${((n / labeled.length) * 100).toFixed(1)}%)`;
-    const rows: [string, number][] = [
-      ["Handoff Guard rules with recorded decisions", labeled.length - disagreements.length],
-      ["The same rules without decisions", noDecisionsAgree],
-      ["No check (every handoff passes)", noCheckAgree],
+    const cell = (n: number, of: number) => `${n} of ${of} (${((n / of) * 100).toFixed(1)}%)`;
+    const rows: [string, number, number][] = [
+      ["Handoff Guard rules with recorded decisions", labeled.length - disagreements.length, labeled.length],
+      ["The same rules without decisions", noDecisionsAgree, labeled.length],
+      ["No check (every handoff passes)", noCheckAgree, labeled.length],
     ];
-    const wrong = rows.filter(([name, n]) => !readme.includes(`| ${name} | ${cell(n)} |`)).map(([name, n]) => `${name}: ${cell(n)}`);
+    // The human table exists only once there are human labels; its rows are not required before that.
+    if (human.decided > 0) {
+      rows.push(
+        ["Human: Handoff Guard rules with recorded decisions", human.agree.rules, human.decided],
+        ["Human: the same rules without decisions", human.agree.rulesWithoutDecisions, human.decided],
+        ["Human: no check (every handoff passes)", human.agree.noCheck, human.decided],
+        ["Human: Muse labels", human.agree.muse, human.decided],
+      );
+    }
+    const wrong = rows
+      .filter(([name, n, of]) => !readme.includes(`| ${name} | ${cell(n, of)} |`))
+      .map(([name, n, of]) => `${name}: ${cell(n, of)}`);
     if (wrong.length > 0) {
       console.error(`README measurement table differs from measure: ${wrong.join("; ")}`);
       process.exit(1);
@@ -119,6 +154,7 @@ if (process.argv.includes("--init")) {
         agreement: labeled.length === 0 ? null : Number(((labeled.length - disagreements.length) / labeled.length).toFixed(3)),
         baselines,
         disagreements,
+        human,
       },
       null,
       2,
