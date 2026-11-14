@@ -300,4 +300,45 @@ Each lead was checked against `src/` before it went in here. Two leads were drop
 - **What:** a finding when the prepared handoff's receiver is not the work item's current assignee, so the validator refuses the transition.
 - **Why not now:** a handoff is normally prepared before the reassignment, so the finding would fire on the ordinary path and change the measured figures. Today the mismatch is an advisory (`watchAssignee`). Any change here alters rule semantics and needs an Opus-level review first.
 
-## Tavily calls used: 112 (29 in round one under the 30-call limit; 17 in round two, 36 in round three and 30 in round four, after the owner asked to continue)
+## (h) Fifth research round (2026-11-14): public Codegeist repositories, 2024 to 2026
+
+Read to improve our own entry, not to take anyone's idea. Only READMEs and judge guides that their authors published were read; nothing was cloned, installed or run. An idea is on the shortlist only when three or more unrelated projects show it or when it was already ours. Raw pages and per-project cards stay outside the repo.
+
+How it was done: GitHub repository search for "codegeist" (name, description, README) gave 358 repositories created since 2024; GitHub topic pages and 77 Tavily searches added 22; 380 READMEs were read with Tavily extract (about 80 calls). Gemini and Muse Spark wrote one short card per README (348 cards; the rest were empty or not projects). The counts below come from those model-written cards, so read them as rough shares, not measurements. 283 cards are Codegeist entries: 203 from 2026, 41 from 2025, 9 from 2024.
+
+### What the field looks like in 2026
+
+- **The space is crowded on both sides of us.** About 13 entries are about handoffs or handovers, and almost all of them build a handover pack or brief for someone going on leave, from the Teamwork Graph ([relay-codegeist](https://github.com/TUSHAR8075/relay-codegeist), [handoff-brief](https://github.com/DesignMaster-Solutions/handoff-brief), [handover-codegeist](https://github.com/seunghyeon1004/handover-codegeist), [HandoffIQ](https://github.com/venkatkrish98/HandoffIQ)). About 29 are a "decision memory": they collect decisions and flag new work that contradicts one ([vanichitkara/precedent](https://github.com/vanichitkara/precedent), [Wayo2003/precedent](https://github.com/Wayo2003/precedent), [decision-memory](https://github.com/VamsiKrishnaThota03/decision-memory), [Tripwire](https://github.com/Akar-Samudra-Artifisial/Tripwire)); at least eight are named Precedent.
+- **Nobody else asks the receiver to restate.** No README among the 380 describes a read-back by the receiver that code can refuse. That, and the stale acknowledgement, are the parts of Handoff Guard no other entry shows. "Recorded decisions bind work" is not a difference any more; a judge will have seen it many times.
+- **Modules are not a difference either.** Of the entries, 56% have a Rovo agent, 44% MCP, 25% Teamwork Graph. A workflow validator is rare (4%).
+
+### What the stronger READMEs do
+
+| Pattern | Share of entries | Examples | For us |
+|---|---|---|---|
+| A judge section near the top with a time ("5-minute tour", "Try it in 2 minutes") | 14% state minutes | [vanichitkara/precedent](https://github.com/vanichitkara/precedent), [Wayo2003/precedent](https://github.com/Wayo2003/precedent), [anticipate](https://github.com/toskaman/anticipate-codegeist-2026) | Ours is at the bottom of `docs/DEVPOST.md`. Move a short one to the README. |
+| The result to expect at each step, with numbers ("You should see: 80 read, 15 rejected") | 32% | [golden-set JUDGES.md](https://github.com/DmitriyTopka/golden-set/blob/HEAD/docs/JUDGES.md), [jj-stuff/relay](https://github.com/jj-stuff/relay) | Add to every step. |
+| Sample data in one click, with a way to remove it | 23% one click, 18% a script | [golden-set](https://github.com/DmitriyTopka/golden-set), [Tripwire](https://github.com/Akar-Samudra-Artifisial/Tripwire) | We have Load sample decisions. We have no remove button. |
+| Works with one account | 34% say so; 6% need two | | The practice read-back (built this round) gives one account our main moment. |
+| A measured number, with what it measures | 16%; 82% give none | [golden-set](https://github.com/DmitriyTopka/golden-set), [cold-read](https://github.com/works-on-my-box/cold-read), [jj-stuff/relay](https://github.com/jj-stuff/relay) | We have one (agreement with labels). Say it near the top, with its limit. |
+| Image and video link on the first screen | 22% image, 16% video | | Add after filming. |
+| The video opens on the moment, not on the problem statement | seen in the scripts that are public | [golden-set VIDEO_SCRIPT.md](https://github.com/DmitriyTopka/golden-set/blob/HEAD/docs/VIDEO_SCRIPT.md) | Open on the refused read-back. |
+
+Past winners (Atlassian's posts for [2024](https://www.atlassian.com/blog/developer/codegeist-2024-winners) and [2025](https://www.atlassian.com/blog/development/meet-the-winners-of-codegeist-2025-atlassian-williams-racing-edition)) are narrow tools with one visible job; the 2024 first-place winners' own advice is a real problem, a small scope and a clear page and video ([GoCapable](https://www.gocapable.com/blog/how-to-win-atlassian-codegeist-from-the-2024-winners)). Only one 2025 winner's repository is public ([Secure Notes for Jira](https://github.com/vzakharchenko/Forge-Secure-Notes-for-Jira)), so "what winners share" rests on the posts, not on their code.
+
+### Shortlist
+
+1. Polish: say the difference in the first line everywhere: the receiver restates each decision and code refuses a restatement that contradicts one. Name the two crowds (handover packs, decision memories) by contrast, without naming entries.
+2. Done this round: practice read-back, so one account sees a refusal and an acceptance without a handoff (nothing stored, no verdict).
+3. Polish: a "Try it in 3 minutes" block at the top of the README, each step with the result to expect.
+4. Polish: the measured figure and its limit in the README's first screen.
+5. Polish: the video opens on the refused read-back; other paths move to the end.
+6. Owner: an install swap with other solo entrants is being offered in the open ([developer community thread](https://community.developer.atlassian.com/t/codegeist-2026-swap-a-10-minute-install-test-my-link-in-your-site-yours-in-mine/103885)); it is a way to get a second person to Clear.
+7. New feature, needs the owner's yes: a "Remove sample decisions" button.
+8. New feature, not recommended: a one-click sample work item. It needs a write scope, and "read-only scopes" is one of our fixed constraints.
+
+### Not taken
+
+Each of these is one entry's own idea: a sealed sign-off record page; scoring an agent before and after an article edit with Rovo Evaluations; risk and owner-fit formulas for leave cover; capturing decisions from Confluence `/decision` items; a `check-plan` tool for coding agents; assumption tripwires that reopen a decision.
+
+## Tavily calls used: 112 in rounds one to four, about 157 more in round five (29 in round one under the 30-call limit; 17 in round two, 36 in round three and 30 in round four, after the owner asked to continue)
