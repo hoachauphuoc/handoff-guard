@@ -2,7 +2,7 @@ import type { PeopleRead } from "../actions/schema";
 
 // Pure: no Forge imports. Teamwork Graph data is advisory. It adds people to the handoff brief,
 // but it never reaches checkHandoff(); a missing scope returns empty rows, not an error, so "nothing" is
-// reported as such and never as a fact. Pages are not queried: a Jira-only app cannot read their text.
+// reported as such and never as a fact. A call that fails twice is reported as "error", not as "nothing". Pages are not queried: a Jira-only app cannot read their text.
 
 /** The Cypher texts the owner registers as saved queries (new apps cannot send raw Cypher). */
 export const QUERIES = {
@@ -53,15 +53,19 @@ export type Deps = {
   call: (queryKey: string, params: { issueAri: string }) => Promise<unknown>;
 };
 
-async function ids(deps: Deps, name: QueryName, ari: string): Promise<string[]> {
+// null means the query was asked and could not be read, even after one retry; [] is an empty answer.
+async function ids(deps: Deps, name: QueryName, ari: string): Promise<string[] | null> {
   const key = deps.queryKey(name);
   if (key === null) return [];
-  try {
-    const out = parseAris(await deps.call(key, { issueAri: ari }));
-    return out.ok ? out.aris : [];
-  } catch {
-    return [];
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const out = parseAris(await deps.call(key, { issueAri: ari }));
+      if (out.ok) return out.aris;
+    } catch {
+      // A throttled or failed call is retried once below.
+    }
   }
+  return null;
 }
 
 /**
@@ -76,7 +80,10 @@ export async function twgPeople(deps: Deps, ari: string | null): Promise<PeopleR
     return { status: "not_configured", reason: "no_query", ...none };
   }
   const [shared, mentioned] = await Promise.all([ids(deps, "shared", ari), ids(deps, "mentioned", ari)]);
-  const accounts = (xs: string[]) => [...new Set(xs.flatMap((x) => accountIdFromAri(x) ?? []))];
+  // An unanswered query is not "nobody": the UI must name it as a failed read (principle 3).
+  if (shared === null && mentioned === null) return { status: "error", reason: "read_failed", ...none };
+  const accounts = (xs: string[] | null) => [...new Set((xs ?? []).flatMap((x) => accountIdFromAri(x) ?? []))];
   const out = { sharedWith: accounts(shared), mentioned: accounts(mentioned) };
-  return { status: out.sharedWith.length + out.mentioned.length > 0 ? "ok" : "nothing", ...out };
+  const partial = shared === null || mentioned === null ? { partial: true } : {};
+  return { status: out.sharedWith.length + out.mentioned.length > 0 ? "ok" : "nothing", ...out, ...partial };
 }

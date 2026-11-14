@@ -128,14 +128,15 @@ export type ProposeSuccess = {
 
 export type ProposeOutput = ProposeSuccess | ActionError<typeof SCHEMA_VERSION.propose>;
 
-export type PeopleStatus = "ok" | "nothing" | "not_configured";
+export type PeopleStatus = "ok" | "nothing" | "not_configured" | "error";
 
-/** What the graph call returned. `reason` only says why nothing was asked. */
+/** What the graph call returned. `reason` says why nothing was asked or read; `partial` that one query failed. */
 export type PeopleRead = {
   status: PeopleStatus;
   sharedWith: string[];
   mentioned: string[];
-  reason?: "no_site" | "no_query";
+  reason?: "no_site" | "no_query" | "read_failed";
+  partial?: boolean;
 };
 
 /** Advisory and never a rule input: the verdict does not read it. */

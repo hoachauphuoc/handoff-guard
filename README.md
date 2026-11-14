@@ -6,7 +6,7 @@ A Forge app for Jira. When a work item is handed to someone else, rules check wh
 
 1. Install the app on a Jira site from the installation link in the Devpost submission. The app is Jira-only: it declares no Confluence scope and no multi-app compatibility, so it installs on any single Jira site. Developers working on the app install their own build with `forge install -e development --product jira`.
 2. Open a work item, click the apps icon under the summary (tooltip "View app actions") and choose **Handoff Guard**. The panel shows a short checklist with three paths to choose from: "New to this project", "Handing over this work" (the default) and "Leaving the project". A step-by-step path of about 10 minutes, with the exact read-backs to type, is in `docs/DEVPOST.md` ("Testing instructions"). One account is enough to see a refusal and an accepted read-back; reaching Clear needs a second user as receiver.
-3. Teamwork Graph needs no setup from you. If it returns nothing, or was not asked, the app says so, and no rule depends on it.
+3. Teamwork Graph needs no setup from you. If it returns nothing, was not asked, or could not be read (one retry, then the app says so), the app says which, and no rule depends on it.
 
 ## Joining, handing over, leaving
 

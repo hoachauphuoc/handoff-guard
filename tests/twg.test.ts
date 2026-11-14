@@ -42,21 +42,59 @@ describe("Teamwork Graph people statuses", () => {
     expect(await twgPeople(deps(), null)).toEqual({ status: "not_configured", reason: "no_site", ...empty });
   });
 
-  it("says nothing, not an error, when the call fails or returns no rows", async () => {
-    expect(
-      await twgPeople(
-        deps({
-          call: async () => {
-            throw new Error("403");
-          },
-        }),
-        "ari",
-      ),
-    ).toEqual({ status: "nothing", ...empty });
+  it("says nothing when queries answer with no people", async () => {
+    expect(await twgPeople(deps({ call: async () => ok() }), "ari")).toEqual({ status: "nothing", ...empty });
+  });
+
+  it("retries a failed call once and uses the answer", async () => {
+    let calls = 0;
+    const out = await twgPeople(
+      deps({
+        queryKey: (n) => (n === "shared" ? "s" : null),
+        call: async () => {
+          calls++;
+          if (calls === 1) throw new Error("429");
+          return ok(USER("a"));
+        },
+      }),
+      "ari",
+    );
+    expect(out).toEqual({ status: "ok", sharedWith: ["a"], mentioned: [] });
+    expect(calls).toBe(2);
+  });
+
+  it("reports error when every configured query fails", async () => {
+    let calls = 0;
+    const out = await twgPeople(
+      deps({
+        call: async () => {
+          calls++;
+          throw new Error("403");
+        },
+      }),
+      "ari",
+    );
+    expect(out).toEqual({ status: "error", reason: "read_failed", ...empty });
+    expect(calls).toBe(4);
     expect(await twgPeople(deps({ call: async () => ({ data: { customQuery: null }, errors: [{ message: "x" }] }) }), "ari")).toEqual({
-      status: "nothing",
+      status: "error",
+      reason: "read_failed",
       ...empty,
     });
+  });
+
+  it("keeps ok with partial when one query fails and the other answers", async () => {
+    const out = await twgPeople(
+      deps({
+        queryKey: (n) => (n === "shared" ? "s" : "m"),
+        call: async (key: string) => {
+          if (key === "s") throw new Error("403");
+          return ok(USER("c"));
+        },
+      }),
+      "ari",
+    );
+    expect(out).toEqual({ status: "ok", sharedWith: [], mentioned: ["c"], partial: true });
   });
 
   it("asks with one key when only one is registered", async () => {

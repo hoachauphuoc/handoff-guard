@@ -479,10 +479,18 @@ describe("gather-handoff-context", () => {
     if (noSite.ok) expect(noSite.quote).toContain("Teamwork Graph: was not asked.");
   });
 
-  it("turns a failing graph call into nothing, not an error", async () => {
+  it("names a failing graph call as a failed read, keeps the brief and hides the cause", async () => {
     const out = await gather({ people: failing(new Error("403")) });
-    expect(out).toMatchObject({ ok: true, people: { status: "nothing", sharedWith: [], mentioned: [] } });
+    expect(out).toMatchObject({
+      ok: true,
+      people: { status: "error", sharedWith: [], mentioned: [], note: expect.stringContaining("could not be read just now") },
+    });
     expect(JSON.stringify(out)).not.toContain("403");
+  });
+
+  it("says when only part of the graph could be read", async () => {
+    const out = await gather({ people: graph({ status: "ok", sharedWith: [], mentioned: ["x"], partial: true }) });
+    expect(out).toMatchObject({ ok: true, people: { status: "ok", note: expect.stringContaining("Some Teamwork Graph results could not be read.") } });
   });
 
   it("people never change the check", async () => {

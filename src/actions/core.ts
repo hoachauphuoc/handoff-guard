@@ -309,6 +309,8 @@ const PEOPLE_NOTE = {
   nothing:
     "Teamwork Graph returned nothing. That can mean no permission or nobody is connected; it is not a fact about the work item.",
   ok: "People connected to this work item according to Teamwork Graph; advisory, not checked by any rule. Shared with: direct shares in the last 90 days.",
+  error: "Teamwork Graph could not be read just now, so connected people are not shown. No rule depends on it.",
+  partial: "Some Teamwork Graph results could not be read.",
 } as const;
 
 // A failing graph call must not fail the brief: people are advisory and the check does not read them.
@@ -317,16 +319,30 @@ async function readPeople(issueId: string, deps: Deps): Promise<People> {
   try {
     read = await deps.people(issueId);
   } catch {
-    read = { status: "nothing", sharedWith: [], mentioned: [] };
+    read = { status: "error", reason: "read_failed", sharedWith: [], mentioned: [] };
   }
   const base = { source: "Teamwork Graph" as const, status: read.status };
-  if (read.status === "ok") return { ...base, sharedWith: read.sharedWith, mentioned: read.mentioned, note: PEOPLE_NOTE.ok };
-  const note = read.status === "nothing" ? PEOPLE_NOTE.nothing : read.reason === "no_site" ? PEOPLE_NOTE.no_site : PEOPLE_NOTE.no_query;
+  const partly = read.partial ? ` ${PEOPLE_NOTE.partial}` : "";
+  if (read.status === "ok") return { ...base, sharedWith: read.sharedWith, mentioned: read.mentioned, note: PEOPLE_NOTE.ok + partly };
+  const note =
+    read.status === "error"
+      ? PEOPLE_NOTE.error
+      : read.status === "nothing"
+        ? PEOPLE_NOTE.nothing + partly
+        : read.reason === "no_site"
+          ? PEOPLE_NOTE.no_site
+          : PEOPLE_NOTE.no_query;
   return { ...base, sharedWith: [], mentioned: [], note };
 }
 
 const peopleQuote = (p: People): string =>
-  p.status === "ok" ? `${p.sharedWith.length} shared with, ${p.mentioned.length} mentioned` : p.status === "nothing" ? "returned nothing" : "was not asked";
+  p.status === "ok"
+    ? `${p.sharedWith.length} shared with, ${p.mentioned.length} mentioned`
+    : p.status === "nothing"
+      ? "returned nothing"
+      : p.status === "error"
+        ? "could not be read"
+        : "was not asked";
 
 // Reads only. The verdict comes from runCheckHandoff, whose result is passed through untouched; nothing
 // gathered here (comments, people) is an input to it.
