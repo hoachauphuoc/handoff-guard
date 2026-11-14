@@ -1,4 +1,5 @@
 import { kvs } from "@forge/kvs";
+import { appendEvent, type AuditEvent } from "./audit";
 import { touches } from "./decisions/page";
 import { MAX_CANDIDATES } from "./decisions/validate";
 import type { Proposal } from "./decisions/types";
@@ -55,4 +56,20 @@ export async function getProposals(issueId: string): Promise<Proposal[]> {
 // A bounded overwrite, never an append: the set can not grow past the cap however often it is saved.
 export async function putProposals(issueId: string, proposals: Proposal[]): Promise<void> {
   await kvs.set(proposalsKey(issueId), proposals.slice(0, MAX_CANDIDATES));
+}
+
+const auditKey = (projectKey: string) => `audit:${projectKey.toLowerCase()}`;
+
+export async function getAudit(projectKey: string): Promise<AuditEvent[]> {
+  return (await kvs.get<AuditEvent[]>(auditKey(projectKey))) ?? [];
+}
+
+// The trail is written after the change it describes. A failed write here must not undo or hide that change,
+// so it is reported to the log by name only and the action still succeeds.
+export async function addAudit(projectKey: string, event: AuditEvent): Promise<void> {
+  try {
+    await kvs.set(auditKey(projectKey), appendEvent(await getAudit(projectKey), event));
+  } catch (e) {
+    console.log(`audit write failed: ${e instanceof Error ? e.name : typeof e}`);
+  }
 }

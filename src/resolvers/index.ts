@@ -18,6 +18,7 @@ import { driftByDecision, fingerprintOf, staleAcks } from "../handoff/drift";
 import type { AcknowledgeAllReply, HandoffRecord, PanelState, PracticeReadBackReply } from "../handoff/types";
 import { explainRefusal } from "../llm";
 import { MANAGE_DENIED } from "../authz";
+import { monthCounts, type AuditAction, type AuditEvent, type MonthCounts } from "../audit";
 import { isProjectAdminAsUser, openItemsAsUser, readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
@@ -28,7 +29,7 @@ import type { Proposal } from "../decisions/types";
 import type { Decision, Finding } from "../rules/types";
 import { hasSamples, mergeDecisions, sampleDecisions, withoutSamples } from "../samples/decisions";
 import { readSourceAsUser } from "../source";
-import { getDecisions, getProposals, getRecord, putProposals, putRecord, updateDecisions } from "../store";
+import { addAudit, getAudit, getDecisions, getProposals, getRecord, putProposals, putRecord, updateDecisions } from "../store";
 
 const resolver = new Resolver();
 
@@ -46,6 +47,10 @@ const PRACTICE_RULES: Finding["rule"][] = [
 async function requireAdmin(projectKey: string): Promise<void> {
   if (!(await isProjectAdminAsUser(projectKey))) throw new Error(MANAGE_DENIED);
 }
+
+// The trail keeps the action, the person, the time and a key or id; never text someone typed.
+const log = (projectKey: string, who: string | null | undefined, action: AuditAction, ref: string): Promise<void> =>
+  addAudit(projectKey, { at: new Date().toISOString(), who: who ?? "unknown", action, ref });
 
 type Ctx = { accountId?: string; cloudId?: string; extension: { issue: { key: string; id: string } } };
 
@@ -135,6 +140,7 @@ resolver.define("prepareHandoff", async ({ context, payload }) => {
     protocol: 1,
   };
   await putRecord(issueId, record);
+  await log(item.projectKey, ctx.accountId, "handoff_prepared", ctx.extension.issue.key);
   return panelState(ctx);
 });
 
@@ -150,6 +156,7 @@ resolver.define("acknowledgeDecision", async ({ context, payload }) => {
   const out = acknowledge(record, ctx.accountId ?? null, decisionId, binding, new Date().toISOString(), fingerprintOf(item), stale);
   if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
   await putRecord(issueId, out.record);
+  await log(item.projectKey, ctx.accountId, "handoff_acknowledged", ctx.extension.issue.key);
   return panelState(ctx);
 });
 
@@ -178,13 +185,16 @@ resolver.define("acknowledgeAll", async ({ context, payload }) => {
   if (!record) throw new Error("No handoff has been prepared for this work item.");
   const out = acknowledgeAll(record, ctx.accountId ?? null, bindingDecisions(decisions, item), readBack, new Date().toISOString(), fingerprintOf(item));
   // A model sentence is asked for only when the code found a contradiction; it is shown beside the reasons.
-  if (!out.ok && out.reason === "read_back")
+  if (!out.ok && out.reason === "read_back") {
+    await log(item.projectKey, ctx.accountId, "readback_refused", ctx.extension.issue.key);
     return {
       reasons: out.problems,
       ...(out.contradictions.length > 0 ? { explanation: await explainRefusal(readBack, out.contradictions) } : {}),
     } satisfies AcknowledgeAllReply;
+  }
   if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
   await putRecord(issueId, out.record);
+  await log(item.projectKey, ctx.accountId, "handoff_acknowledged", ctx.extension.issue.key);
   return { state: await panelState(ctx) } satisfies AcknowledgeAllReply;
 });
 
@@ -208,6 +218,7 @@ resolver.define("loadSampleDecisions", async ({ context }) => {
   await updateDecisions(item.projectKey, (decisions) =>
     hasSamples(decisions, item.projectKey) ? decisions : mergeDecisions(decisions, sampleDecisions(item.projectKey)),
   );
+  await log(item.projectKey, ctx.accountId, "samples_loaded", item.projectKey);
   return panelState(ctx);
 });
 
@@ -216,6 +227,7 @@ resolver.define("removeSampleDecisions", async ({ context }) => {
   const { item } = await readItem(ctx.extension.issue.key);
   await requireAdmin(item.projectKey);
   await updateDecisions(item.projectKey, (decisions) => withoutSamples(decisions, item.projectKey));
+  await log(item.projectKey, ctx.accountId, "samples_removed", item.projectKey);
   return panelState(ctx);
 });
 
@@ -241,6 +253,7 @@ resolver.define("confirmProposal", async ({ context, payload }) => {
   // The decision is saved first: if the second write fails the proposal is still listed and confirming
   // again changes nothing, whereas the other order could lose the decision.
   await putProposals(issueId, remaining);
+  await log(item.projectKey, ctx.accountId, "decision_confirmed", ctx.extension.issue.key);
   return panelState(ctx);
 });
 
@@ -273,20 +286,29 @@ resolver.define("getMarked", async ({ context }): Promise<MarkedState> => {
 
 // The Decisions project page. Open items are read as the viewer, so the counts only cover work the viewer
 // may see, and the page says when the cap cut the list. Nothing is written.
-resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageState> => {
+const ACTIVITY_SHOWN = 20;
+
+export type DecisionsPageView = DecisionsPageState & { activity: AuditEvent[]; counts: MonthCounts[] };
+
+resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageView> => {
   const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
   const viewerId = (context as { accountId?: string }).accountId ?? null;
   const [open, decisions, canManage] = await Promise.all([openItemsAsUser(projectKey), getDecisions(projectKey), isProjectAdminAsUser(projectKey)]);
+  const audit = await getAudit(projectKey);
   const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
-  return buildDecisionsPage(
-    projectKey,
-    decisions,
-    open.items.map((i, n) => ({ item: i.item, record: records[n] ?? null })),
-    open.capped,
-    new Date().toISOString(),
-    viewerId,
-    canManage,
-  );
+  return {
+    ...buildDecisionsPage(
+      projectKey,
+      decisions,
+      open.items.map((i, n) => ({ item: i.item, record: records[n] ?? null })),
+      open.capped,
+      new Date().toISOString(),
+      viewerId,
+      canManage,
+    ),
+    activity: audit.slice(0, ACTIVITY_SHOWN),
+    counts: monthCounts(audit),
+  };
 });
 
 // What one person still holds in this project. Read as the viewer, like the page above. Nothing is written.
@@ -339,6 +361,7 @@ resolver.define("supersedeDecision", async ({ context, payload }) => {
   if (!target) throw new Error("That decision is not in force. Reload the page.");
   if (!canSupersede(target, accountId)) throw new Error("Only the person who confirmed this decision can supersede it.");
   await updateDecisions(projectKey, (current) => supersede(current, [id], new Date().toISOString()));
+  await log(projectKey, accountId, "decision_superseded", id);
 });
 
 // Adding a decision by hand: the preview counts the open work items it would contradict, the add stores it.
@@ -364,8 +387,10 @@ resolver.define("previewDecision", async ({ context, payload }) => {
 });
 
 resolver.define("addDecision", async ({ context, payload }) => {
-  const { projectKey, decision } = await manualDecision(context as Parameters<typeof manualDecision>[0], payload);
+  const ctx = context as Parameters<typeof manualDecision>[0];
+  const { projectKey, decision } = await manualDecision(ctx, payload);
   await updateDecisions(projectKey, (current) => mergeDecisions(current, [decision]));
+  await log(projectKey, ctx.accountId, "decision_added", decision.id);
 });
 
 export const handler = resolver.getDefinitions();

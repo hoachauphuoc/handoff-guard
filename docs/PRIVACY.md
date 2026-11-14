@@ -8,6 +8,7 @@ Handoff Guard stores only work records, in Forge storage of the installation. It
 - Handoff records: sender and receiver account ids, which decisions the receiver acknowledged, timestamps.
 - With each acknowledgement, a fingerprint of the work item at that moment: the due date, labels and components as values, and the summary and description only as a short hash (no text). It lets the panel say what changed since the receiver acknowledged.
 - Two texts a person types in the panel, both work-record text: the sender's contingency (at most 300 characters) and the receiver's read-back (at most 600 characters, replaced each time it is given). Neither is written by Rovo or by an action, and neither is chat.
+- An activity list per project (the latest 300 entries): the action (for example "prepared a handoff", "had a read-back refused"), the account id of the person, the time, and the work item key or decision id. No text anyone typed is kept in it. It is shown on the Decisions page and the monthly counts are computed from it.
 - Proposals waiting for a person (at most 5 per work item): title, scope, constraints, and the evidence quote (up to 300 characters) copied from a work item description, or a visible comment, with where it came from.
 
 ## What is not stored

@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, DatePicker, Lozenge, SectionMessage, Select, Stack, Text, Textfield, User, UserPicker } from "@forge/react";
 import { invoke } from "@forge/bridge";
 import type { LeavingView } from "../decisions/leaving";
-import type { DecisionsPageState } from "../decisions/page";
+import { AUDIT_TEXT } from "../audit";
 import { MANAGE_DENIED } from "../authz";
 import { plainError } from "../errors";
 import { count } from "../plural";
-import type { ReplayState } from "../resolvers";
+import type { DecisionsPageView, ReplayState } from "../resolvers";
 
 const VERDICT = { blocked: { text: "Blocked", appearance: "removed" }, needs_info: { text: "Needs info", appearance: "moved" } } as const;
 
@@ -29,7 +29,7 @@ const App = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
-  const [state, setState] = useState<DecisionsPageState | null>(null);
+  const [state, setState] = useState<DecisionsPageView | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [replay, setReplay] = useState<ReplayState | null>(null);
   const [replayError, setReplayError] = useState<string | null>(null);
@@ -47,8 +47,8 @@ const App = () => {
     );
 
   const load = () =>
-    invoke<DecisionsPageState>("getDecisionsPage").then(
-      (s) => setState(s as DecisionsPageState),
+    invoke<DecisionsPageView>("getDecisionsPage").then(
+      (s) => setState(s as DecisionsPageView),
       (e) => setError(String(e)),
     );
   // No accountId means the viewer; picking a person reloads for them.
@@ -284,6 +284,27 @@ const App = () => {
           ))}
         </>
       )}
+      <Text>Activity</Text>
+      <Text>
+        Who changed decisions and handoffs in this project, newest first. Only the action, the person, the time and the work item or decision are
+        kept; nothing anyone typed.
+      </Text>
+      {state.activity.length === 0 && <Text>Nothing recorded yet.</Text>}
+      {state.activity.map((e, i) => (
+        <Text key={i}>
+          {`${e.at.slice(0, 16).replace("T", " ")} UTC: `}
+          <User accountId={e.who} />
+          {` ${AUDIT_TEXT[e.action]} (${e.ref}).`}
+        </Text>
+      ))}
+      <Text>Counts by month</Text>
+      {state.counts.length === 0 && <Text>Nothing to count yet.</Text>}
+      {state.counts.map((c) => (
+        <Text key={c.month}>
+          {`${c.month}: ${count(c.prepared, "handoff")} prepared, ${count(c.acknowledged, "read-back")} accepted, ${count(c.refused, "read-back")} refused, ${count(c.decisions, "decision")} recorded.`}
+        </Text>
+      ))}
+      <Text>Counts come from the activity list above, which keeps the latest 300 entries; older months can be incomplete.</Text>
       <Text>Source: rule check on stored decisions and open work items read as you. Ranked by code: blocked first, then oldest.</Text>
     </Stack>
   );
