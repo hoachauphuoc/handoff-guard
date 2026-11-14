@@ -87,6 +87,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     result,
     viewerId,
     canManage,
+    inForceCount: decisions.filter((d) => d.status === "decided" && touches(d, item.projectKey)).length,
     hasSamples: hasSamples(decisions, item.projectKey),
     exampleReadBack: exampleReadBack(bindingDecisions(decisions, item)),
     canPrepare: mayPrepare(record, viewerId, item.assigneeId, canManage),

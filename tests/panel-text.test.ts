@@ -82,3 +82,9 @@ describe("who may change decisions", () => {
     expect(resolvers).toMatch(/async function manualDecision[\s\S]*requireAdmin\(projectKey\)/);
   });
 });
+
+describe("load sample decisions", () => {
+  it("is offered when nothing is in force, not only when nothing is stored", () => {
+    expect(panel).toMatch(/state\.inForceCount === 0 && !state\.hasSamples && state\.canManage && \(\s*<Button[\s\S]{0,80}loadSampleDecisions/);
+  });
+});

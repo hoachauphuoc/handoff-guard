@@ -35,6 +35,8 @@ export type PanelState = {
   isReceiver: boolean;
   /** A read-back that the check accepts, built from the decisions that bind this item; empty when none bind. For the practice box. */
   exampleReadBack: string;
+  /** Stored decisions for this project that are in force. With none, and no samples, the panel offers the samples. */
+  inForceCount: number;
   /** Whether this project still holds the demo decisions that Load sample decisions adds. */
   hasSamples: boolean;
   /** Whether the viewer may prepare this handoff (again): the sender, the assignee or a project administrator once one exists. */

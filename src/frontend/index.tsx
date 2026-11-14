@@ -454,8 +454,9 @@ const App = () => {
         </SectionMessage>
       )}
       {state.decisionCount === 0 && <Text>{NO_DECISIONS_TEXT}</Text>}
-      {state.decisionCount === 0 && !state.canManage && <Text>{MANAGE_DENIED}</Text>}
-      {state.decisionCount === 0 && state.canManage && (
+      {/* Offered whenever nothing is in force: a project left with only superseded decisions must not lose the way in. */}
+      {state.inForceCount === 0 && !state.hasSamples && !state.canManage && <Text>{MANAGE_DENIED}</Text>}
+      {state.inForceCount === 0 && !state.hasSamples && state.canManage && (
         <Button isDisabled={busy} onClick={() => call("loadSampleDecisions")}>
           Load sample decisions (demo)
         </Button>
