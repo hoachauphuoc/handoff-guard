@@ -8,6 +8,14 @@ A Jira handoff goes through only when the receiver's own read-back agrees with t
 
 A task is handed over on Friday. The team decided it ships by the end of the year, but nobody told the receiver. With Handoff Guard the receiver restates each recorded decision before taking the work, and plain code refuses a restatement that contradicts one in ways it can detect, for example a date after a recorded limit or a required label described as skipped. It does not catch every contradiction or prove understanding.
 
+## In short
+
+- **The receiver reads back, and code can say no.** Before taking the work, the receiver restates each recorded decision that binds it. "I will ship on 15 January 2027" against a decision that says end of 2026 is refused, with the reason, by plain code.
+- **A verdict from rules.** Clear, Needs info or Blocked comes from a rule check on the work item, the recorded decisions and the acknowledgements. A model only writes sentences that are labelled as model-written.
+- **A gate in the workflow.** Where a Jira admin adds the validator, the transition goes through only when the handoff is Clear.
+
+Try it with one account in three minutes: "Testing instructions" below. Everything else the app does is under "What it does".
+
 ## Who it is for
 
 Software teams whose Jira work items change owner while the work is still open: release work passed between engineers, on-call rotation, cover for someone on leave.
@@ -81,7 +89,13 @@ Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Fo
 
 ## What's next
 
-Pilot with one team and measure handoffs that are reopened or bounced back, which this version does not measure. Then decide from that whether to watch more sources for decisions or share decisions across projects.
+A pilot with one release team. None of this is measured yet.
+
+- **What it costs a team to start:** a project administrator records the decisions (by hand on the Decisions page, or by confirming what Rovo proposes), and a Jira admin adds the validator to the handoff transition. Senders and receivers then work in the panel.
+- **The one number the pilot is judged on:** handoffs bounced back to the sender or reopened within 7 days of the receiver's read-back, against the same team's four weeks before. Time to the first read-back is watched as the cost, not as the result.
+- **Who would pay (a hypothesis, not a plan):** an engineering manager or release owner. A single project stays free; decisions shared across projects, the validator across many workflows, and export of the activity list are what a paid tier would hold.
+
+Then decide from the pilot whether to watch more sources for decisions or share decisions across projects.
 
 ## Testing instructions (for judges)
 

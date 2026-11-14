@@ -13,7 +13,7 @@ Everything on screen is the Codegeist demo site `one-atlas-hxpc.atlassian.net`. 
 | 7 | 2:00-2:20 | Move MOBL-53 through the transition that has the Handoff Guard validator: Jira refuses and shows the findings. Then move TD-1 through the same transition: it goes through | "A workflow validator enforces the check. A blocked handoff cannot move the work item. A clear one goes through." |
 | 8 | 2:20-2:35 | On an item the receiver has acknowledged, change the due date. Reload: "Changed since you acknowledged: due ... to ...", the finding returns, and the button reads "Acknowledge again with a new read-back" | "If something a decision reads changes after the receiver agreed, here the due date, the acknowledgement goes stale. The receiver reads back again." |
 | 9 | 2:35-2:47 | The Decisions project page: "Replay on a date" with the date picker, the list of handoffs whose verdict differs; the "Supersede" button on a decision | "The Decisions page can replay verdicts on an earlier date, using the decisions as they stood then. A person can supersede a decision they confirmed." |
-| 10 | 2:47-3:00 | Closing card: the measurement table from `README.md` (47 of 48, 34 of 48, 12 of 48). Caption: "Rovo agent, Rovo MCP, Teamwork Graph, Forge LLMs" | "On 48 synthetic handoffs, the rules agree with Muse labels 47 times out of 48. Rules decide. Models explain." |
+| 10 | 2:47-3:00 | Closing card: the refused read-back from scene 1 again, red box with the code's reason and the "Model-written" label on the sentence below it. Caption: "Rovo agent, Rovo MCP, Teamwork Graph, Forge LLMs" | "The receiver said January. The team had decided December. Code said no. Rules decide. Models explain." |
 
 One story carries the video: a handoff where the receiver's read-back contradicts a decision. Scenes 6 to 9 (Rovo, validator, drift, Decisions page) are the short closing part; cut them first if the film runs long.
 
@@ -28,4 +28,6 @@ One story carries the video: a handoff where the receiver's read-back contradict
 - Rovo must be enabled on the site for scene 6, and the item for "Find decisions with Rovo" needs a decision written in its description or comments.
 - A Jira admin must have added the Handoff Guard validator to a workflow transition for scene 7.
 
-Rules for the cut: no real customer data, only the demo site. The figure is called "agreement with Muse labels", never accuracy. Say that the samples are synthetic and the labels are written by a model.
+Rules for the cut: no real customer data, only the demo site. No measurement figure is shown on screen: a percentage in a video is read as accuracy whatever the narration says (council review, 2026-11-14). The figures stay in the README, called "agreement with labels", with the samples stated as synthetic and the labels as model-written.
+
+Out of the video, in the product and the docs only: Leaving the project, the I-PASS labels, Activity, counts, export and delete, adding a decision by hand. Scene 5 needs two accounts: it is the only place a judge sees Clear.

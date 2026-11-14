@@ -15,6 +15,10 @@ Use an account that is a project administrator of the Jira project. Load sample 
 
 That refusal is the point of the app: the receiver restates each decision, and plain code refuses a restatement that contradicts one in ways it can detect. It does not catch every contradiction or prove understanding. The practice check stores nothing and gives no verdict. A real handoff, with a second user as receiver, reaches Clear through the same check; the 10-minute path is in `docs/DEVPOST.md`.
 
+## Accessibility
+
+Every text box in the panel has a label, the verdict and each step carry a word as well as a colour, and a refusal is shown in an error box with its reasons as text. The panel has not been tested with a screen reader or with the keyboard alone.
+
 ## Install (for judges)
 
 1. Install the app on a Jira site from the installation link in the Devpost submission. The app is Jira-only: it declares no Confluence scope and no multi-app compatibility, so it installs on any single Jira site. Developers working on the app install their own build with `forge install -e development --product jira`.

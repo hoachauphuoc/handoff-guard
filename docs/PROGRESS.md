@@ -408,3 +408,13 @@ Not done: the Prepare again refusal for a third person and the non-admin view ne
 - 75783a9, 2a25a2e after a Gemini critique of the admin check and storage: an empty-state message and two comments.
 - Seen on development (MOBL Decisions page): Export shows the JSON; adding and superseding a test decision ("Test: activity check", left superseded) appear in Activity and in the November count. Delete was not clicked on the site; it has a text test only.
 - Not built from phase 2: the admin settings page (turning rules off changes rule semantics; needs the owner's choice of settings) and Marketplace (owner's accounts).
+
+## 2026-11-14: council review and the fixes it led to
+
+Owner's order: run the installed judging council (agentic-council plugin, `--meet`, five members on Sonnet: Architect, Advocate, Skeptic, Strategist, Herald), then "decide yourself, aim to raise the score ceiling". Notes: `research/council/meeting-notes.md` (local). Opening scores: Innovation 7-8, Technology 7-8, Design 6-7, Impact 5-6, Presentation 4-5.
+
+- 6722b63 Validator refuses a Clear handoff when a third person (neither sender nor receiver) is the assignee. Narrower than the council's proposal (receiver must be assignee): that would refuse the normal state before the reassignment and the judge's two-account path.
+- Dismissing a proposal needs a project administrator. Delete also takes the project's decisions out of the old site-wide key. Handoff record saves carry a save count and are refused from an older copy; preparing and a detected reassignment replace the record on purpose.
+- Panel: verdict and findings first; refusals in an error box; "Model-written" label; labels on the three text boxes. Seen on development, MOBL-58: verdict leads, the January practice read-back shows the red box with the code's reason and the labelled model sentence.
+- Docs: DEVPOST "In short" (three points) before the detail, a pilot paragraph (setup cost, one metric: bounced or reopened within 7 days, who would pay as a hypothesis); VIDEO closing card is the refusal, no figure on screen; README accessibility note (says what was not tested).
+- Not done from the council: one key per decision or transactions for storage (Architect); screen reader and keyboard test (Advocate); the video and the two links (owner).
