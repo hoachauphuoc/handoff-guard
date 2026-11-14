@@ -1,11 +1,15 @@
 import type { Decision } from "../rules/types";
 
-// Demo data for a site with no recorded decisions; ids are fixed so loading twice changes nothing.
+const LEDGER = "Handoff Guard demo ledger";
+
+// Demo data for one project. Ids carry the project key so loading in a second project does not move the
+// first project's samples, and are fixed so loading twice changes nothing.
 export function sampleDecisions(projectKey: string): Decision[] {
-  const source = { kind: "ledger" as const, ref: "Handoff Guard demo ledger" };
+  const source = { kind: "ledger" as const, ref: LEDGER };
+  const id = (n: number) => `d-sample-${n}-${projectKey.toLowerCase()}`;
   return [
     {
-      id: "d-sample-1",
+      id: id(1),
       title: "Work ships by the end of 2026",
       status: "decided",
       source,
@@ -13,7 +17,7 @@ export function sampleDecisions(projectKey: string): Decision[] {
       constraints: [{ kind: "dueNotAfter", date: "2026-12-31" }],
     },
     {
-      id: "d-sample-2",
+      id: id(2),
       title: "Stop using the legacy billing component",
       status: "decided",
       source,
@@ -21,7 +25,7 @@ export function sampleDecisions(projectKey: string): Decision[] {
       constraints: [{ kind: "componentForbidden", component: "legacy-billing" }],
     },
     {
-      id: "d-sample-3",
+      id: id(3),
       title: "Launch work needs legal review",
       status: "decided",
       source,
@@ -29,7 +33,7 @@ export function sampleDecisions(projectKey: string): Decision[] {
       constraints: [{ kind: "labelRequired", label: "legal-reviewed" }],
     },
     {
-      id: "d-sample-4",
+      id: id(4),
       title: "Old rule: freeze changes in November",
       status: "superseded",
       source,
@@ -44,4 +48,12 @@ export function mergeDecisions(existing: Decision[], incoming: Decision[]): Deci
   const byId = new Map(existing.map((d) => [d.id, d]));
   for (const d of incoming) byId.set(d.id, d);
   return [...byId.values()];
+}
+
+/** Whether this project already has the demo decisions, including ones stored before ids carried the project key. */
+export function hasSamples(decisions: Decision[], projectKey: string): boolean {
+  const p = projectKey.toLowerCase();
+  return decisions.some(
+    (d) => d.source.kind === "ledger" && d.source.ref === LEDGER && d.scope.kind === "project" && d.scope.projectKey.toLowerCase() === p,
+  );
 }

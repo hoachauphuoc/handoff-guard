@@ -10,7 +10,8 @@ type ReadBack = { text: string; tag: "agrees" | "contradicts"; contradicts: stri
 
 const DIR = join(import.meta.dirname, "..", "data", "readbacks");
 const AS_OF = "2026-12-01T00:00:00.000Z"; // the day the read-backs were written
-const binding = sampleDecisions("DEMO").slice(0, 3);
+// The read-back set names the samples by their ids from before ids carried the project key.
+const binding = sampleDecisions("DEMO").slice(0, 3).map((d, i) => ({ ...d, id: `d-sample-${i + 1}` }));
 
 const file = readdirSync(DIR).filter((f) => f.endsWith(".json")).sort().at(-1);
 if (!file) throw new Error("no file in data/readbacks");

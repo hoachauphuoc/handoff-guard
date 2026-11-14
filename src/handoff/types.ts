@@ -33,6 +33,7 @@ export type PanelState = {
   result: HandoffResult | null;
   viewerId: string | null;
   isReceiver: boolean;
+  /** Stored decisions that reach this work item's project, in force or not. */
   decisionCount: number;
   /** Findings about the work item itself from a made-up handoff. Deliberately not a verdict. */
   practiceFindings: Finding[];

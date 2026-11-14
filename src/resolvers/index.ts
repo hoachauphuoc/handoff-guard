@@ -6,7 +6,7 @@ import { canSupersede, splitOverlap, supersede } from "../decisions/supersede";
 import { unrecordedMarked, type MarkedState } from "../decisions/marked";
 import { hypothetical } from "../decisions/hypothetical";
 import { leavingView, type LeavingView } from "../decisions/leaving";
-import { buildDecisionsPage, type DecisionsPageState } from "../decisions/page";
+import { buildDecisionsPage, touches, type DecisionsPageState } from "../decisions/page";
 import { acknowledge, acknowledgeAll } from "../handoff/acknowledge";
 import { withContingency } from "../handoff/contingency";
 import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass";
@@ -22,7 +22,7 @@ import { impactOf } from "../rules/impact";
 import { replayDiff, replayInstant, type ReplayChange } from "../rules/replay";
 import type { Proposal } from "../decisions/types";
 import type { Decision, Finding } from "../rules/types";
-import { mergeDecisions, sampleDecisions } from "../samples/decisions";
+import { hasSamples, mergeDecisions, sampleDecisions } from "../samples/decisions";
 import { readSourceAsUser } from "../source";
 import { getDecisions, getProposals, getRecord, putDecisions, putProposals, putRecord } from "../store";
 
@@ -78,7 +78,8 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     result,
     viewerId,
     isReceiver: record !== null && viewerId !== null && viewerId === record.toId,
-    decisionCount: decisions.length,
+    // This project's decisions only: samples are loaded per project, so a site-wide count would hide the button.
+    decisionCount: decisions.filter((d) => touches(d, item.projectKey)).length,
     proposals,
     practiceFindings: practice.findings.filter((f) => PRACTICE_RULES.includes(f.rule)),
     // Computed from confirmed decisions only; proposals never reach it.
@@ -170,8 +171,9 @@ resolver.define("saveContingency", async ({ context, payload }) => {
 resolver.define("loadSampleDecisions", async ({ context }) => {
   const ctx = context as Ctx;
   const { item } = await readItem(ctx.extension.issue.key);
-  // Demo data for this project only; nothing is written to Jira.
-  await putDecisions(mergeDecisions(await getDecisions(), sampleDecisions(item.projectKey)));
+  // Demo data for this project only; nothing is written to Jira. A project that has them already is left as it is.
+  const decisions = await getDecisions();
+  if (!hasSamples(decisions, item.projectKey)) await putDecisions(mergeDecisions(decisions, sampleDecisions(item.projectKey)));
   return panelState(ctx);
 });
 

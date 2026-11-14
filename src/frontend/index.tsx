@@ -33,7 +33,7 @@ const CONSENT_TEXT =
 
 const LOADING_TEXT = "Checking the handoff… The first check can take several seconds.";
 const NO_DECISIONS_TEXT =
-  "No decisions are stored yet. A decision is a recorded rule, such as a due date or a label that work must follow; the rule check compares each handoff against them. Load sample decisions (demo) adds demo ones for this project.";
+  "No decisions are stored for this project yet. A decision is a recorded rule, such as a due date or a label that work must follow; the rule check compares each handoff against them. Load sample decisions (demo) adds demo ones for this project.";
 const NO_BINDING_TEXT = "No recorded decision binds this work item, so there is nothing to read back.";
 
 const App = () => {
@@ -448,7 +448,7 @@ const App = () => {
       </Button>
       {rovoNote && <Text>{rovoNote}</Text>}
       <Text>Rovo explains and proposes; the verdict comes from the rule check.</Text>
-      <Text>Source: rule check, {count(state.decisionCount, "stored decision")}.</Text>
+      <Text>Source: rule check, {count(state.decisionCount, "stored decision")} for this project.</Text>
     </Stack>
   );
 };
