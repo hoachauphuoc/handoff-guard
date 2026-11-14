@@ -78,8 +78,9 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     result,
     viewerId,
     isReceiver: record !== null && viewerId !== null && viewerId === record.toId,
-    // This project's decisions only: samples are loaded per project, so a site-wide count would hide the button.
-    decisionCount: decisions.filter((d) => touches(d, item.projectKey)).length,
+    // Decisions that name this project. Samples are loaded per project, so a site-wide count, or an old label
+    // decision stored before labels carried a project, would hide the sample button here.
+    decisionCount: decisions.filter((d) => touches(d, item.projectKey) && !(d.scope.kind === "label" && d.scope.projectKey === undefined)).length,
     proposals,
     practiceFindings: practice.findings.filter((f) => PRACTICE_RULES.includes(f.rule)),
     // Computed from confirmed decisions only; proposals never reach it.
