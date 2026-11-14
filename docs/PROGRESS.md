@@ -348,3 +348,4 @@ The owner chose to build this despite the feature freeze, to be done by 2026-12-
 - Pilot ran 2026-11-13/14: 48 cases, 2 experts each, USD 49.81 charged (forecast 32.42, limit 45). Export: `data/toloka/raw/export.json`; imported by `scripts/import_human_labels.py` into `data/human_labels.json` (strict majority, else `unresolved`).
 - `scripts/measure.ts` now reports a `human` section and `--check-readme` checks the human table. 40 of 48 decided; rules 36/40, Muse 35/40.
 - The 4 rules-vs-people disagreements all have a null due date. The expert brief did not say a missing due date counts as missing: a gap in the brief, not a verdict on the rules. Not rerun (cost); the README says so.
+- Checked 2026-11-14: 7 samples use a work-item-scoped decision, which the expert brief left out (fixed in the repo during the pilot, `f68f1d6`); 3 of the 8 unresolved samples are among them. Said in the README beside the due-date gap.

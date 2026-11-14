@@ -75,7 +75,7 @@ The same 48 handoffs were also labeled by people on Toloka: two independent expe
 | Human: no check (every handoff passes) | 17 of 40 (42.5%) |
 | Human: Muse labels | 35 of 40 (87.5%) |
 
-The four rules-versus-people disagreements are all samples with no due date: the rules ask for more information, the people said clear. The instructions given to the experts said a due date must be valid, not that a missing one counts as missing, so this is at least partly a gap in those instructions, not proof the rules are wrong. Two experts per sample is a small panel; no figure here is an error rate of the app.
+The four rules-versus-people disagreements are all samples with no due date: the rules ask for more information, the people said clear. The instructions given to the experts said a due date must be valid, not that a missing one counts as missing, so this is at least partly a gap in those instructions, not proof the rules are wrong. The instructions also described a decision's reach as a project or a label or component, and left out a decision that names one work item; that was corrected in the repository while the pilot ran, and it is not recorded which wording the experts saw. Seven samples use such a decision; three of them are among the eight left out. Two experts per sample is a small panel; no figure here is an error rate of the app.
 
 ## Limits
 
