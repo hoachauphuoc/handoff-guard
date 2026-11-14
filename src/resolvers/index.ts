@@ -159,7 +159,7 @@ resolver.define("practiceReadBack", async ({ context, payload }) => {
   const readBack = String((payload as { readBack?: string }).readBack ?? "");
   const { item } = await readItem(ctx.extension.issue.key);
   const binding = bindingDecisions(await getDecisions(item.projectKey), item);
-  if (binding.length === 0) throw new Error("No decision binds this work item yet. Load sample decisions first.");
+  if (binding.length === 0) throw new Error("No decision binds this work item yet. A project administrator can load sample decisions here or add one on the Decisions page.");
   const { problems, contradictions } = checkReadBack(readBack, binding, new Date().toISOString());
   return {
     accepted: problems.length === 0,
