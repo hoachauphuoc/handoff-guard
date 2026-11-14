@@ -23,6 +23,8 @@ export type HandoffRecord = {
   contingency?: string;
   /** Written by the receiver when acknowledging under protocol 1; replaced each time. At most 600 characters. */
   readBack?: string;
+  /** Counts saves of this record, so a save made from an older copy is refused. Set by the store only. */
+  rev?: number;
 };
 
 export type ValidatorResponse = { result: boolean; errorMessage?: string };

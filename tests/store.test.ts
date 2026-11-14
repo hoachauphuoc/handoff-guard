@@ -59,3 +59,18 @@ describe("purgeLegacyDecisions", () => {
     expect((data.get("decisions") as Decision[]).map((d) => d.id)).toEqual(["b", "l"]);
   });
 });
+
+describe("handoff record saves", () => {
+  const rec = { fromId: "a", toId: "b", acknowledged: [], preparedAt: "2026-11-14T00:00:00Z", acknowledgedAt: {} };
+  it("refuses a save made from an older copy, and lets a new handoff replace the record", async () => {
+    const { getRecord, putRecord, replaceRecord, RECORD_CHANGED } = await import("../src/store");
+    await replaceRecord("1", rec);
+    const first = (await getRecord("1"))!;
+    const second = (await getRecord("1"))!;
+    await putRecord("1", { ...first, acknowledged: ["d1"] });
+    await expect(putRecord("1", { ...second, contingency: "if x then y" })).rejects.toThrow(RECORD_CHANGED);
+    expect((await getRecord("1"))?.acknowledged).toEqual(["d1"]);
+    await replaceRecord("1", rec);
+    expect((await getRecord("1"))?.acknowledged).toEqual([]);
+  });
+});

@@ -44,7 +44,21 @@ export async function getRecord(issueId: string): Promise<HandoffRecord | null> 
   return (await kvs.get<HandoffRecord>(recordKey(issueId))) ?? null;
 }
 
+export const RECORD_CHANGED = "This handoff was changed a moment ago by someone else. Reload the panel and try again.";
+
+/**
+ * Saves a change to an existing record. The stored copy is read again first; if its save count differs from
+ * the copy the change was made from, the save is refused, so an acknowledgement or a contingency written at
+ * nearly the same moment is not silently dropped. As with decisions, this narrows the race, it does not close it.
+ */
 export async function putRecord(issueId: string, record: HandoffRecord): Promise<void> {
+  const stored = await getRecord(issueId);
+  if (stored !== null && (stored.rev ?? 0) !== (record.rev ?? 0)) throw new Error(RECORD_CHANGED);
+  await kvs.set(recordKey(issueId), { ...record, rev: (record.rev ?? 0) + 1 });
+}
+
+/** Starts a new handoff: preparing (again) and a detected reassignment replace whatever was stored, on purpose. */
+export async function replaceRecord(issueId: string, record: HandoffRecord): Promise<void> {
   await kvs.set(recordKey(issueId), record);
 }
 

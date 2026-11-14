@@ -29,7 +29,7 @@ import type { Proposal } from "../decisions/types";
 import type { Decision, Finding } from "../rules/types";
 import { hasSamples, mergeDecisions, sampleDecisions, withoutSamples } from "../samples/decisions";
 import { readSourceAsUser } from "../source";
-import { addAudit, deleteItemData, getAudit, getDecisions, getProposals, getRecord, putProposals, purgeLegacyDecisions, putRecord, resetAudit, updateDecisions } from "../store";
+import { addAudit, deleteItemData, getAudit, getDecisions, getProposals, getRecord, putProposals, purgeLegacyDecisions, putRecord, replaceRecord, resetAudit, updateDecisions } from "../store";
 
 const resolver = new Resolver();
 
@@ -139,7 +139,7 @@ resolver.define("prepareHandoff", async ({ context, payload }) => {
     origin: "manual",
     protocol: 1,
   };
-  await putRecord(issueId, record);
+  await replaceRecord(issueId, record);
   await log(item.projectKey, ctx.accountId, "handoff_prepared", ctx.extension.issue.key);
   return panelState(ctx);
 });
