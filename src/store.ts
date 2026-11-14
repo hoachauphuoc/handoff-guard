@@ -28,9 +28,9 @@ export async function getDecisions(projectKey: string): Promise<Decision[]> {
 }
 
 /**
- * Read, change, write. The version is read again just before the write and a newer one stops the save, so two
- * people saving at nearly the same moment cannot silently drop one change. Forge storage has no atomic
- * compare-and-set here, so a window of a few milliseconds remains; the message tells the person to retry.
+ * Read, change, write. The version is read again just before the write and a newer one stops the save with a
+ * message to retry. This narrows the race, it does not close it: Forge storage has no atomic compare-and-set
+ * here, so two saves within a few milliseconds (or two first saves of a project) can still lose one.
  */
 export async function updateDecisions(projectKey: string, change: (current: Decision[]) => Decision[]): Promise<void> {
   const before = await readDecisions(projectKey);

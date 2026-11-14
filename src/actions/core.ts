@@ -284,8 +284,8 @@ export async function runProposeDecisions(payload: unknown, deps: Deps): Promise
     const rejected = raw.map((r) => ({ ...r, message: REASON_TEXT[r.reason] }));
     let waiting: Proposal[] | null = null;
     if (kept.length > 0) {
-      // Merged into the saved set (capped at 5), newest first, so a second call adds to what a person has not
-      // yet confirmed instead of erasing it. A proposal seen before keeps its first proposedAt, so asking
+      // New proposals go ahead of those still waiting and the list is cut at the cap, so a second call adds to
+      // what a person has not yet confirmed; only the oldest fall off when more than the cap wait. A proposal seen before keeps its first proposedAt, so asking
       // twice leaves identical state. All-rejected input writes nothing and keeps what is there.
       const before = inProject(await deps.getProposals(src.issueId), src.projectKey);
       waiting = [...kept.map((p) => before.find((b) => b.id === p.id) ?? p), ...before.filter((b) => !kept.some((k) => k.id === b.id))].slice(0, MAX_CANDIDATES);
