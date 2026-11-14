@@ -19,6 +19,13 @@ describe("panel first-use text", () => {
   });
 });
 
+describe("help toggle", () => {
+  it("shows a hint beside each finding only while help is on, after the finding's own message", () => {
+    expect(panel).toContain('{open ? "Hide help" : "Show help"}');
+    expect(panel).toMatch(/• \{f\.message\}\s*\{open \? ` \$\{HINTS\[f\.rule\]\}` : ""\}/);
+  });
+});
+
 describe("rovo guide step", () => {
   it("warns that Rovo may be absent and keeps the verdict with the rule check", () => {
     const s = STEPS.find((x) => x.id === "rovo")!;

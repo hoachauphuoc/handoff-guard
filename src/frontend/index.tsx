@@ -169,7 +169,7 @@ const App = () => {
           {PATH_NAMES[p]}
         </Button>
       ))}
-      <Button onClick={() => setGuideOpen(!open)}>{open ? "Hide steps" : "Show steps"}</Button>
+      <Button onClick={() => setGuideOpen(!open)}>{open ? "Hide help" : "Show help"}</Button>
       {open &&
         guide.steps.map((step) => (
           <Stack key={step.id} space="space.050">
@@ -217,7 +217,11 @@ const App = () => {
             <Text>{`Detected from a change of assignee on ${record.preparedAt.slice(0, 10)}. Prepare the handoff again to name a different receiver.`}</Text>
           )}
           {result.findings.map((f, i) => (
-            <Text key={i}>• {f.message}</Text>
+            // The hint is panel wording beside the finding; the finding's own message is shown unchanged.
+            <Text key={i}>
+              • {f.message}
+              {open ? ` ${HINTS[f.rule]}` : ""}
+            </Text>
           ))}
           {state.actions.length > 0 && (
             <SectionMessage appearance="information" title="Action list (one action per finding, worked out by the rule check)">
