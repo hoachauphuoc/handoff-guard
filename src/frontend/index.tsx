@@ -6,8 +6,8 @@ import type { GatherOutput } from "../actions/schema";
 import type { MarkedState } from "../decisions/marked";
 import { constraintText, reachText } from "../decisions/reach";
 import { count } from "../plural";
-import type { AcknowledgeAllReply, PanelState } from "../handoff/types";
-import { GUIDE_SOURCE, PATH_NAMES, PRACTICE_NONE, PRACTICE_TITLE, guideView, type GuidePath, type StepNeed, type StepState } from "../guide/steps";
+import type { AcknowledgeAllReply, PanelState, PracticeReadBackReply } from "../handoff/types";
+import { GUIDE_SOURCE, PATH_NAMES, PRACTICE_NONE, PRACTICE_READBACK_ACCEPTED, PRACTICE_READBACK_BUTTON, PRACTICE_READBACK_HOW, PRACTICE_READBACK_REFUSED, PRACTICE_TITLE, guideView, type GuidePath, type StepNeed, type StepState } from "../guide/steps";
 import { HINTS } from "../guide/hints";
 import { BEFORE_READ_BACK, CONTINGENCY_MAX, READ_BACK_MAX, READ_BACK_MIN, READ_BACK_NOTE } from "../handoff/ipass";
 import { explanationNote, type Explanation } from "../handoff/explain";
@@ -27,6 +27,15 @@ const STEP_LOOK: Record<StepState, { text: string; appearance: "success" | "inpr
   manual: { text: "Manual", appearance: "new" },
 };
 const NEEDS: Record<StepNeed, string> = { teammate: "a teammate", rovo: "Rovo", admin: "a Jira admin" };
+
+// One component for the real and the practice refusal, so the model sentence cannot be shown differently.
+const ModelExplanation = ({ explanation }: { explanation: Explanation | null }) =>
+  explanation ? (
+    <>
+      {"text" in explanation && <Text>{explanation.text}</Text>}
+      <Text>{explanationNote(explanation)}</Text>
+    </>
+  ) : null;
 
 const CONSENT_TEXT =
   "Allow access: Handoff Guard needs your permission to read this work item as you. Click Allow access when Jira asks, then reload the page.";
@@ -52,6 +61,9 @@ const App = () => {
   const [contingencyNote, setContingencyNote] = useState<string | null>(null);
   const [ackNotes, setAckNotes] = useState<string[]>([]);
   const [explanation, setExplanation] = useState<Explanation | null>(null);
+  const [practiceText, setPracticeText] = useState("");
+  const [practice, setPractice] = useState<PracticeReadBackReply | null>(null);
+  const [practiceNote, setPracticeNote] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState<boolean | null>(null);
   const [path, setPath] = useState<GuidePath>("handover");
 
@@ -109,6 +121,19 @@ const App = () => {
           }
         },
         (e) => setAckNotes([plainError(e)]),
+      )
+      .finally(() => setBusy(false));
+  };
+
+  // Practice only: the reply says refused or accepted and is shown in place; nothing else on the panel changes.
+  const tryPracticeReadBack = () => {
+    setBusy(true);
+    setPractice(null);
+    setPracticeNote(null);
+    return invoke<PracticeReadBackReply>("practiceReadBack", { readBack: practiceText })
+      .then(
+        (r) => setPractice(r as PracticeReadBackReply),
+        (e) => setPracticeNote(plainError(e)),
       )
       .finally(() => setBusy(false));
   };
@@ -188,6 +213,22 @@ const App = () => {
                       • {f.message} {HINTS[f.rule]}
                     </Text>
                   ))
+                )}
+                <Text>{PRACTICE_READBACK_HOW}</Text>
+                <TextArea name="practiceReadBack" onChange={(e) => setPracticeText(e.target.value)} />
+                <Button isDisabled={busy} onClick={() => void tryPracticeReadBack()}>
+                  {PRACTICE_READBACK_BUTTON}
+                </Button>
+                {practiceNote && <Text>{practiceNote}</Text>}
+                {practice?.accepted && <Text>{PRACTICE_READBACK_ACCEPTED}</Text>}
+                {practice && !practice.accepted && (
+                  <>
+                    <Text>{PRACTICE_READBACK_REFUSED}</Text>
+                    {practice.reasons.map((r, i) => (
+                      <Text key={i}>{r}</Text>
+                    ))}
+                    <ModelExplanation explanation={practice.explanation ?? null} />
+                  </>
                 )}
               </SectionMessage>
             )}
@@ -289,8 +330,7 @@ const App = () => {
           {ackNotes.map((n, i) => (
             <Text key={i}>{n}</Text>
           ))}
-          {explanation && "text" in explanation && <Text>{explanation.text}</Text>}
-          {explanation && <Text>{explanationNote(explanation)}</Text>}
+          <ModelExplanation explanation={explanation} />
           {protocol && record.readBack && <Text>{`Read-back from the receiver: "${record.readBack}"`}</Text>}
           {protocol && state.isReceiver && waiting.length > 0 && (
             <>

@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import panel from "../src/frontend/index.tsx?raw";
 import stepsRaw from "../src/guide/steps.ts?raw";
+import resolvers from "../src/resolvers/index?raw";
 import { PATH_NAMES, STEPS } from "../src/guide/steps";
 
 describe("panel first-use text", () => {
@@ -43,5 +44,28 @@ describe("guide paths in the panel", () => {
   it("imports the path names for the switch", () => {
     expect(panel).toMatch(/from\s+"\.\.\/guide\/steps"/);
     expect(panel).toContain("PATH_NAMES");
+  });
+});
+
+describe("practice read-back", () => {
+  it("defines the practice read-back strings in the guide", () => {
+    expect(stepsRaw).toContain('PRACTICE_READBACK_BUTTON = "Try a read-back (practice, nothing is saved)"');
+    expect(stepsRaw).toContain(
+      `PRACTICE_READBACK_ACCEPTED = "This read-back would be accepted. Practice only: nothing is saved and there is no verdict. In a real handoff the receiver's read-back gets this same check."`,
+    );
+    expect(stepsRaw).toContain('PRACTICE_READBACK_REFUSED = "This read-back would be refused:"');
+  });
+
+  it("imports the practice strings in the panel", () => {
+    const names = panel.match(/import \{([^}]*)\} from "\.\.\/guide\/steps"/)?.[1] ?? "";
+    for (const name of ["PRACTICE_READBACK_BUTTON", "PRACTICE_READBACK_ACCEPTED", "PRACTICE_READBACK_REFUSED"]) expect(names).toContain(name);
+  });
+
+  it("stores nothing in the practiceReadBack resolver", () => {
+    const start = resolvers.indexOf('resolver.define("practiceReadBack"');
+    expect(start).toBeGreaterThan(-1);
+    const next = resolvers.indexOf("resolver.define(", start + 1);
+    const body = next === -1 ? resolvers.slice(start) : resolvers.slice(start, next);
+    for (const write of ["putRecord(", "putDecisions(", "putProposals("]) expect(body).not.toContain(write);
   });
 });

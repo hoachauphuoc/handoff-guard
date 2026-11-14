@@ -66,3 +66,6 @@ export type PanelState = {
 export type AcknowledgeAllReply =
   | { state: PanelState; reasons?: never; explanation?: never }
   | { state?: never; reasons: string[]; explanation?: Explanation };
+
+/** Whether a practice read-back would be refused or accepted. Nothing is stored and there is no verdict. */
+export type PracticeReadBackReply = { accepted: boolean; reasons: string[]; explanation?: Explanation };

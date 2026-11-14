@@ -7,12 +7,12 @@ import { unrecordedMarked, type MarkedState } from "../decisions/marked";
 import { hypothetical } from "../decisions/hypothetical";
 import { leavingView, type LeavingView } from "../decisions/leaving";
 import { buildDecisionsPage, touches, type DecisionsPageState } from "../decisions/page";
-import { acknowledge, acknowledgeAll } from "../handoff/acknowledge";
+import { acknowledge, acknowledgeAll, checkReadBack } from "../handoff/acknowledge";
 import { withContingency } from "../handoff/contingency";
 import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
 import { driftByDecision, fingerprintOf, staleAcks } from "../handoff/drift";
-import type { AcknowledgeAllReply, HandoffRecord, PanelState } from "../handoff/types";
+import type { AcknowledgeAllReply, HandoffRecord, PanelState, PracticeReadBackReply } from "../handoff/types";
 import { explainRefusal } from "../llm";
 import { openItemsAsUser, readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
@@ -135,6 +135,21 @@ resolver.define("acknowledgeDecision", async ({ context, payload }) => {
   if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
   await putRecord(issueId, out.record);
   return panelState(ctx);
+});
+
+// Practice only: nothing is stored and no verdict is produced, so one person can see a refusal without a handoff.
+resolver.define("practiceReadBack", async ({ context, payload }) => {
+  const ctx = context as Ctx;
+  const readBack = String((payload as { readBack?: string }).readBack ?? "");
+  const { item } = await readItem(ctx.extension.issue.key);
+  const binding = bindingDecisions(await getDecisions(), item);
+  if (binding.length === 0) throw new Error("No decision binds this work item yet. Load sample decisions first.");
+  const { problems, contradictions } = checkReadBack(readBack, binding, new Date().toISOString());
+  return {
+    accepted: problems.length === 0,
+    reasons: problems,
+    ...(contradictions.length > 0 ? { explanation: await explainRefusal(readBack, contradictions) } : {}),
+  } satisfies PracticeReadBackReply;
 });
 
 // One read-back acknowledges every binding decision of a record prepared under the I-PASS design. The checks

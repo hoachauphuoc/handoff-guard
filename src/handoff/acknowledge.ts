@@ -44,6 +44,18 @@ export type AckAllResult =
   | { ok: false; reason: "read_back"; problems: string[]; contradictions: Contradiction[] };
 
 /**
+ * Whether a read-back would be refused or accepted, without a record: the coverage reasons followed by
+ * each contradiction's reason, in the same order `acknowledgeAll` reports them.
+ */
+export function checkReadBack(readBack: string, binding: Decision[], nowIso: string): { problems: string[]; contradictions: Contradiction[] } {
+  const reasons = readBackProblems(readBack, binding);
+  const length = readBack.trim().length;
+  // A read-back of the wrong length gets only the length reason; there is nothing to compare yet.
+  const contradicted = length < READ_BACK_MIN || length > READ_BACK_MAX ? [] : contradictions(readBack, binding, nowIso);
+  return { problems: [...reasons, ...contradicted.map((c) => c.reason)], contradictions: contradicted };
+}
+
+/**
  * One read-back acknowledges every binding decision. It must address all of them, not only the ones that are
  * new or stale: it replaces the earlier read-back, and each acknowledgement takes a new time and baseline, so
  * a stale acknowledgement is cleared by giving the read-back again. A read-back that addresses a decision but
@@ -60,12 +72,9 @@ export function acknowledgeAll(
   if (accountId === null || accountId !== record.toId) return { ok: false, reason: "not_receiver" };
   if (record.protocol !== 1) return { ok: false, reason: "no_protocol" };
   if (binding.length === 0) return { ok: false, reason: "nothing_to_acknowledge" };
-  const problems = readBackProblems(readBack, binding);
-  const length = readBack.trim().length;
-  // A read-back of the wrong length gets only the length reason; there is nothing to compare yet.
-  const contradicted = length < READ_BACK_MIN || length > READ_BACK_MAX ? [] : contradictions(readBack, binding, nowIso);
+  const { problems, contradictions: contradicted } = checkReadBack(readBack, binding, nowIso);
   if (problems.length > 0 || contradicted.length > 0)
-    return { ok: false, reason: "read_back", problems: [...problems, ...contradicted.map((c) => c.reason)], contradictions: contradicted };
+    return { ok: false, reason: "read_back", problems, contradictions: contradicted };
   const ids = binding.map((d) => d.id);
   return {
     ok: true,
