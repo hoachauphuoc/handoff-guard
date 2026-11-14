@@ -76,6 +76,20 @@ export function validatorResponse(result: HandoffResult): ValidatorResponse {
   return { result: false, errorMessage: result.findings.map((f) => f.message).join(" ") };
 }
 
+export const THIRD_PERSON =
+  "The work item is assigned to someone who is neither the sender nor the receiver of the prepared handoff. Prepare the handoff again for the current assignee.";
+
+/**
+ * True when the work item is held by a third person. A Clear handoff says the receiver read back the decisions;
+ * it says nothing about anyone else, so the gate must not open for them. The sender still holding the item, or
+ * no assignee at all, is the normal state before the reassignment and is not refused.
+ */
+export function heldByThirdPerson(item: WorkItem, record: { fromId: string; toId: string }): boolean {
+  if (item.assigneeId === null) return false;
+  const who = item.assigneeId.trim().toLowerCase();
+  return who !== record.fromId.trim().toLowerCase() && who !== record.toId.trim().toLowerCase();
+}
+
 /** The decision gate: allows the transition only when the work item breaks no binding decision. */
 export function decisionGuardResponse(findings: Finding[]): ValidatorResponse {
   if (findings.length === 0) return { result: true };

@@ -62,3 +62,13 @@ describe("decisionGuardResponse", () => {
     expect(decisionGuardResponse([f("A."), f("B.")])).toEqual({ result: false, errorMessage: "A. B." });
   });
 });
+
+describe("heldByThirdPerson", () => {
+  it("is true only when the assignee is neither the sender nor the receiver", async () => {
+    const { heldByThirdPerson } = await import("../src/handoff/build");
+    expect(heldByThirdPerson(item, { fromId: "u1", toId: "u2" })).toBe(false);
+    expect(heldByThirdPerson(item, { fromId: "u0", toId: "U1 " })).toBe(false);
+    expect(heldByThirdPerson(item, { fromId: "u0", toId: "u2" })).toBe(true);
+    expect(heldByThirdPerson({ ...item, assigneeId: null }, { fromId: "u0", toId: "u2" })).toBe(false);
+  });
+});

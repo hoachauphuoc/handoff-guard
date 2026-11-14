@@ -1,6 +1,6 @@
 import api, { route } from "@forge/api";
 import { FIELDS } from "./jira";
-import { applyModifiedFields, decisionGuardResponse, handoffFrom, toWorkItem, validatorResponse } from "./handoff/build";
+import { applyModifiedFields, decisionGuardResponse, handoffFrom, heldByThirdPerson, THIRD_PERSON, toWorkItem, validatorResponse } from "./handoff/build";
 import type { ValidatorResponse } from "./handoff/types";
 import { checkHandoff, checkItem } from "./rules/checkHandoff";
 import type { WorkItem } from "./rules/types";
@@ -32,7 +32,9 @@ export async function validate(payload: ValidatorPayload): Promise<ValidatorResp
     if (!record) {
       return { result: false, errorMessage: "Prepare the handoff in the Handoff Guard panel first." };
     }
-    return validatorResponse(checkHandoff(handoffFrom(item, record, decisions), decisions));
+    const response = validatorResponse(checkHandoff(handoffFrom(item, record, decisions), decisions));
+    // Checked only when the handoff is otherwise Clear: other findings already refuse and say why.
+    return response.result && heldByThirdPerson(item, record) ? { result: false, errorMessage: THIRD_PERSON } : response;
   } catch (e) {
     return failClosed(e);
   }

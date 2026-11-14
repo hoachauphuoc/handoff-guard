@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import panel from "../src/frontend/index.tsx?raw";
 import stepsRaw from "../src/guide/steps.ts?raw";
 import resolvers from "../src/resolvers/index?raw";
+import validatorRaw from "../src/validator?raw";
 import { PATH_NAMES, STEPS } from "../src/guide/steps";
 
 describe("panel first-use text", () => {
@@ -96,5 +97,11 @@ describe("delete project data", () => {
     expect(body.indexOf("Nothing was deleted")).toBeGreaterThan(-1);
     expect(body.indexOf("Nothing was deleted")).toBeLessThan(body.indexOf("deleteItemData("));
     expect(body.indexOf("requireAdmin(")).toBeLessThan(body.indexOf("deleteItemData("));
+  });
+});
+
+describe("validator", () => {
+  it("refuses a Clear handoff when a third person holds the work item", () => {
+    expect(validatorRaw).toMatch(/response\.result && heldByThirdPerson\(item, record\) \? \{ result: false, errorMessage: THIRD_PERSON \}/);
   });
 });
