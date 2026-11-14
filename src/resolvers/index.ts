@@ -7,7 +7,7 @@ import { unrecordedMarked, type MarkedState } from "../decisions/marked";
 import { hypothetical } from "../decisions/hypothetical";
 import { buildManualDecision, readManualInput } from "../decisions/manual";
 import { leavingView, type LeavingView } from "../decisions/leaving";
-import { buildDecisionsPage, touches, type DecisionsPageState } from "../decisions/page";
+import { buildDecisionsPage, projectOfKey, touches, type DecisionsPageState } from "../decisions/page";
 import { acknowledge, acknowledgeAll, checkReadBack } from "../handoff/acknowledge";
 import { mayPrepare, PREPARE_DENIED } from "../handoff/prepare";
 import { withContingency } from "../handoff/contingency";
@@ -27,7 +27,7 @@ import type { Proposal } from "../decisions/types";
 import type { Decision, Finding } from "../rules/types";
 import { hasSamples, mergeDecisions, sampleDecisions } from "../samples/decisions";
 import { readSourceAsUser } from "../source";
-import { getDecisions, getProposals, getRecord, putDecisions, putProposals, putRecord } from "../store";
+import { getDecisions, getProposals, getRecord, putProposals, putRecord, updateDecisions } from "../store";
 
 const resolver = new Resolver();
 
@@ -72,7 +72,7 @@ function overlapFor(proposals: Proposal[], decisions: Decision[], viewerId: stri
 
 async function panelState(ctx: Ctx): Promise<PanelState> {
   const { item, issueId } = await readItem(ctx.extension.issue.key);
-  const [decisions, record, stored, canManage] = await Promise.all([getDecisions(), getRecord(issueId), getProposals(issueId), isProjectAdminAsUser(item.projectKey)]);
+  const [decisions, record, stored, canManage] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId), getProposals(issueId), isProjectAdminAsUser(item.projectKey)]);
   const proposals = inProject(stored, item.projectKey);
   const viewerId = ctx.accountId ?? null;
   const result = record ? checkHandoff(handoffFrom(item, record, decisions), decisions) : null;
@@ -137,7 +137,7 @@ resolver.define("acknowledgeDecision", async ({ context, payload }) => {
   const ctx = context as Ctx;
   const decisionId = String((payload as { decisionId?: string }).decisionId ?? "");
   const { item, issueId } = await readItem(ctx.extension.issue.key);
-  const [decisions, record] = await Promise.all([getDecisions(), getRecord(issueId)]);
+  const [decisions, record] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId)]);
   if (!record) throw new Error("No handoff has been prepared for this work item.");
   const binding = bindingDecisions(decisions, item).map((d) => d.id);
   const stale = decisionId in staleAcks(record.acknowledged, record.acknowledgedWith, item, bindingDecisions(decisions, item));
@@ -153,7 +153,7 @@ resolver.define("practiceReadBack", async ({ context, payload }) => {
   const ctx = context as Ctx;
   const readBack = String((payload as { readBack?: string }).readBack ?? "");
   const { item } = await readItem(ctx.extension.issue.key);
-  const binding = bindingDecisions(await getDecisions(), item);
+  const binding = bindingDecisions(await getDecisions(item.projectKey), item);
   if (binding.length === 0) throw new Error("No decision binds this work item yet. Load sample decisions first.");
   const { problems, contradictions } = checkReadBack(readBack, binding, new Date().toISOString());
   return {
@@ -169,7 +169,7 @@ resolver.define("acknowledgeAll", async ({ context, payload }) => {
   const ctx = context as Ctx;
   const readBack = String((payload as { readBack?: string }).readBack ?? "");
   const { item, issueId } = await readItem(ctx.extension.issue.key);
-  const [decisions, record] = await Promise.all([getDecisions(), getRecord(issueId)]);
+  const [decisions, record] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId)]);
   if (!record) throw new Error("No handoff has been prepared for this work item.");
   const out = acknowledgeAll(record, ctx.accountId ?? null, bindingDecisions(decisions, item), readBack, new Date().toISOString(), fingerprintOf(item));
   // A model sentence is asked for only when the code found a contradiction; it is shown beside the reasons.
@@ -200,8 +200,9 @@ resolver.define("loadSampleDecisions", async ({ context }) => {
   const { item } = await readItem(ctx.extension.issue.key);
   await requireAdmin(item.projectKey);
   // Demo data for this project only; nothing is written to Jira. A project that has them already is left as it is.
-  const decisions = await getDecisions();
-  if (!hasSamples(decisions, item.projectKey)) await putDecisions(mergeDecisions(decisions, sampleDecisions(item.projectKey)));
+  await updateDecisions(item.projectKey, (decisions) =>
+    hasSamples(decisions, item.projectKey) ? decisions : mergeDecisions(decisions, sampleDecisions(item.projectKey)),
+  );
   return panelState(ctx);
 });
 
@@ -213,15 +214,20 @@ resolver.define("confirmProposal", async ({ context, payload }) => {
   const id = String((payload as { proposalId?: string }).proposalId ?? "");
   const { item, issueId } = await readItem(ctx.extension.issue.key);
   await requireAdmin(item.projectKey);
-  const [stored, decisions] = await Promise.all([getProposals(issueId), getDecisions()]);
-  const proposals = inProject(stored, item.projectKey);
+  const proposals = inProject(await getProposals(issueId), item.projectKey);
   const retire = (payload as { supersede?: boolean }).supersede === true;
-  const out = confirmProposal(proposals, decisions, id, ctx.accountId, new Date().toISOString(), retire);
-  if (!out.ok) throw new Error("That proposal is no longer there. Reload the page to see the current list.");
+  let remaining: Proposal[] | null = null;
+  // Worked out from the decisions as they are at the moment of saving, not from an earlier read.
+  await updateDecisions(item.projectKey, (current) => {
+    const out = confirmProposal(proposals, current, id, ctx.accountId as string, new Date().toISOString(), retire);
+    if (!out.ok) return current;
+    remaining = out.proposals;
+    return out.decisions;
+  });
+  if (remaining === null) throw new Error("That proposal is no longer there. Reload the page to see the current list.");
   // The decision is saved first: if the second write fails the proposal is still listed and confirming
   // again changes nothing, whereas the other order could lose the decision.
-  await putDecisions(out.decisions);
-  await putProposals(issueId, out.proposals);
+  await putProposals(issueId, remaining);
   return panelState(ctx);
 });
 
@@ -245,7 +251,7 @@ resolver.define("gatherContext", ({ context }) => {
 // returned here is stored, and it is not an input to the rule check.
 resolver.define("getMarked", async ({ context }): Promise<MarkedState> => {
   const ctx = context as Ctx;
-  const [src, decisions] = await Promise.all([readSourceAsUser(ctx.extension.issue.key), getDecisions()]);
+  const [src, decisions] = await Promise.all([readSourceAsUser(ctx.extension.issue.key), getDecisions(projectOfKey(ctx.extension.issue.key))]);
   return {
     notInLedger: unrecordedMarked(src.parts, decisions),
     truncated: src.truncated,
@@ -257,7 +263,7 @@ resolver.define("getMarked", async ({ context }): Promise<MarkedState> => {
 resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageState> => {
   const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
   const viewerId = (context as { accountId?: string }).accountId ?? null;
-  const [open, decisions, canManage] = await Promise.all([openItemsAsUser(projectKey), getDecisions(), isProjectAdminAsUser(projectKey)]);
+  const [open, decisions, canManage] = await Promise.all([openItemsAsUser(projectKey), getDecisions(projectKey), isProjectAdminAsUser(projectKey)]);
   const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
   return buildDecisionsPage(
     projectKey,
@@ -275,7 +281,7 @@ resolver.define("getLeaving", async ({ context, payload }): Promise<LeavingView>
   const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
   const personId = String((payload as { accountId?: string }).accountId || (context as { accountId?: string }).accountId || "");
   if (personId === "") throw new Error("Pick a person first.");
-  const [open, decisions] = await Promise.all([openItemsAsUser(projectKey), getDecisions()]);
+  const [open, decisions] = await Promise.all([openItemsAsUser(projectKey), getDecisions(projectKey)]);
   const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
   return leavingView(
     personId,
@@ -297,7 +303,7 @@ resolver.define("replayOn", async ({ context, payload }): Promise<ReplayState> =
   const now = new Date();
   const thenIso = replayInstant(date, now.toISOString());
   if (thenIso === null) throw new Error("Pick a date that is today or earlier.");
-  const [open, stored] = await Promise.all([openItemsAsUser(projectKey), getDecisions()]);
+  const [open, stored] = await Promise.all([openItemsAsUser(projectKey), getDecisions(projectKey)]);
   // Only this project's decisions: another project's cannot bind these items, and its undated titles would
   // otherwise be listed in the notes here.
   const decisions = stored.filter((d) => touches(d, projectKey));
@@ -315,11 +321,11 @@ resolver.define("supersedeDecision", async ({ context, payload }) => {
   if (!accountId) throw new Error("Superseding a decision needs a signed-in person.");
   const id = String((payload as { decisionId?: string }).decisionId ?? "");
   await requireAdmin(String((context as { extension: { project: { key: string } } }).extension.project.key));
-  const decisions = await getDecisions();
-  const target = decisions.find((d) => d.id === id && d.status === "decided");
+  const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
+  const target = (await getDecisions(projectKey)).find((d) => d.id === id && d.status === "decided");
   if (!target) throw new Error("That decision is not in force. Reload the page.");
   if (!canSupersede(target, accountId)) throw new Error("Only the person who confirmed this decision can supersede it.");
-  await putDecisions(supersede(decisions, [id], new Date().toISOString()));
+  await updateDecisions(projectKey, (current) => supersede(current, [id], new Date().toISOString()));
 });
 
 // Adding a decision by hand: the preview counts the open work items it would contradict, the add stores it.
@@ -330,10 +336,10 @@ async function manualDecision(ctx: { accountId?: string; extension: { project: {
   if (typeof input === "string") throw new Error(input);
   const projectKey = String(ctx.extension.project.key);
   await requireAdmin(projectKey);
-  const stored = await getDecisions();
+  const stored = await getDecisions(projectKey);
   const built = buildManualDecision(input, projectKey, stored, ctx.accountId, new Date().toISOString());
   if (!built.ok) throw new Error(built.reason);
-  return { projectKey, stored, decision: built.decision };
+  return { projectKey, decision: built.decision };
 }
 
 resolver.define("previewDecision", async ({ context, payload }) => {
@@ -345,8 +351,8 @@ resolver.define("previewDecision", async ({ context, payload }) => {
 });
 
 resolver.define("addDecision", async ({ context, payload }) => {
-  const { stored, decision } = await manualDecision(context as Parameters<typeof manualDecision>[0], payload);
-  await putDecisions(mergeDecisions(stored, [decision]));
+  const { projectKey, decision } = await manualDecision(context as Parameters<typeof manualDecision>[0], payload);
+  await updateDecisions(projectKey, (current) => mergeDecisions(current, [decision]));
 });
 
 export const handler = resolver.getDefinitions();

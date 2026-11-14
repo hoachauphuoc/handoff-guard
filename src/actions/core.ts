@@ -1,5 +1,6 @@
 import { inProject } from "../decisions/confirm";
 import type { DecisionSource, Proposal } from "../decisions/types";
+import { projectOfKey } from "../decisions/page";
 import { REASON_TEXT, validateCandidates } from "../decisions/validate";
 import { handoffFrom, previewHandoff } from "../handoff/build";
 import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass";
@@ -27,7 +28,7 @@ import {
 // Injected so this file has no Forge imports and tests need no network.
 export type Deps = {
   readItem: (key: string) => Promise<{ item: WorkItem; issueId: string }>;
-  getDecisions: () => Promise<Decision[]>;
+  getDecisions: (projectKey: string) => Promise<Decision[]>;
   getRecord: (issueId: string) => Promise<HandoffRecord | null>;
   readSource: (key: string) => Promise<DecisionSource>;
   getProposals: (issueId: string) => Promise<Proposal[]>;
@@ -136,7 +137,7 @@ export async function runCheckHandoff(payload: unknown, accountId: string | null
   const { key, receiver } = parsed;
   try {
     const { item, issueId } = await deps.readItem(key);
-    const [decisions, record] = await Promise.all([deps.getDecisions(), deps.getRecord(issueId)]);
+    const [decisions, record] = await Promise.all([deps.getDecisions(item.projectKey), deps.getRecord(issueId)]);
     const stored = record !== null && (receiver === null || receiver === record.toId);
     const basis: CheckHandoffSuccess["basis"] = stored ? "stored" : receiver !== null ? "preview" : "none";
     // Depends on the item and decisions only, so it is the same with or without a handoff.
@@ -194,7 +195,7 @@ export async function runListBindingDecisions(payload: unknown, deps: Deps): Pro
   const { key } = parsed;
   try {
     const { item } = await deps.readItem(key);
-    const all = await deps.getDecisions();
+    const all = await deps.getDecisions(item.projectKey);
     const bound = bindingDecisions(all, item);
     const quote =
       bound.length === 0
@@ -273,7 +274,7 @@ export async function runProposeDecisions(payload: unknown, deps: Deps): Promise
   try {
     // The source is read again here, as the caller: quotes are checked against Jira, never against what
     // the model says it read.
-    const [src, stored] = await Promise.all([deps.readSource(key), deps.getDecisions()]);
+    const [src, stored] = await Promise.all([deps.readSource(key), deps.getDecisions(projectOfKey(key))]);
     const { kept, rejected: raw } = validateCandidates(
       fillScopes(candidates, { issueKey: key, projectKey: src.projectKey }),
       src.parts,
@@ -354,7 +355,7 @@ export async function runGatherHandoffContext(payload: unknown, accountId: strin
   const check = await runCheckHandoff({ issueKey: key }, accountId, deps);
   if (!check.ok) return { schema, ok: false, source: "rules", issueKey: key, error: check.error, quote: check.quote };
   try {
-    const [{ item, issueId }, src, decisions] = await Promise.all([deps.readItem(key), deps.readSource(key), deps.getDecisions()]);
+    const [{ item, issueId }, src, decisions] = await Promise.all([deps.readItem(key), deps.readSource(key), deps.getDecisions(projectOfKey(key))]);
     const record = await deps.getRecord(issueId);
     const people = await readPeople(issueId, deps);
     // Only for a stored handoff: a preview has no record, so no sender's contingency and no owners to name.

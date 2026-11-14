@@ -28,7 +28,7 @@ async function readAfterTransition({ issue, transition }: ValidatorPayload): Pro
 export async function validate(payload: ValidatorPayload): Promise<ValidatorResponse> {
   try {
     const { item, issueId } = await readAfterTransition(payload);
-    const [decisions, record] = await Promise.all([getDecisions(), getRecord(issueId)]);
+    const [decisions, record] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId)]);
     if (!record) {
       return { result: false, errorMessage: "Prepare the handoff in the Handoff Guard panel first." };
     }
@@ -43,7 +43,7 @@ export async function validate(payload: ValidatorPayload): Promise<ValidatorResp
 export async function validateDecisions(payload: ValidatorPayload): Promise<ValidatorResponse> {
   try {
     const { item } = await readAfterTransition(payload);
-    return decisionGuardResponse(checkItem(item, await getDecisions()));
+    return decisionGuardResponse(checkItem(item, await getDecisions(item.projectKey)));
   } catch (e) {
     return failClosed(e);
   }

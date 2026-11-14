@@ -37,6 +37,9 @@ export type DecisionsPageState = {
 
 const MAX_KEYS = 10;
 
+/** The project of a work item key such as OPS-12. */
+export const projectOfKey = (issueKey: string): string => issueKey.slice(0, issueKey.lastIndexOf("-"));
+
 // A decision belongs on this project's page when it can bind work here; only a legacy label scope without a project can bind anywhere.
 export const touches = (d: Decision, projectKey: string): boolean => {
   const p = projectKey.toLowerCase();

@@ -11,7 +11,7 @@ type ContextPayload = { extension: { issue: { key: string } } };
 export async function contextProperties(payload: ContextPayload): Promise<ContextStatus> {
   try {
     const { item, issueId } = await readItemAsUser(payload.extension.issue.key);
-    const [decisions, record] = await Promise.all([getDecisions(), getRecord(issueId)]);
+    const [decisions, record] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId)]);
     return contextStatus(record ? checkHandoff(handoffFrom(item, record, decisions), decisions) : null);
   } catch (e) {
     // The error's name only: a message could one day carry work item text, which must not reach the logs.
