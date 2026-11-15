@@ -111,7 +111,7 @@ Teamwork Graph: **Gather handoff context** in the Rovo agent returns people conn
 
 ## What was seen working, and what was not
 
-Seen on a live Jira Cloud site (development and production builds of this app): the refused read-back, the typed receipt refusing a date after the limit, acknowledgement by a second account, a stale acknowledgement after the due date changed, a Clear verdict, the validator refusing on a transition and on a board drag, and the Teamwork Graph "people connected" query returning one row (a person the work item was shared with). Not seen: the validator letting a Clear handoff through on production, a real bounced handoff, and the Rovo agent on a site other than ours. A site without Rovo or Teamwork Graph access gets a panel that says so, and nothing in the main path depends on them.
+Seen on a live Jira Cloud site (development and production builds of this app): the refused read-back, the typed receipt refusing a date after the limit, acknowledgement by a second account, a stale acknowledgement after the due date changed, a Clear verdict, the validator refusing on a transition and on a board drag and letting a Clear handoff through on production (2026-11-15), and the Teamwork Graph "people connected" query returning one row (a person the work item was shared with). Not seen: a real bounced handoff, and the Rovo agent on a site other than ours. A site without Rovo or Teamwork Graph access gets a panel that says so, and nothing in the main path depends on them.
 
 ## Bonus prizes
 

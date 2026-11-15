@@ -23,7 +23,7 @@ Scene 5 is a montage of three short cuts; cut it first if the film runs long. Si
 - Click "Load sample decisions (demo)" on the project so decisions exist. Film with an account that is a project administrator: the button, Confirm, Supersede and "Add a decision" are hidden from anyone else. On a project with no decision the panel puts this button first.
 - The practice read-back box shows whenever a decision binds the item and the viewer is not the receiver, with "Fill an example". The receiver sees the real read-back form instead.
 - Blocked case (suggested: MOBL-53): a description, a due date later than 2026-12-31 or a missing due date, the component `legacy-billing`, and a prepared handoff to the receiver. The binding decisions are the two sample decisions above.
-- Clear case (suggested: TD-1 or MOBL-58): the item meets both decisions (a due date of 2026-12-15), and the receiver has given a read-back after the last change to the item.
+- Clear case (suggested: TD-1 or MOBL-58): the item meets both decisions (a due date of 2026-12-15), the receiver has given a read-back after the last change to the item, and the item is assigned to the receiver (or the sender, or no one). The validator refuses an item assigned to a third person even when the handoff is Clear.
 - Rovo must be enabled on the site for scene 5, and the item for "Find decisions with Rovo" needs a decision written in its description or comments. Do not depend on Rovo for the main story: a judge's site may not have it.
 - A Jira admin must have added the Handoff Guard validator to a workflow transition for scene 4.
 
