@@ -21,6 +21,8 @@ On the Decisions page, **Look for bounced handoffs** reads the Jira history of t
 
 Two of those causes can be switched on as project rules by a project administrator: require a contingency from the sender, and require it in the "if … then …" form. A rule that is on is part of the same rule check: the handoff is Needs info until it is met, in the panel, the workflow validator, the context row and the Rovo actions. Both are off as installed. The verdict "then" uses the decisions as they stood at that time and the work item as it is now; Replay on a date does not apply the project rules.
 
+Beside the free-text read-back, the receiver can acknowledge with **typed answers**: one per constraint of each binding decision, a date for a date limit and a confirmation for a label or component that must be kept or kept off. Plain code compares each value (a date after the limit is refused with both dates) and only those values are stored. Rovo cannot fill or send them.
+
 A decision that says the opposite of one in force for the same work (a required label against the same label forbidden, or another date limit) cannot be saved beside it: it is saved only together with superseding the older one.
 
 ## Accessibility
