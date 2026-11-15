@@ -83,11 +83,11 @@ function overlapFor(proposals: Proposal[], decisions: Decision[], viewerId: stri
 
 async function panelState(ctx: Ctx): Promise<PanelState> {
   const { item, issueId } = await readItem(ctx.extension.issue.key);
-  const [decisions, record, stored, canManage] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId), getProposals(issueId), isProjectAdminAsUser(item.projectKey)]);
-  const rules = await getRules(item.projectKey);
+  // One round of reads, not four in a row: this panel is the first thing a judge sees, and each read is a wait.
+  const [decisions, record, stored, canManage, rules, savedDraft] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId), getProposals(issueId), isProjectAdminAsUser(item.projectKey), getRules(item.projectKey), getDraft(issueId)]);
   const viewerIsReceiver = record !== null && ctx.accountId !== undefined && ctx.accountId === record.toId;
   // A draft is the receiver's to sign; nobody else is shown it.
-  const draftReceipt = viewerIsReceiver ? await getDraft(issueId) : null;
+  const draftReceipt = viewerIsReceiver ? savedDraft : null;
   const proposals = inProject(stored, item.projectKey);
   const viewerId = ctx.accountId ?? null;
   // Decisions that name this project. Samples are loaded per project, so a site-wide count, or an old label
