@@ -73,6 +73,7 @@ const App = () => {
   const [practice, setPractice] = useState<PracticeReadBackReply | null>(null);
   const [practiceNote, setPracticeNote] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState<boolean | null>(null);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const [path, setPath] = useState<GuidePath>("handover");
 
   // Rovo only explains and proposes. Whatever happens here, the verdict shown above stays the rule check's.
@@ -564,6 +565,9 @@ const App = () => {
           Remove sample decisions
         </Button>
       )}
+      <Button onClick={() => setToolsOpen(!toolsOpen)}>{toolsOpen ? "Hide handoff brief and Rovo tools" : "Show handoff brief and Rovo tools"}</Button>
+      {toolsOpen && (
+      <>
       <Stack space="space.100">
         <Text>Handoff brief</Text>
         <Button isDisabled={busy} onClick={() => void gather()}>
@@ -615,8 +619,10 @@ const App = () => {
       <Button onClick={() => void askRovo(`Propose decisions for ${state.issueKey} from its description and comments.`)}>
         Find decisions with Rovo
       </Button>
-      {rovoNote && <Text>{rovoNote}</Text>}
       <Text>Rovo explains and proposes; the verdict comes from the rule check.</Text>
+      </>
+      )}
+      {rovoNote && <Text>{rovoNote}</Text>}
       <Text>Source: rule check, {count(state.decisionCount, "stored decision")} for this project.</Text>
     </Stack>
   );
