@@ -34,3 +34,23 @@ describe("optional project rules", () => {
     expect(ids(check({ requireContingency: true, requireIfThen: true }))).toEqual(["no_contingency"]);
   });
 });
+
+describe("the if-then form", () => {
+  it("may span two lines", async () => {
+    const { isIfThen } = await import("../src/rules/checkHandoff");
+    expect(isIfThen("If the export fails,\nthen roll back to the last release.")).toBe(true);
+    expect(isIfThen("if x then y")).toBe(false);
+  });
+});
+
+describe("every verdict for a stored handoff reads the project's rules", () => {
+  it("passes rules wherever src builds a handoff from a record", async () => {
+    const { readFileSync } = await import("node:fs");
+    const files = ["src/actions/core.ts", "src/context-fn.ts", "src/decisions/leaving.ts", "src/handoff/inflight.ts", "src/resolvers/index.ts", "src/validator.ts"];
+    for (const f of files) {
+      const calls = readFileSync(f, "utf8").split("\n").filter((l) => l.includes("handoffFrom(") && !l.includes("import"));
+      expect(calls.length).toBeGreaterThan(0);
+      for (const line of calls) expect(line).toMatch(/[rR]ules/);
+    }
+  });
+});

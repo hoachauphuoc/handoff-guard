@@ -422,11 +422,13 @@ resolver.define("setProjectRule", async ({ context, payload }) => {
   const ctx = context as { accountId?: string; extension: { project: { key: string } } };
   const projectKey = String(ctx.extension.project.key);
   await requireAdmin(projectKey);
-  const { rule, on } = payload as { rule?: string; on?: boolean };
+  const { rule, on } = (payload ?? {}) as { rule?: unknown; on?: unknown };
   if (rule !== "requireContingency" && rule !== "requireIfThen") throw new Error("That is not a rule this project can switch.");
-  const next = { ...(await getRules(projectKey)), [rule]: on === true };
+  // Anything but a plain true or false is refused: a malformed call must not read as "switch it off".
+  if (typeof on !== "boolean") throw new Error("Say whether the rule is on or off.");
+  const next = { ...(await getRules(projectKey)), [rule]: on };
   await putRules(projectKey, next);
-  await log(projectKey, ctx.accountId, "rule_changed", `${rule} ${on === true ? "on" : "off"}`);
+  await log(projectKey, ctx.accountId, "rule_changed", `${rule} ${on ? "on" : "off"}`);
   return next;
 });
 

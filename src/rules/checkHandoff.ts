@@ -84,7 +84,8 @@ function decisionFindings(decision: Decision, item: WorkItem): Finding[] {
 // Kept in this file, not a module of its own: scripts/measure loads this file directly and it must stay free of runtime imports.
 export const CONTINGENCY_MIN = 20;
 
-const IF_THEN = /\bif\b.+\bthen\b/i;
+// The `s` flag lets "if" and "then" sit on different lines of the same contingency.
+const IF_THEN = /\bif\b.+\bthen\b/is;
 
 /** Whether a contingency reads as a plan: long enough and written as "if … then …". */
 export const isIfThen = (text: string): boolean => text.trim().length >= CONTINGENCY_MIN && IF_THEN.test(text.trim());
@@ -128,7 +129,7 @@ export function checkHandoff(handoff: Handoff, decisions: Decision[]): HandoffRe
   if (handoff.rules?.requireContingency && contingency === "") {
     findings.push({ rule: "no_contingency", severity: "info_needed", message: "The sender has not written a contingency, which this project requires." });
   } else if (handoff.rules?.requireIfThen && contingency !== "" && !isIfThen(contingency)) {
-    findings.push({ rule: "contingency_not_if_then", severity: "info_needed", message: 'The contingency is not written as "if … then …", which this project requires.' });
+    findings.push({ rule: "contingency_not_if_then", severity: "info_needed", message: `The contingency is not written as "if … then …" in at least ${CONTINGENCY_MIN} characters, which this project requires.` });
   }
 
   const binding = bindingDecisions(decisions, item);
