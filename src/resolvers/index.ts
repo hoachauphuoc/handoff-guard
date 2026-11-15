@@ -82,9 +82,15 @@ function overlapFor(proposals: Proposal[], decisions: Decision[], viewerId: stri
 }
 
 async function panelState(ctx: Ctx): Promise<PanelState> {
-  const { item, issueId } = await readItem(ctx.extension.issue.key);
-  // One round of reads, not four in a row: this panel is the first thing a judge sees, and each read is a wait.
-  const [decisions, record, stored, canManage, rules, savedDraft] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId), getProposals(issueId), isProjectAdminAsUser(item.projectKey), getRules(item.projectKey), getDraft(issueId)]);
+  // One round of reads, not two: this panel is the first thing a judge sees, and each round is a wait. The project
+  // and the id are taken from the panel's context so the stored reads start with the Jira read; if Jira says
+  // otherwise (a moved work item), the stored reads are done again with what Jira says.
+  const reads = (projectKey: string, issueId: string) =>
+    Promise.all([getDecisions(projectKey), getRecord(issueId), getProposals(issueId), isProjectAdminAsUser(projectKey), getRules(projectKey), getDraft(issueId)]);
+  const guessed = { projectKey: projectOfKey(ctx.extension.issue.key), issueId: String(ctx.extension.issue.id) };
+  const [{ item, issueId }, first] = await Promise.all([readItem(ctx.extension.issue.key), reads(guessed.projectKey, guessed.issueId)]);
+  const [decisions, record, stored, canManage, rules, savedDraft] =
+    item.projectKey === guessed.projectKey && issueId === guessed.issueId ? first : await reads(item.projectKey, issueId);
   const viewerIsReceiver = record !== null && ctx.accountId !== undefined && ctx.accountId === record.toId;
   // A draft is the receiver's to sign; nobody else is shown it.
   const draftReceipt = viewerIsReceiver ? savedDraft : null;
