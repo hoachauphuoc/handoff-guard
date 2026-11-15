@@ -19,7 +19,7 @@ import type { AcknowledgeAllReply, HandoffRecord, PanelState, PracticeReadBackRe
 import { explainRefusal } from "../llm";
 import { MANAGE_DENIED } from "../authz";
 import { monthCounts, type AuditAction, type AuditEvent, type MonthCounts } from "../audit";
-import { changesAsUser, doneStatusIdsAsUser, isProjectAdminAsUser, openItemsAsUser, readItemAsUser as readItem } from "../jira";
+import { changesAsUser, doneStatusIdsAsUser, isProjectAdminAsUser, openItemsAsUser, RECENT_DAYS, recentItemsAsUser, readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
 import { changeText, suggestFixes } from "../rules/feasible";
@@ -414,14 +414,14 @@ resolver.define("addDecision", async ({ context, payload }) => {
 
 const AUTOPSY_CAP = 50;
 
-export type AutopsyState = Autopsy & { withHandoff: number; capped: boolean; notClear: number };
+export type AutopsyState = Autopsy & { withHandoff: number; capped: boolean; notClear: number; days: number };
 
 // Looks through the project's stored handoffs for ones that were Clear when the receiver last acknowledged and
 // then bounced. Everything is read as the viewer and nothing is written. The verdict "then" uses the decisions
 // as they stood at that time and the work item as it is now, the same limit Replay has.
 resolver.define("bounceAutopsy", async ({ context }): Promise<AutopsyState> => {
   const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
-  const [open, decisions, done] = await Promise.all([openItemsAsUser(projectKey), getDecisions(projectKey), doneStatusIdsAsUser(projectKey)]);
+  const [open, decisions, done] = await Promise.all([recentItemsAsUser(projectKey), getDecisions(projectKey), doneStatusIdsAsUser(projectKey)]);
   const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
   const held = open.items.flatMap((i, n) => (records[n] ? [{ item: i.item, record: records[n] as HandoffRecord }] : []));
   const read = held.slice(0, AUTOPSY_CAP);
@@ -443,7 +443,7 @@ resolver.define("bounceAutopsy", async ({ context }): Promise<AutopsyState> => {
       bindingCount: bindingDecisions(asOf, item).length,
     });
   }
-  return { ...autopsy(handoffs), withHandoff: held.length, capped: open.capped || held.length > AUTOPSY_CAP, notClear };
+  return { ...autopsy(handoffs), withHandoff: held.length, capped: open.capped || held.length > AUTOPSY_CAP, notClear, days: RECENT_DAYS };
 });
 
 // Everything the app holds for one project, for a project administrator: decisions, the handoffs of the open

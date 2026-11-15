@@ -285,7 +285,7 @@ const App = () => {
       {autopsy !== null && (
         <Stack space="space.050">
           <Text>
-            {`${count(autopsy.withHandoff, "open work item")} with a prepared handoff${autopsy.capped ? " (list cut, so these are at least)" : ""}; ${count(autopsy.total, "handoff")} ${autopsy.total === 1 ? "was" : "were"} Clear at the last acknowledgement, ${autopsy.notClear} ${autopsy.notClear === 1 ? "was" : "were"} not and ${autopsy.notClear === 1 ? "is" : "are"} left out.`}
+            {`${count(autopsy.withHandoff, "work item")} changed in the last ${autopsy.days} days ${autopsy.withHandoff === 1 ? "has" : "have"} a prepared handoff${autopsy.capped ? " (list cut, so these are at least)" : ""}; ${count(autopsy.total, "handoff")} ${autopsy.total === 1 ? "was" : "were"} Clear at the last acknowledgement, ${autopsy.notClear} ${autopsy.notClear === 1 ? "was" : "were"} not and ${autopsy.notClear === 1 ? "is" : "are"} left out.`}
           </Text>
           {autopsy.bounced.length === 0 ? (
             <Text>
