@@ -57,7 +57,8 @@ Core:
 Also (one line each; the README has the detail):
 
 - **Around the handoff.** Joining, handing over and leaving checklists; suggested fixes (advice, the app never edits the item); the I-PASS structure with an owner per finding and an optional "if ... then ..." contingency; handoff drift, which makes an acknowledgement stale when the item changes after it.
-- **Rovo, MCP and Teamwork Graph.** The Rovo agent explains the verdict in the rule check's own words and proposes decisions found in the item with a word-for-word quote, binding nothing until a person confirms; the handoff brief adds connected people from Teamwork Graph; the same six actions are exposed through `rovo:mcp`.
+- **Decisions for any business rule.** What your team decides is data; the code knows only the shape of a decision. Besides dates, labels and components, a decision can be a Jira filter (JQL) that Jira evaluates for the one work item, a commitment the receiver confirms by name, or a link to where it was decided, shown and never read.
+- **Rovo, MCP and Teamwork Graph.** The Rovo agent explains the verdict in the rule check's own words and proposes decisions found in the item with a word-for-word quote, binding nothing until a person confirms; for an administrator it turns a rule in plain words into JQL, has code count what it would block, and stores a draft that a person confirms on the Decisions page; the handoff brief adds connected people from Teamwork Graph; the same eight actions are exposed through `rovo:mcp`.
 - **Decisions over time.** Adding a decision by hand with a preview of the items it would contradict; activity, counts, export and delete; typed answers a receiver can give instead of free text (Rovo may draft them, a person signs); refusal of a decision that says the opposite of one in force; replay of verdicts on an earlier date; superseding decisions.
 - **Bounce autopsy and governance.** The Decisions page reads Jira history for handoffs that were Clear and then came back, counts what they lacked beside those that did not bounce, and lets a project administrator release a rule from a fixed catalogue of three after seeing how many handoffs it would turn to Needs info. Code only; a count, not proof of a cause.
 - **Jira-only.** No Confluence scope; installs on any Jira site.
@@ -89,12 +90,12 @@ Then decide from the pilot whether to watch more sources for decisions or share 
 
 Use an account that is a project administrator of the Jira project. Load sample decisions, confirming, adding and superseding a decision need Jira's "Administer projects" permission. About 10 minutes on a Jira site where you are a site admin. With one account you see a refused read-back and an accepted one. Reaching Clear needs a second user as receiver: if you pick yourself, the handoff stays Blocked with "Sender and receiver are the same person", which is the rule working.
 
-**Three minutes, one account.** After steps 1 to 3 below, type the read-back of step 5 into the box under "Practice read-back" and click **Try a read-back (practice, nothing is saved)**: it is refused, with the code's reason. Type the read-back of step 6: it "would be accepted". The practice check stores nothing and gives no verdict; steps 4 to 7 are the real handoff.
+**Three minutes, one account.** After steps 1 to 3 below, click **Show everything** in the panel (it otherwise shows only your next step), then type the read-back of step 5 into the box under "Practice read-back" and click **Try a read-back (practice, nothing is saved)**: it is refused, with the code's reason. Type the read-back of step 6: it "would be accepted". The practice check stores nothing and gives no verdict; steps 4 to 7 are the real handoff.
 
 The panel can take several seconds to load the first time.
 
 1. Open the installation link below, choose your site, select Jira and click Install. The app asks for four permissions and nothing for Confluence.
-2. Open a work item. Under the summary click the apps icon (its tooltip is "View app actions"), then **Handoff Guard**; the panel opens below the description. If Jira asks, click **Allow access** and reload. A getting-started checklist in the panel shows the next step at any time.
+2. Open a work item. Under the summary click the apps icon (its tooltip is "View app actions"), then **Handoff Guard**; the panel opens below the description. If Jira asks, click **Allow access** and reload. The panel opens on one card, "Your next step". If you get lost, **Apps** in Jira's top bar has **Handoff Guard: start here**, with a button for each step.
 3. Click **Load sample decisions (demo)**. This stores demo decisions for that project in the app; nothing is written to Jira. The panel then says "4 stored decisions for this project"; two bind every item in the project: "Work ships by the end of 2026" and "Stop using the legacy billing component".
 4. Give the work item a description and a due date in 2026. Pick a receiver (a second user, or yourself) and click **Prepare handoff**. The findings say the receiver has not acknowledged the two decisions.
 5. As the receiver, open the same work item and the panel. In the read-back box write: `Work ships by the end of 2026: I will ship on 15 January 2027. Stop using the legacy billing component: understood.` Click **Acknowledge all with this read-back**. It is refused, with the code's reason and one sentence labelled as written by a model.
@@ -102,10 +103,12 @@ The panel can take several seconds to load the first time.
 7. Drift: change the due date of the work item and reload the panel. The acknowledgement is stale and the receiver is asked to read back again.
 8. Optional, Jira admin: in the workflow editor, add the **Handoff Guard** validator to a transition (edit the transition, then Validators). A work item whose handoff is not Clear is refused on that transition, and so is one assigned to a third person who is neither the sender nor the receiver. The refusal says "Prepare the handoff in the Handoff Guard panel first." both when the status is changed from the work item view and when a card is dragged on a board (seen on the demo site, 2026-11-14).
 
-Steps 9 and 10 need Rovo enabled on the site. Without Rovo the panel says so.
+Steps 9 to 11 need Rovo enabled on the site. Without Rovo the panel says so.
 
 9. Optional, Rovo: click **Explain with Rovo** in the panel, or open the Handoff Guard agent in Rovo Chat and ask "Is this work item ready to hand off?".
 10. Optional, MCP: a site admin turns the tools on in Atlassian Administration (Apps, Sites, your site, Connected apps, Handoff Guard, Tools). An MCP client then connects to `https://mcp.atlassian.com/forge/<app UUID>` and calls `check-handoff` with `issueKey`.
+
+11. Optional, Rovo for a project administrator: ask the agent "Would the filter prioritee = Highest work as a rule in <your project key>?". It gives Jira's error word for word and offers `priority = Highest`; ask it to check that and draft it. The draft appears on the project's Decisions page under "Drafted with Rovo (not in force)" and binds nothing until you click **Confirm**.
 
 Teamwork Graph: **Gather handoff context** in the Rovo agent returns people connected to the work item. On a site with little activity it may say that Teamwork Graph returned nothing; the app says so and uses it for no rule.
 

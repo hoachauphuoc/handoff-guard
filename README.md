@@ -10,9 +10,9 @@ A Forge app for Jira. When a work item is handed to someone else, the receiver r
 
 Use an account that is a project administrator of the Jira project. Load sample decisions, confirming, adding and superseding a decision need Jira's "Administer projects" permission.
 
-1. Install from the installation link in the Devpost submission and open any work item. Click the apps icon under the summary ("View app actions"), then **Handoff Guard**. You should see a checklist headed "Handing over this work".
+1. Install from the installation link in the Devpost submission and open any work item. Click the apps icon under the summary ("View app actions"), then **Handoff Guard**. The panel opens on one card, "Your next step: Load the demo rules". If you cannot find the panel, open **Apps** in Jira's top bar and choose **Handoff Guard: start here**: it names the three steps and has a button for each.
 2. Click **Load sample decisions (demo)**. You should see "4 stored decisions for this project". Nothing is written to Jira.
-3. Under "Practice read-back", type `Work ships by the end of 2026: I will ship on 15 January 2027. Stop using the legacy billing component: understood.` and click **Try a read-back (practice, nothing is saved)**. You should see "This read-back would be refused:", the code's reason about the 2026-12-31 limit, and one sentence labelled as written by a model.
+3. Click **Show everything** (the panel otherwise shows only your next step). Under "Practice read-back", type `Work ships by the end of 2026: I will ship on 15 January 2027. Stop using the legacy billing component: understood.` and click **Try a read-back (practice, nothing is saved)**. You should see "This read-back would be refused:", the code's reason about the 2026-12-31 limit, and one sentence labelled as written by a model.
 4. Change the date to `15 December 2026` and click again. You should see "This read-back would be accepted."
 
 That refusal is the point of the app: the receiver restates each decision, and plain code refuses a restatement that contradicts one in ways it can detect. It does not catch every contradiction or prove understanding. The practice check stores nothing and gives no verdict. A real handoff, with a second user as receiver, reaches Clear through the same check; the 10-minute path is in `docs/DEVPOST.md`.
@@ -26,6 +26,25 @@ Governance: a project administrator can release rules from a fixed catalogue of 
 Beside the free-text read-back, the receiver can acknowledge with **typed answers**: one per constraint of each binding decision, a date for a date limit and a confirmation for a label or component that must be kept or kept off. Plain code compares each value (a date after the limit is refused with both dates) and only those values are stored. Rovo can draft them when the receiver asks in chat (`draft-receipt`): code checks the values and refuses a draft that breaks a decision, and an accepted draft is stored unsigned. It acknowledges nothing until the receiver opens the panel, fills it in from the draft and sends it, where the same check runs again.
 
 A decision that says the opposite of one in force for the same work (a required label against the same label forbidden, or another date limit) cannot be saved beside it: it is saved only together with superseding the older one.
+
+## Decisions for any business rule
+
+What a team decides is data; the code knows only the shape of a decision. Besides a date limit and a required or forbidden label or component, a decision can be one of three kinds:
+
+| Kind | Example | Who decides whether it is met |
+|---|---|---|
+| A Jira filter (JQL) the work item must match | `priority = Highest`, a custom field, a status | Jira runs the filter for that one work item; plain code reads yes or no. When Jira gives no answer, the finding says the rule could not be checked and the verdict is never Clear on a guess. |
+| A commitment, with nothing to check | "Tell legal before release" | The receiver confirms it by name; code records who and when. |
+| A link to where it was decided | a page, a ticket, a contract | Nobody: it is shown beside the decision and never opened or read by the app. |
+
+A filter is refused at save time when Jira cannot parse it (with Jira's own message) or when it sorts. Before saving, **Check** counts the open work items it would contradict.
+
+**Rovo as the administrator's JQL assistant.** JQL is hard to write, so a project administrator can ask the Handoff Guard agent in Rovo, for example "Would 'only Highest priority can go to review' work in MOBL?". Rovo writes the filter and the sentences; code does the rest:
+
+- `check-condition` lists the filters in force with how many open work items match each, or, for a new filter, asks Jira whether it can run (Jira's errors word for word) and counts the open work items that match and do not. It reads as the person asking and stores nothing.
+- `draft-condition` stores a draft, for a project administrator only (at most 10 per project). A draft binds nothing. It appears on the Decisions page under "Drafted with Rovo (not in force)", where an administrator confirms it, with the same checks as the form, or discards it. Both are written to Activity.
+
+Without Rovo, the form on the Decisions page does all of this by hand.
 
 ## Accessibility
 
@@ -54,7 +73,7 @@ Every scope in `manifest.yml` and why it is there. A test fails if this table an
 
 ## Rovo MCP server
 
-The app has one `rovo:mcp` module ("Handoff Guard") that exposes the same six actions the Rovo agent uses: `check-handoff`, `list-binding-decisions`, `read-decision-source`, `propose-decisions`, `gather-handoff-context`, `draft-receipt`. External access is off by default. A site admin turns it on per installation in Atlassian Administration (Apps, Sites, the site, Connected apps, this app, Tools). The endpoint is `https://mcp.atlassian.com/forge/<app UUID>`. Tools run with the calling user's permissions. Over MCP there is no work item context, so pass `issueKey` such as `OPS-1`. `propose-decisions` only saves proposals; a person confirms them in the panel.
+The app has one `rovo:mcp` module ("Handoff Guard") that exposes the same eight actions the Rovo agent uses: `check-handoff`, `list-binding-decisions`, `read-decision-source`, `propose-decisions`, `gather-handoff-context`, `draft-receipt`, `check-condition`, `draft-condition`. External access is off by default. A site admin turns it on per installation in Atlassian Administration (Apps, Sites, the site, Connected apps, this app, Tools). The endpoint is `https://mcp.atlassian.com/forge/<app UUID>`. Tools run with the calling user's permissions. Over MCP there is no work item context, so pass `issueKey` such as `OPS-1`. `propose-decisions` only saves proposals and `draft-condition` only saves drafts; a person confirms them in the panel or on the Decisions page. `check-condition` takes `projectKey`.
 
 ## I-PASS structure
 
@@ -131,6 +150,9 @@ All of them:
 - Superseding a decision from the Decisions page needs a project administrator. A decision with a recorded confirmer can be superseded only by that confirmer. "Confirm and supersede" in the panel retires the older decisions the new one makes redundant that you may supersede (you are a project administrator, and you confirmed them or they have no recorded confirmer); a decision someone else confirmed stays in force and the panel names it.
 - Reassigning a work item to a different person starts a new handoff record: the earlier acknowledgements, read-back and contingency are not carried over.
 - A handoff prepared before read-back existed keeps one acknowledgement per decision, and the panel says that no read-back was checked.
+- A Jira filter decision is evaluated by Jira: as the viewer in the panel, the Rovo actions and the counts, and as the app in the workflow validator, so results can differ where permissions differ. The validator checks the stored work item, not fields changed on the transition screen. At most 5 filters per project are evaluated; the rest read as not checked. Replay on a date evaluates a filter as of now.
+- Teach-back has no contradiction pattern for a filter or a commitment: the receiver addresses them by title, and code cannot compare prose with JQL.
+- Rovo writes the filter and can write a wrong one. The counts and keys come from Jira, are shown before anything is stored, and a person confirms; the Rovo counts cover only the first 100 open work items and say so.
 
 ## Privacy and security
 
