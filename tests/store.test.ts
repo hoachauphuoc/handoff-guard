@@ -73,6 +73,15 @@ describe("handoff record saves", () => {
     await replaceRecord("1", rec);
     expect((await getRecord("1"))?.acknowledged).toEqual([]);
   });
+
+  it("keeps the save count rising across a replacement, so a change made from the old record is refused", async () => {
+    const { getRecord, putRecord, replaceRecord, RECORD_CHANGED } = await import("../src/store");
+    await replaceRecord("2", rec);
+    const old = (await getRecord("2"))!;
+    await replaceRecord("2", { ...rec, toId: "c" });
+    await expect(putRecord("2", { ...old, acknowledged: ["d1"] })).rejects.toThrow(RECORD_CHANGED);
+    expect((await getRecord("2"))?.toId).toBe("c");
+  });
 });
 
 describe("project rules", () => {

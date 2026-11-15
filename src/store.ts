@@ -59,7 +59,10 @@ export async function putRecord(issueId: string, record: HandoffRecord): Promise
 
 /** Starts a new handoff: preparing (again) and a detected reassignment replace whatever was stored, on purpose. */
 export async function replaceRecord(issueId: string, record: HandoffRecord): Promise<void> {
-  await kvs.set(recordKey(issueId), record);
+  // The save count keeps rising across a replacement, so a change made from the old record can no longer match
+  // and overwrite the new receiver's record.
+  const stored = await getRecord(issueId);
+  await kvs.set(recordKey(issueId), { ...record, rev: (stored?.rev ?? 0) + 1 });
 }
 
 export async function getProposals(issueId: string): Promise<Proposal[]> {
