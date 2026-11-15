@@ -21,7 +21,8 @@ import type { AcknowledgeAllReply, HandoffRecord, PanelState, PracticeReadBackRe
 import { explainRefusal } from "../llm";
 import { MANAGE_DENIED } from "../authz";
 import { monthCounts, type AuditAction, type AuditEvent, type MonthCounts } from "../audit";
-import { changesAsUser, doneStatusIdsAsUser, isProjectAdminAsUser, openItemsAsUser, RECENT_DAYS, recentItemsAsUser, readItemAsUser as readItem } from "../jira";
+import { changesAsUser, doneStatusIdsAsUser, isProjectAdminAsUser, latestOpenItemAsUser, openItemsAsUser, projectsAsUser, RECENT_DAYS, recentItemsAsUser, readItemAsUser as readItem } from "../jira";
+import { appIds, startView, type StartProject, type StartView } from "../guide/start";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
 import { changeText, suggestFixes } from "../rules/feasible";
@@ -140,6 +141,20 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
 }
 
 resolver.define("getPanel", ({ context }) => panelState(context as Ctx));
+
+export type StartState = StartView & { projects: StartProject[] };
+
+// The start page reads as the viewer, like the panel; it stores nothing.
+resolver.define("getStart", async ({ context, payload }): Promise<StartState> => {
+  const projects = await projectsAsUser();
+  const asked = typeof payload?.projectKey === "string" ? payload.projectKey : null;
+  const project = projects.find((p) => p.key === asked) ?? projects[0] ?? null;
+  const ids = appIds((context as { localId?: string }).localId);
+  if (!project) return { ...startView({ project: null, inForceCount: 0, itemKey: null, ids }), projects };
+  const [decisions, itemKey] = await Promise.all([getDecisions(project.key), latestOpenItemAsUser(project.key)]);
+  const inForceCount = decisions.filter((d) => d.status === "decided" && touches(d, project.key) && !(d.scope.kind === "label" && d.scope.projectKey === undefined)).length;
+  return { ...startView({ project, inForceCount, itemKey, ids }), projects };
+});
 
 resolver.define("prepareHandoff", async ({ context, payload }) => {
   const ctx = context as Ctx;

@@ -3,6 +3,7 @@ import { hasAdminPermission } from "./authz";
 import { doneStatusIds, toChanges, type Change } from "./autopsy/bounce";
 import { itemsFromSearch, toWorkItem } from "./handoff/build";
 import { JiraReadError } from "./jira-error";
+import type { StartProject } from "./guide/start";
 import type { WorkItem } from "./rules/types";
 
 // API v2 returns the description as plain text; v3 returns a document tree the rules cannot read.
@@ -29,6 +30,24 @@ async function searchAsUser(projectKey: string, rest: string): Promise<{ items: 
   const res = await api.asUser().requestJira(route`/rest/api/2/search/jql?jql=${jql}&fields=${FIELDS}&maxResults=${OPEN_ITEM_CAP}`);
   checkStatus(res, projectKey);
   return itemsFromSearch(await res.json());
+}
+
+// The projects the caller can see, for the start page's picker. At most 50: the page is a front door, not a list.
+export async function projectsAsUser(): Promise<StartProject[]> {
+  const res = await api.asUser().requestJira(route`/rest/api/3/project/search?maxResults=50&orderBy=name`);
+  checkStatus(res, "the project list");
+  const body = (await res.json()) as { values?: { key: string; name: string; projectTypeKey?: string }[] };
+  return (body.values ?? []).map((p) => ({ key: p.key, name: p.name, type: p.projectTypeKey ?? "software" }));
+}
+
+// The open work item changed last, so the start page links to something real. Null when there is none.
+export async function latestOpenItemAsUser(projectKey: string): Promise<string | null> {
+  if (!/^[A-Za-z][A-Za-z0-9_]*$/.test(projectKey)) throw new JiraReadError("jira_error", "That project key is not valid.");
+  const jql = `project = "${projectKey}" AND statusCategory != Done ORDER BY updated DESC`;
+  const res = await api.asUser().requestJira(route`/rest/api/3/search/jql?jql=${jql}&fields=summary&maxResults=1`);
+  checkStatus(res, projectKey);
+  const body = (await res.json()) as { issues?: { key: string }[] };
+  return body.issues?.[0]?.key ?? null;
 }
 
 // When Jira asks for consent the error says so; it is never retried as the app, which would hide the

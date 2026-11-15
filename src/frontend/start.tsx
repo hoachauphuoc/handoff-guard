@@ -1,0 +1,70 @@
+import React, { useEffect, useState } from "react";
+import ForgeReconciler, { Button, Heading, Label, Lozenge, SectionMessage, Select, Stack, Text } from "@forge/react";
+import { invoke, router } from "@forge/bridge";
+import { GLOSSARY, NO_PROJECT_TEXT, START_INTRO, START_TITLE } from "../guide/start";
+import { plainError } from "../errors";
+import type { StartState } from "../resolvers";
+
+const STATE_LOOK = { done: { text: "Done", appearance: "success" }, next: { text: "Next", appearance: "inprogress" }, open: { text: "Then", appearance: "default" } } as const;
+
+const App = () => {
+  const [state, setState] = useState<StartState | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = (projectKey?: string) =>
+    invoke<StartState>("getStart", projectKey ? { projectKey } : {}).then(
+      (s) => {
+        setState(s as StartState);
+        setError(null);
+      },
+      (e) => setError(plainError(e)),
+    );
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const options = (state?.projects ?? []).map((p) => ({ label: `${p.name} (${p.key})`, value: p.key }));
+  const chosen = options.find((o) => o.value === state?.project?.key);
+
+  return (
+    <Stack space="space.200">
+      <Heading as="h1">{START_TITLE}</Heading>
+      <Text>{START_INTRO}</Text>
+      {error && <SectionMessage appearance="error" title="The start page could not be read">{<Text>{error}</Text>}</SectionMessage>}
+      {!state && !error && <Text>Reading your projects…</Text>}
+      {state && state.projects.length === 0 && <Text>{NO_PROJECT_TEXT}</Text>}
+      {state && state.projects.length > 1 && (
+        <Stack space="space.050">
+          <Label labelFor="start-project">Project</Label>
+          <Select inputId="start-project" name="start-project" options={options} value={chosen} onChange={(o: { value: string }) => void load(o.value)} />
+        </Stack>
+      )}
+      {state?.steps.map((s) => (
+        <Stack key={s.n} space="space.100">
+            <Heading as="h2">{`${s.n}. ${s.title}`}</Heading>
+            <Lozenge appearance={STATE_LOOK[s.state].appearance}>{STATE_LOOK[s.state].text}</Lozenge>
+            <Text>{s.how}</Text>
+            {s.href && (
+              <Button appearance={s.state === "next" ? "primary" : "default"} onClick={() => void router.navigate(s.href!)}>
+                {s.button}
+              </Button>
+            )}
+        </Stack>
+      ))}
+      <Heading as="h2">Jira words used here</Heading>
+      <Stack space="space.050">
+        {GLOSSARY.map((g) => (
+          <Text key={g.word}>{`${g.word}: ${g.meaning}`}</Text>
+        ))}
+      </Stack>
+      <Text>Jira's own menus cannot be changed by an app; the buttons above take you past them.</Text>
+    </Stack>
+  );
+};
+
+ForgeReconciler.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
