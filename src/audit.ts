@@ -31,7 +31,7 @@ export const AUDIT_TEXT: Record<AuditAction, string> = {
   handoff_acknowledged: "acknowledged with a read-back",
   readback_refused: "had a read-back refused",
   data_deleted: "deleted this project's app data",
-  rule_changed: "switched a project rule",
+  rule_changed: "released or retired a project rule",
 };
 
 export type MonthCounts = { month: string; prepared: number; acknowledged: number; refused: number; decisions: number };

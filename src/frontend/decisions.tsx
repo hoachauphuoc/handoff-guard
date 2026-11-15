@@ -6,6 +6,8 @@ import { AUDIT_TEXT } from "../audit";
 import { MANAGE_DENIED } from "../authz";
 import { plainError } from "../errors";
 import { count } from "../plural";
+import type { RuleImpact } from "../handoff/impact";
+import type { ProjectRule as RuleName } from "../autopsy/causes";
 import type { AutopsyState, DecisionsPageView, ReplayState } from "../resolvers";
 
 const VERDICT = { blocked: { text: "Blocked", appearance: "removed" }, needs_info: { text: "Needs info", appearance: "moved" } } as const;
@@ -33,6 +35,7 @@ const App = () => {
   const [autopsyNote, setAutopsyNote] = useState<string | null>(null);
   const [exported, setExported] = useState<string | null>(null);
   const [deleteKey, setDeleteKey] = useState("");
+  const [pending, setPending] = useState<{ rule: RuleName; impact: RuleImpact } | null>(null);
   const [dataNote, setDataNote] = useState<string | null>(null);
   const [state, setState] = useState<DecisionsPageView | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -115,9 +118,18 @@ const App = () => {
       (e) => setAutopsyNote(plainError(e)),
     );
   };
-  const setRule = (rule: "requireContingency" | "requireIfThen", on: boolean) =>
+  const setRule = (rule: RuleName, on: boolean) =>
     invoke("setProjectRule", { rule, on }).then(
-      () => load(),
+      () => {
+        setPending(null);
+        return load();
+      },
+      (e) => setAutopsyNote(plainError(e)),
+    );
+  // A release is two steps: the administrator first sees what it would do to today's handoffs.
+  const previewRule = (rule: RuleName) =>
+    invoke<RuleImpact>("previewRule", { rule }).then(
+      (impact) => setPending({ rule, impact: impact as RuleImpact }),
       (e) => setAutopsyNote(plainError(e)),
     );
   const exportData = () =>
@@ -314,27 +326,41 @@ const App = () => {
           )}
         </Stack>
       )}
-      <Text>Project rules (off unless a project administrator switches them on)</Text>
+      <Text>Governance: rules this project can release (a rule is a draft until a project administrator releases it)</Text>
       {(
         [
           ["requireContingency", "Require a contingency from the sender", "no_contingency"],
           ["requireIfThen", 'Require the contingency to be written as "if … then …"', "contingency_not_if_then"],
+          ["requireReceiverAssigned", "Require the work item to be assigned to the receiver", "receiver_not_assignee"],
         ] as const
       ).map(([rule, label, cause]) => {
         const seen = autopsy?.causes.find((c) => c.id === cause);
+        const released = state.rules[rule];
         return (
           <Stack key={rule} space="space.050">
             <Text>
-              <Lozenge appearance={state.rules[rule] ? "success" : "default"}>{state.rules[rule] ? "On" : "Off"}</Lozenge> {label}
+              <Lozenge appearance={released ? "success" : "default"}>{released ? "Released" : "Draft"}</Lozenge> {label}
               {seen && autopsy && autopsy.bounced.length > 0 ? ` (${seen.bouncedWith} of ${autopsy.bounced.length} bounced handoffs lacked this)` : ""}
             </Text>
-            {state.canManage && <Button onClick={() => void setRule(rule, !state.rules[rule])}>{state.rules[rule] ? "Switch off" : "Switch on"}</Button>}
+            {state.canManage && released && <Button onClick={() => void setRule(rule, false)}>Retire this rule</Button>}
+            {state.canManage && !released && <Button onClick={() => void previewRule(rule)}>See what releasing it would change</Button>}
+            {pending?.rule === rule && (
+              <Stack space="space.050">
+                <Text>
+                  {pending.impact.wouldTurn === 0
+                    ? `Of ${count(pending.impact.checked, "prepared handoff")} read, none that is Clear now would need information.`
+                    : `Of ${count(pending.impact.checked, "prepared handoff")} read, ${pending.impact.wouldTurn} that ${pending.impact.wouldTurn === 1 ? "is" : "are"} Clear now would need information: ${pending.impact.keys.join(", ")}.`}
+                </Text>
+                <Button appearance="primary" onClick={() => void setRule(rule, true)}>Release this rule</Button>
+                <Button onClick={() => setPending(null)}>Keep it a draft</Button>
+              </Stack>
+            )}
           </Stack>
         );
       })}
       <Text>
-        A rule that is on is checked by the same rule check as everything else: a handoff that lacks it is Needs info in the panel and is
-        refused by the workflow validator.
+        A released rule is checked by the same rule check as everything else: a handoff that lacks it is Needs info in the panel and is
+        refused by the workflow validator. Rules come from this fixed list; code decides, and every release or retirement is written to Activity.
       </Text>
       <Text>Handoffs in flight</Text>
       {state.inFlight.length === 0 && <Text>No prepared handoff in this project is waiting on anything.</Text>}

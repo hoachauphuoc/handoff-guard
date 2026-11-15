@@ -14,7 +14,7 @@ export type AutopsyHandoff = {
 };
 
 /** The optional rules a project administrator can switch on. Each matches one cause below. */
-export type ProjectRule = "requireContingency" | "requireIfThen";
+export type ProjectRule = "requireContingency" | "requireIfThen" | "requireReceiverAssigned";
 
 export type CauseId = "no_contingency" | "contingency_not_if_then" | "changed_after_read_back" | "no_read_back" | "no_binding_decision";
 

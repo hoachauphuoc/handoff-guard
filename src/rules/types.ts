@@ -45,9 +45,9 @@ export type Decision = {
   supersededBy?: string;
 };
 
-/** Optional checks a project administrator switched on for one project. Both off is the app as installed. */
-export type ProjectRules = { requireContingency: boolean; requireIfThen: boolean };
-export const NO_RULES: ProjectRules = { requireContingency: false, requireIfThen: false };
+/** Optional checks a project administrator switched on for one project. All off is the app as installed. */
+export type ProjectRules = { requireContingency: boolean; requireIfThen: boolean; requireReceiverAssigned: boolean };
+export const NO_RULES: ProjectRules = { requireContingency: false, requireIfThen: false, requireReceiverAssigned: false };
 
 export type Handoff = {
   item: WorkItem;
@@ -77,7 +77,8 @@ export type Finding = {
     | "contradicts_decision"
     | "decision_not_acknowledged"
     | "no_contingency"
-    | "contingency_not_if_then";
+    | "contingency_not_if_then"
+    | "receiver_not_assignee";
   severity: "block" | "info_needed";
   message: string;
   decisionId?: string;

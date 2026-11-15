@@ -7,6 +7,7 @@ import { unrecordedMarked, type MarkedState } from "../decisions/marked";
 import { hypothetical } from "../decisions/hypothetical";
 import { buildManualDecision, readManualInput } from "../decisions/manual";
 import { leavingView, type LeavingView } from "../decisions/leaving";
+import { ruleImpact, type RuleImpact } from "../handoff/impact";
 import { buildDecisionsPage, projectOfKey, touches, type DecisionsPageState } from "../decisions/page";
 import { acknowledge, acknowledgeAll, checkReadBack } from "../handoff/acknowledge";
 import { mayPrepare, PREPARE_DENIED } from "../handoff/prepare";
@@ -453,13 +454,27 @@ resolver.define("setProjectRule", async ({ context, payload }) => {
   const projectKey = String(ctx.extension.project.key);
   await requireAdmin(projectKey);
   const { rule, on } = (payload ?? {}) as { rule?: unknown; on?: unknown };
-  if (rule !== "requireContingency" && rule !== "requireIfThen") throw new Error("That is not a rule this project can switch.");
+  if (!isCatalogueRule(rule)) throw new Error("That is not a rule this project can switch.");
   // Anything but a plain true or false is refused: a malformed call must not read as "switch it off".
   if (typeof on !== "boolean") throw new Error("Say whether the rule is on or off.");
   const next = { ...(await getRules(projectKey)), [rule]: on };
   await putRules(projectKey, next);
-  await log(projectKey, ctx.accountId, "rule_changed", `${rule} ${on ? "on" : "off"}`);
+  await log(projectKey, ctx.accountId, "rule_changed", `${rule} ${on ? "released" : "retired"}`);
   return next;
+});
+
+const CATALOGUE = ["requireContingency", "requireIfThen", "requireReceiverAssigned"] as const;
+const isCatalogueRule = (r: unknown): r is (typeof CATALOGUE)[number] => typeof r === "string" && (CATALOGUE as readonly string[]).includes(r);
+
+// Shown to the administrator before a release: how many handoffs that are Clear today would need information.
+resolver.define("previewRule", async ({ context, payload }): Promise<RuleImpact> => {
+  const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
+  await requireAdmin(projectKey);
+  const { rule } = (payload ?? {}) as { rule?: unknown };
+  if (!isCatalogueRule(rule)) throw new Error("That is not a rule this project can switch.");
+  const [open, decisions, rules] = await Promise.all([openItemsAsUser(projectKey), getDecisions(projectKey), getRules(projectKey)]);
+  const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
+  return ruleImpact(open.items.map((i, n) => ({ item: i.item, record: records[n] ?? null })), decisions, rules, rule);
 });
 
 const AUTOPSY_CAP = 50;

@@ -125,6 +125,7 @@ describe("hints", () => {
     "decision_not_acknowledged",
     "no_contingency",
     "contingency_not_if_then",
+    "receiver_not_assignee",
   ];
   it("covers every rule with one imperative sentence and no verdict language", () => {
     expect(Object.keys(HINTS).sort()).toEqual([...rules].sort());

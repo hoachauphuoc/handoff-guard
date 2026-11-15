@@ -13,5 +13,6 @@ export const HINTS: Record<Finding["rule"], string> = {
   contradicts_decision: "Change the work item to fit the decision, or ask the decision owner to supersede it.",
   no_contingency: "The sender writes it in the panel: if something goes wrong, then what.",
   contingency_not_if_then: "Rewrite the contingency as: if something happens, then what the receiver should do.",
+  receiver_not_assignee: "Assign the work item to the receiver, or prepare the handoff again for the current assignee.",
   decision_not_acknowledged: "The receiver acknowledges it in the panel; a handoff prepared now takes one read-back for all its decisions.",
 };

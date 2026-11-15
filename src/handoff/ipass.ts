@@ -31,6 +31,7 @@ const OWNER: Record<Finding["rule"], Owner> = {
   decision_not_acknowledged: "receiver",
   no_contingency: "sender",
   contingency_not_if_then: "sender",
+  receiver_not_assignee: "sender",
 };
 const WITH_HINT: Finding["rule"][] = ["empty_description", "no_due_date", "invalid_due_date"];
 

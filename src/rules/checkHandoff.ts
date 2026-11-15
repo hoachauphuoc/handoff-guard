@@ -123,13 +123,18 @@ export function checkHandoff(handoff: Handoff, decisions: Decision[]): HandoffRe
     });
   }
 
-  // Optional rules of the project. Both are information the sender still owes, never a block, and with no
+  // Optional rules of the project. Each is information the sender still owes, never a block, and with no
   // rules switched on this adds nothing: the check is then exactly what it was.
   const contingency = (handoff.contingency ?? "").trim();
   if (handoff.rules?.requireContingency && contingency === "") {
     findings.push({ rule: "no_contingency", severity: "info_needed", message: "The sender has not written a contingency, which this project requires." });
   } else if (handoff.rules?.requireIfThen && contingency !== "" && !isIfThen(contingency)) {
     findings.push({ rule: "contingency_not_if_then", severity: "info_needed", message: `The contingency is not written as "if … then …" in at least ${CONTINGENCY_MIN} characters, which this project requires.` });
+  }
+
+  // A Clear handoff says the receiver read the decisions back; this rule also asks that the work is theirs.
+  if (handoff.rules?.requireReceiverAssigned && handoff.toId !== null && (item.assigneeId === null || norm(item.assigneeId) !== norm(handoff.toId))) {
+    findings.push({ rule: "receiver_not_assignee", severity: "info_needed", message: "The work item is not assigned to the receiver, which this project requires." });
   }
 
   const binding = bindingDecisions(decisions, item);
