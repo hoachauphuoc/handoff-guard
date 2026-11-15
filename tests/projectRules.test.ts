@@ -53,8 +53,7 @@ describe("the if-then form", () => {
 describe("every verdict for a stored handoff reads the project's rules", () => {
   it("passes rules wherever src builds a handoff from a record", () => {
     for (const source of [coreRaw, contextRaw, leavingRaw, inflightRaw, resolversRaw, validatorRaw]) {
-      const calls = source.split("
-").filter((l: string) => l.includes("handoffFrom(") && !l.includes("import"));
+      const calls = source.split(/\r?\n/).filter((l: string) => l.includes("handoffFrom(") && !l.includes("import"));
       expect(calls.length).toBeGreaterThan(0);
       for (const line of calls) expect(line).toMatch(/[rR]ules/);
     }
