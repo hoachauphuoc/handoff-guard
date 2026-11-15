@@ -121,8 +121,15 @@ export async function getRules(projectKey: string): Promise<ProjectRules> {
   return { ...NO_RULES, ...((await kvs.get<Partial<ProjectRules>>(rulesKey(projectKey))) ?? {}) };
 }
 
-export async function putRules(projectKey: string, rules: ProjectRules): Promise<void> {
-  await kvs.set(rulesKey(projectKey), rules);
+/**
+ * Changes one rule. The stored rules are read again right before the write, so a rule another administrator
+ * switched a moment ago is kept; without that, two switches would overwrite each other. As with decisions,
+ * this narrows the race and does not close it.
+ */
+export async function setRule(projectKey: string, rule: keyof ProjectRules, on: boolean): Promise<ProjectRules> {
+  const next = { ...(await getRules(projectKey)), [rule]: on };
+  await kvs.set(rulesKey(projectKey), next);
+  return next;
 }
 
 const draftKey = (issueId: string) => `receipt-draft:${issueId}`;

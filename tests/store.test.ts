@@ -77,10 +77,17 @@ describe("handoff record saves", () => {
 
 describe("project rules", () => {
   it("are off until stored, per project", async () => {
-    const { getRules, putRules } = await import("../src/store");
+    const { getRules, setRule } = await import("../src/store");
     expect(await getRules("OPS")).toMatchObject({ requireContingency: false, requireIfThen: false });
-    await putRules("OPS", { requireContingency: true, requireIfThen: false, requireReceiverAssigned: false });
+    await setRule("OPS", "requireContingency", true);
     expect(await getRules("ops")).toMatchObject({ requireContingency: true, requireIfThen: false });
     expect(await getRules("HR")).toMatchObject({ requireContingency: false, requireIfThen: false });
+  });
+
+  it("switching one rule keeps the others", async () => {
+    const { getRules, setRule } = await import("../src/store");
+    await setRule("OPS", "requireContingency", true);
+    await setRule("OPS", "requireIfThen", true);
+    expect(await getRules("OPS")).toMatchObject({ requireContingency: true, requireIfThen: true });
   });
 });

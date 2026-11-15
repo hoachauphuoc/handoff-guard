@@ -33,7 +33,7 @@ import type { Proposal } from "../decisions/types";
 import type { Decision, Finding, ProjectRules } from "../rules/types";
 import { hasSamples, mergeDecisions, sampleDecisions, withoutSamples } from "../samples/decisions";
 import { readSourceAsUser } from "../source";
-import { addAudit, deleteDraft, deleteItemData, getAudit, getDecisions, getDraft, getProposals, getRecord, putProposals, getRules, purgeLegacyDecisions, putRecord, putRules, replaceRecord, resetAudit, updateDecisions } from "../store";
+import { addAudit, deleteDraft, deleteItemData, getAudit, getDecisions, getDraft, getProposals, getRecord, putProposals, getRules, purgeLegacyDecisions, putRecord, setRule, replaceRecord, resetAudit, updateDecisions } from "../store";
 
 const resolver = new Resolver();
 
@@ -457,8 +457,7 @@ resolver.define("setProjectRule", async ({ context, payload }) => {
   if (!isCatalogueRule(rule)) throw new Error("That is not a rule this project can switch.");
   // Anything but a plain true or false is refused: a malformed call must not read as "switch it off".
   if (typeof on !== "boolean") throw new Error("Say whether the rule is on or off.");
-  const next = { ...(await getRules(projectKey)), [rule]: on };
-  await putRules(projectKey, next);
+  const next = await setRule(projectKey, rule, on);
   await log(projectKey, ctx.accountId, "rule_changed", `${rule} ${on ? "released" : "retired"}`);
   return next;
 });
