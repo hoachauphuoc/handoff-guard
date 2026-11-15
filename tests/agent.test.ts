@@ -1,7 +1,11 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from "vitest";
 import manifest from "../manifest.yml?raw";
-import { CheckHandoffInputSchema, DraftReceiptInputSchema, GatherInputSchema, ListBindingInputSchema, ProposeInputSchema, ReadSourceInputSchema } from "../src/actions/schema";
+import {
+  CheckConditionInputSchema,
+  CheckHandoffInputSchema,
+  DraftConditionInputSchema,
+  DraftReceiptInputSchema, GatherInputSchema, ListBindingInputSchema, ProposeInputSchema, ReadSourceInputSchema } from "../src/actions/schema";
 
 // The manifest is read as text on purpose: no YAML dependency, and the prompt wording is what is pinned.
 describe("agent manifest", () => {
@@ -62,6 +66,8 @@ describe("agent manifest", () => {
     expect(inputNames("propose-decisions").sort()).toEqual(Object.keys(ProposeInputSchema.properties).sort());
     expect(inputNames("gather-handoff-context").sort()).toEqual(Object.keys(GatherInputSchema.properties).sort());
     expect(inputNames("draft-receipt").sort()).toEqual(Object.keys(DraftReceiptInputSchema.properties).sort());
+    expect(inputNames("check-condition").sort()).toEqual(Object.keys(CheckConditionInputSchema.properties).sort());
+    expect(inputNames("draft-condition").sort()).toEqual(Object.keys(DraftConditionInputSchema.properties).sort());
   });
 });
 
@@ -74,12 +80,27 @@ describe("Rovo MCP module", () => {
     const mcp = section("  rovo:mcp:", "\n  action:\n");
     expect(keys(mcp, /^ {8}- (\S+)/gm)).toEqual(actionKeys);
     expect(keys(section("      actions:", "\n  rovo:mcp:"), /^ {8}- (\S+)/gm)).toEqual(actionKeys);
-    expect(actionKeys).toHaveLength(6);
+    expect(actionKeys).toHaveLength(8);
   });
 
   it("is one module with the agreed key and name", () => {
     expect(manifest.match(/^ {2}rovo:mcp:/gm)).toHaveLength(1);
     expect(manifest).toContain("- key: handoff-guard-mcp\n      name: Handoff Guard");
+  });
+});
+
+describe("condition assistant rule", () => {
+  it("checks before answering, relays Jira's words and never puts a condition in force", () => {
+    for (const phrase of [
+      "always call check-condition before you answer",
+      "give the errors word for word and offer a corrected JQL",
+      "Never say whether the rule is a good idea and never call the counts a verdict",
+      "Only when the administrator asks you to save it, call draft-condition",
+      "Never say a condition is in force",
+      "only the first 100 open work items were counted",
+    ]) {
+      expect(manifest).toContain(phrase);
+    }
   });
 });
 

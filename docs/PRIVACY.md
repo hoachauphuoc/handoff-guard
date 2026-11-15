@@ -18,6 +18,7 @@ Handoff Guard stores only work records, in Forge storage of the installation. It
 
 - No chat. Rovo conversations are not saved by the app; the agent prompt forbids it.
 - No copy of work item descriptions or comments beyond the short evidence quote in a proposal or confirmed decision.
+- Conditions drafted with Rovo are stored per project (`condition-drafts:<project>`, at most 10): a title, the Jira filter (JQL), the decision it would replace, who asked and when. Nothing of the chat is stored with it. A draft binds nothing until a project administrator confirms or discards it on the Decisions page.
 - No Teamwork Graph results: they are read at request time and not saved. Teamwork Graph people are shown at request time and not stored by the app; Rovo's own chat history is governed by Atlassian.
 
 ## Forge LLMs
@@ -31,4 +32,4 @@ When a read-back is refused because it contradicts a decision, the app sends the
 
 ## Deletion
 
-Uninstalling the app removes its Forge storage. A project administrator can also export everything the app holds for a project as JSON from the Decisions page, and delete it there (decisions, the activity list, and the handoffs, drafts and proposals of up to 100 open work items that administrator can see); the administrator types the project key to confirm. Records on closed work items or items past that cap, and the project's rule switches, stay until the app is uninstalled. Account IDs are kept in handoff records and in the activity list (the latest 300 events), and deleting one person's data on request is not supported; contact us through GitHub issues. Dismissing a proposal deletes it; it may be proposed again.
+Uninstalling the app removes its Forge storage. A project administrator can also export everything the app holds for a project as JSON from the Decisions page, and delete it there (decisions, condition drafts, the activity list, and the handoffs, drafts and proposals of up to 100 open work items that administrator can see); the administrator types the project key to confirm. Records on closed work items or items past that cap, and the project's rule switches, stay until the app is uninstalled. Account IDs are kept in handoff records and in the activity list (the latest 300 events), and deleting one person's data on request is not supported; contact us through GitHub issues. Dismissing a proposal deletes it; it may be proposed again.

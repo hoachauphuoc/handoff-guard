@@ -34,7 +34,27 @@ import type { Proposal } from "../decisions/types";
 import type { Decision, Finding, ProjectRules } from "../rules/types";
 import { hasSamples, mergeDecisions, sampleDecisions, withoutSamples } from "../samples/decisions";
 import { readSourceAsUser } from "../source";
-import { addAudit, deleteDraft, deleteItemData, getAudit, getDecisions, getDraft, getProposals, getRecord, putProposals, getRules, purgeLegacyDecisions, putRecord, setRule, replaceRecord, resetAudit, updateDecisions } from "../store";
+import {
+  addAudit,
+  deleteConditionDrafts,
+  deleteDraft,
+  deleteItemData,
+  getAudit,
+  getConditionDrafts,
+  getDecisions,
+  getDraft,
+  getProposals,
+  getRecord,
+  putConditionDrafts,
+  putProposals,
+  getRules,
+  purgeLegacyDecisions,
+  putRecord,
+  setRule,
+  replaceRecord,
+  resetAudit,
+  updateDecisions,
+} from "../store";
 
 const resolver = new Resolver();
 
@@ -356,14 +376,24 @@ resolver.define("getMarked", async ({ context }): Promise<MarkedState> => {
 // may see, and the page says when the cap cut the list. Nothing is written.
 const ACTIVITY_SHOWN = 20;
 
-export type DecisionsPageView = DecisionsPageState & { activity: AuditEvent[]; counts: MonthCounts[]; clashes: { a: string; b: string }[]; rules: ProjectRules };
+/** A condition Rovo drafted, as the Decisions page shows it: not in force until a person confirms it. */
+export type DraftView = { id: string; title: string; jql: string; supersedes: { id: string; title: string } | null; at: string };
+
+export type DecisionsPageView = DecisionsPageState & {
+  activity: AuditEvent[];
+  counts: MonthCounts[];
+  clashes: { a: string; b: string }[];
+  rules: ProjectRules;
+  drafts: DraftView[];
+};
 
 resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageView> => {
   const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
   const viewerId = (context as { accountId?: string }).accountId ?? null;
   const [open, decisions, canManage] = await Promise.all([openItemsAsUser(projectKey), getDecisions(projectKey), isProjectAdminAsUser(projectKey)]);
-  const [audit, rules] = await Promise.all([getAudit(projectKey), getRules(projectKey)]);
+  const [audit, rules, drafts] = await Promise.all([getAudit(projectKey), getRules(projectKey), getConditionDrafts(projectKey)]);
   const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
+  const titleOf = (id: string) => decisions.find((d) => d.id === id)?.title ?? id;
   return {
     ...buildDecisionsPage(
       projectKey,
@@ -379,6 +409,7 @@ resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageVi
     clashes: storedClashes(decisions.filter((d) => touches(d, projectKey))).map((c) => ({ a: c.a.title, b: c.b.title })),
     activity: audit.slice(0, ACTIVITY_SHOWN),
     counts: monthCounts(audit),
+    drafts: drafts.map((d) => ({ id: d.id, title: d.title, jql: d.jql, supersedes: d.supersedes ? { id: d.supersedes, title: titleOf(d.supersedes) } : null, at: d.at })),
   };
 });
 
@@ -482,6 +513,39 @@ resolver.define("addDecision", async ({ context, payload }) => {
   await log(projectKey, ctx.accountId, "decision_added", decision.id);
 });
 
+// A draft from Rovo becomes a decision only here, by a person, through the same build and Jira check as the form.
+resolver.define("confirmConditionDraft", async ({ context, payload }) => {
+  const ctx = context as Parameters<typeof manualDecision>[0];
+  const projectKey = String(ctx.extension.project.key);
+  await requireAdmin(projectKey);
+  const id = String((payload as { draftId?: string }).draftId ?? "");
+  const draft = (await getConditionDrafts(projectKey)).find((d) => d.id === id);
+  if (!draft) throw new Error("That draft is no longer waiting. Reload the page.");
+  const input = { title: draft.title, scope: "project", constraint: "condition", constraintValue: draft.jql, supersede: draft.supersedes !== null };
+  const { decision, retire, stored } = await manualDecision(ctx, input);
+  const ids = [...retire];
+  if (draft.supersedes !== null) {
+    const target = stored.find((d) => d.id === draft.supersedes && d.status === "decided");
+    if (!target) throw new Error("The decision this draft replaces is no longer in force. Discard the draft or ask Rovo for a new one. Nothing was saved.");
+    if (!canSupersede(target, ctx.accountId ?? "")) throw new Error(`Only the person who confirmed "${target.title}" can supersede it. Nothing was saved.`);
+    if (!ids.includes(target.id)) ids.push(target.id);
+  }
+  const nowIso = new Date().toISOString();
+  await updateDecisions(projectKey, (current) => mergeDecisions(supersede(current, ids, nowIso, decision.id), [decision]));
+  await putConditionDrafts(projectKey, (await getConditionDrafts(projectKey)).filter((d) => d.id !== id));
+  await log(projectKey, ctx.accountId, "decision_added", decision.id);
+  for (const retired of ids) await log(projectKey, ctx.accountId, "decision_superseded", retired);
+});
+
+resolver.define("discardConditionDraft", async ({ context, payload }) => {
+  const ctx = context as { accountId?: string; extension: { project: { key: string } } };
+  const projectKey = String(ctx.extension.project.key);
+  await requireAdmin(projectKey);
+  const id = String((payload as { draftId?: string }).draftId ?? "");
+  await putConditionDrafts(projectKey, (await getConditionDrafts(projectKey)).filter((d) => d.id !== id));
+  await log(projectKey, ctx.accountId, "draft_discarded", id);
+});
+
 // A project administrator switches an optional rule on or off. From then on the rule check asks for it in
 // every handoff of the project: panel, validator, context row and the Rovo actions read the same setting.
 resolver.define("setProjectRule", async ({ context, payload }) => {
@@ -550,10 +614,10 @@ resolver.define("bounceAutopsy", async ({ context }): Promise<AutopsyState> => {
 resolver.define("exportProject", async ({ context }) => {
   const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
   await requireAdmin(projectKey);
-  const [open, decisions, activity] = await Promise.all([openItemsAsUser(projectKey), getDecisions(projectKey), getAudit(projectKey)]);
+  const [open, decisions, activity, drafts] = await Promise.all([openItemsAsUser(projectKey), getDecisions(projectKey), getAudit(projectKey), getConditionDrafts(projectKey)]);
   const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
   const handoffs = open.items.flatMap((i, n) => (records[n] ? [{ key: i.item.key, record: records[n] }] : []));
-  return JSON.stringify({ project: projectKey, exportedAt: new Date().toISOString(), openItemsCapped: open.capped, decisions, handoffs, activity }, null, 2);
+  return JSON.stringify({ project: projectKey, exportedAt: new Date().toISOString(), openItemsCapped: open.capped, decisions, drafts, handoffs, activity }, null, 2);
 });
 
 // Deletes what the export above lists. The administrator types the project key, checked here on the server, so
@@ -569,6 +633,7 @@ resolver.define("deleteProjectData", async ({ context, payload }) => {
   await Promise.all(open.items.map((i) => deleteItemData(i.issueId)));
   await updateDecisions(projectKey, () => []);
   await purgeLegacyDecisions(projectKey);
+  await deleteConditionDrafts(projectKey);
   await resetAudit(projectKey, { at: new Date().toISOString(), who: ctx.accountId ?? "unknown", action: "data_deleted", ref: projectKey });
   return { items: open.items.length, capped: open.capped };
 });

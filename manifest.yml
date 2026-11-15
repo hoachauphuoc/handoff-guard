@@ -114,6 +114,8 @@ modules:
         18. When a gather-handoff-context result has ipass.actions, list each action word for word with its owner (sender, receiver or decision owner) under the heading "Action list", in a brief inside "What the receiver must do" for the receiver's actions. Say the I-PASS name from ipass.severity next to the verdict, as a label for it and never as a second verdict. If ipass.contingency is set, quote it word for word under "Contingency from the sender"; if ipass.contingencyAdvisory is set, repeat it and say it is advisory; if there is no contingency, say the sender has not written one. Never write an action, a contingency or a read-back yourself and never offer to save one: the sender and the receiver write them in the panel. A read-back checks that each decision is addressed, not that it was understood.
 
         19. Only when the user asks you to fill in or draft their answers to the binding decisions: call list-binding-decisions, read its slots, then call draft-receipt with one answer per slot taken from what the user said (a date written YYYY-MM-DD, or "yes"). Never choose an answer yourself; ask the user for any that is missing. Begin with the quote field of draft-receipt, copied exactly. A saved draft acknowledges nothing: say that the receiver has to check it and sign it in the Handoff Guard panel. If the draft is refused, give the reasons word for word and save nothing else.
+
+        20. When a project administrator asks which conditions are in force, whether a rule would work, or how to change one: write the rule as a Jira filter (JQL) without ORDER BY, such as priority = Highest, and always call check-condition before you answer, with that jql (or with no jql for the conditions in force). Begin with its quote field, copied exactly, then show the JQL and the counts exactly as returned; say when capped is true that only the first 100 open work items were counted. If checked.errors is not empty, give the errors word for word and offer a corrected JQL, then check it again. Never say whether the rule is a good idea and never call the counts a verdict. Only when the administrator asks you to save it, call draft-condition with the same jql and their words as the title, and supersedes set to the decisionId of the condition it replaces, if any. Never say a condition is in force: a draft binds nothing until a project administrator confirms it on the Decisions page.
       actions:
         - check-handoff
         - list-binding-decisions
@@ -121,6 +123,8 @@ modules:
         - propose-decisions
         - gather-handoff-context
         - draft-receipt
+        - check-condition
+        - draft-condition
   rovo:mcp:
     - key: handoff-guard-mcp
       name: Handoff Guard
@@ -131,6 +135,8 @@ modules:
         - propose-decisions
         - gather-handoff-context
         - draft-receipt
+        - check-condition
+        - draft-condition
   action:
     - key: check-handoff
       name: Check handoff
@@ -213,6 +219,48 @@ modules:
           type: string
           required: true
           description: 'A JSON object, as a string, from slot key to answer, using the slots that list-binding-decisions returns: a date written YYYY-MM-DD for a date slot, "yes" for a confirmation slot. Only values the user gave.'
+    - key: check-condition
+      name: Check condition
+      function: check-condition-fn
+      actionVerb: GET
+      description: Lists the Jira filter conditions in force in a project with how many open work items match each, and, when a filter is given, asks Jira whether it can run and counts the open work items that match and do not. Reads only; stores nothing.
+      inputs:
+        projectKey:
+          title: Project key
+          type: string
+          required: false
+          description: The project key the administrator gave, such as MOBL. Leave empty when none was given; the project of the work item the chat was opened from is then used.
+        jql:
+          title: Jira filter (JQL)
+          type: string
+          required: false
+          description: A Jira filter (JQL) without ORDER BY that a work item must match, such as priority = Highest. Leave empty to list the conditions already in force.
+    - key: draft-condition
+      name: Draft condition
+      function: draft-condition-fn
+      actionVerb: GET
+      description: For a project administrator only. Stores a Jira filter condition as a draft on the Decisions page. A draft binds no work item until a project administrator confirms it there. Changes no decision and no Jira data.
+      inputs:
+        projectKey:
+          title: Project key
+          type: string
+          required: false
+          description: The project key the administrator gave, such as MOBL. Leave empty when none was given; the project of the work item the chat was opened from is then used.
+        title:
+          title: Title
+          type: string
+          required: true
+          description: "The rule in the administrator's words, such as: Only Highest priority goes to review."
+        jql:
+          title: Jira filter (JQL)
+          type: string
+          required: true
+          description: The Jira filter (JQL) exactly as check-condition was last called with.
+        supersedes:
+          title: Replaces decision
+          type: string
+          required: false
+          description: The decisionId of a condition in force that this one replaces, from the check-condition result. Leave empty when it replaces nothing.
   function:
     - key: resolver
       handler: index.handler
@@ -234,6 +282,10 @@ modules:
       handler: index.gatherHandoffContextAction
     - key: draft-receipt-fn
       handler: index.draftReceiptAction
+    - key: check-condition-fn
+      handler: index.checkConditionAction
+    - key: draft-condition-fn
+      handler: index.draftConditionAction
     - key: context-props
       handler: index.contextProperties
   # Forge LLMs writes the sentence beside a teach-back refusal; the refusal itself is plain code.

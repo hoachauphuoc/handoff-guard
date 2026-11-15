@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, CodeBlock, DatePicker, Heading, Label, Link, Lozenge, SectionMessage, Select, Stack, Text, Textfield, User, UserPicker } from "@forge/react";
+import ForgeReconciler, { Button, CodeBlock, DatePicker, Heading, Inline, Label, Link, Lozenge, SectionMessage, Select, Stack, Strong, Text, Textfield, User, UserPicker } from "@forge/react";
 import { invoke } from "@forge/bridge";
 import type { LeavingView } from "../decisions/leaving";
 import { AUDIT_TEXT } from "../audit";
@@ -52,6 +52,8 @@ const App = () => {
   const [replayError, setReplayError] = useState<string | null>(null);
   const [leaving, setLeaving] = useState<LeavingView | null>(null);
   const [leavingError, setLeavingError] = useState<string | null>(null);
+  const [draftError, setDraftError] = useState<string | null>(null);
+  const [draftBusy, setDraftBusy] = useState(false);
 
   // A bad date or a failed read stays beside the control; it does not replace the page.
   const replayOn = (date: string) =>
@@ -91,6 +93,20 @@ const App = () => {
       () => load(),
       (e) => setError(String(e)),
     );
+
+  // Confirming runs the same checks as the form on the server; a refusal stays beside the drafts.
+  const onDraft = (call: "confirmConditionDraft" | "discardConditionDraft", draftId: string) => {
+    setDraftBusy(true);
+    return invoke(call, { draftId })
+      .then(
+        () => {
+          setDraftError(null);
+          return load();
+        },
+        (e) => setDraftError(plainError(e)),
+      )
+      .finally(() => setDraftBusy(false));
+  };
 
   // Any edit clears the preview, so the number on screen is always for the decision as it is now written.
   const edit = (patch: Partial<typeof EMPTY_FORM>) => {
@@ -240,6 +256,32 @@ const App = () => {
           )}
         </Stack>
       ))}
+      {state.drafts.length > 0 && (
+        <Stack space="space.100">
+          <Heading size="small">Drafted with Rovo (not in force)</Heading>
+          <Text>These conditions were drafted in a chat with the Handoff Guard agent. They bind no work item until a project administrator confirms them here.</Text>
+          {draftError && <SectionMessage appearance="error">{draftError}</SectionMessage>}
+          {state.drafts.map((d) => (
+            <Stack key={d.id} space="space.050">
+              <Text>
+                <Strong>{d.title}</Strong>
+              </Text>
+              <Text>{`Must match the Jira filter: ${d.jql}`}</Text>
+              {d.supersedes && <Text>{`Replaces: "${d.supersedes.title}"`}</Text>}
+              {state.canManage && (
+                <Inline space="space.100">
+                  <Button appearance="primary" isDisabled={draftBusy} onClick={() => void onDraft("confirmConditionDraft", d.id)}>
+                    {d.supersedes ? `Confirm and supersede "${d.supersedes.title}"` : "Confirm"}
+                  </Button>
+                  <Button isDisabled={draftBusy} onClick={() => void onDraft("discardConditionDraft", d.id)}>
+                    Discard
+                  </Button>
+                </Inline>
+              )}
+            </Stack>
+          ))}
+        </Stack>
+      )}
       {!state.canManage && <Text>{`Add a decision: ${MANAGE_DENIED}`}</Text>}
       {state.canManage && (
         <Stack space="space.100">

@@ -47,8 +47,12 @@ const requester = (as: As) => (as === "user" ? api.asUser() : api.asApp());
  * condition. Any failure leaves that answer null, which the rules report as not checked, never as a match.
  * The panel and the actions ask as the viewer; the validator, which has no viewer, asks as the app.
  */
-export async function withConditions<T extends { item: WorkItem }>(rows: T[], decisions: Decision[], as: As): Promise<T[]> {
-  const all = conditionJqls(decisions);
+export function withConditions<T extends { item: WorkItem }>(rows: T[], decisions: Decision[], as: As): Promise<T[]> {
+  return withJqls(rows, conditionJqls(decisions), as);
+}
+
+/** The same, for filters given as text: a filter not yet in force, asked about before anyone saves it. */
+export async function withJqls<T extends { item: WorkItem }>(rows: T[], all: string[], as: As): Promise<T[]> {
   if (all.length === 0 || rows.length === 0) return rows;
   const jqls = all.slice(0, CONDITION_CAP);
   const keys = rows.map((r) => r.item.key);

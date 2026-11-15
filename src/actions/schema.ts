@@ -12,6 +12,8 @@ export const SCHEMA_VERSION = {
   propose: "handoff-guard/propose-decisions@1",
   gather: "handoff-guard/handoff-context@1",
   draft: "handoff-guard/draft-receipt@1",
+  checkCondition: "handoff-guard/check-condition@1",
+  draftCondition: "handoff-guard/draft-condition@1",
 } as const;
 
 export const CheckHandoffInputSchema = {
@@ -68,6 +70,67 @@ export const DraftReceiptInputSchema = {
 
 export type DraftReceiptInput = { issueKey?: string; answers: string };
 
+const PROJECT_KEY = {
+  type: "string",
+  description: "The project key the administrator gave, such as MOBL. Leave empty when none was given; the project of the work item the chat was opened from is then used.",
+} as const;
+
+export const CheckConditionInputSchema = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  type: "object",
+  properties: {
+    projectKey: PROJECT_KEY,
+    jql: {
+      type: "string",
+      description: "A Jira filter (JQL) without ORDER BY that a work item must match, such as priority = Highest. Leave empty to list the conditions already in force.",
+    },
+  },
+  additionalProperties: false,
+} as const;
+
+export const DraftConditionInputSchema = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  type: "object",
+  properties: {
+    projectKey: PROJECT_KEY,
+    title: { type: "string", description: "The rule in the administrator's words, such as: Only Highest priority goes to review." },
+    jql: { type: "string", description: "The Jira filter (JQL) exactly as check-condition was last called with." },
+    supersedes: { type: "string", description: "The decisionId of a condition in force that this one replaces, from the check-condition result. Leave empty when it replaces nothing." },
+  },
+  required: ["title", "jql"],
+  additionalProperties: false,
+} as const;
+
+export type ConditionTally = { matching: number; notMatching: number; unanswered: number; notMatchingKeys: string[] };
+
+export type CheckConditionSuccess = {
+  schema: typeof SCHEMA_VERSION.checkCondition;
+  ok: true;
+  source: "rules";
+  projectKey: string;
+  /** Open work items read, at most 100; `capped` says when there were more. */
+  scanned: number;
+  capped: boolean;
+  inForce: ({ decisionId: string; title: string; jql: string } & ConditionTally)[];
+  /** Only when a filter was given: Jira's parse errors word for word, and the counts when it parsed. */
+  checked: { jql: string; errors: string[]; counts: ConditionTally | null; alreadyInForce: string | null } | null;
+  quote: string;
+};
+export type CheckConditionOutput = CheckConditionSuccess | ActionError<typeof SCHEMA_VERSION.checkCondition>;
+
+export type DraftConditionSuccess = {
+  schema: typeof SCHEMA_VERSION.draftCondition;
+  ok: true;
+  source: "rules";
+  projectKey: string;
+  draftId: string;
+  title: string;
+  jql: string;
+  supersedes: string | null;
+  quote: string;
+};
+export type DraftConditionOutput = DraftConditionSuccess | ActionError<typeof SCHEMA_VERSION.draftCondition>;
+
 /** One typed answer the receiver owes; `kind` says whether it takes a date or a confirmation. */
 export type SlotView = { key: string; decision: string; kind: "date" | "confirm"; ask: string };
 
@@ -91,7 +154,7 @@ export type ReadSourceInput = ListBindingInput;
 export type ProposeInput = { issueKey?: string; candidates: string };
 export type GatherInput = { issueKey?: string };
 
-export type ErrorCode = "bad_input" | "consent" | "not_found" | "jira_error" | "internal";
+export type ErrorCode = "bad_input" | "consent" | "not_found" | "jira_error" | "not_allowed" | "internal";
 
 export type ActionError<S extends string> = {
   schema: S;

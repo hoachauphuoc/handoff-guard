@@ -8,7 +8,8 @@ import {
   runProposeDecisions,
   runReadDecisionSource,
 } from "./core";
-import { depsFor } from "./deps";
+import { runCheckCondition, runDraftCondition } from "./conditions";
+import { conditionDeps, depsFor } from "./deps";
 
 type Ctx = { accountId?: string; cloudId?: string; installContext?: string };
 
@@ -39,4 +40,12 @@ export async function draftReceiptAction(payload: unknown) {
 
 export async function gatherHandoffContextAction(payload: unknown, context: Ctx) {
   return runGatherHandoffContext(payload, callerAccountId(payload, context), depsFor(callerCloudId(payload, context)));
+}
+
+export async function checkConditionAction(payload: unknown) {
+  return runCheckCondition(payload, conditionDeps);
+}
+
+export async function draftConditionAction(payload: unknown, context: Ctx) {
+  return runDraftCondition(payload, callerAccountId(payload, context), conditionDeps);
 }

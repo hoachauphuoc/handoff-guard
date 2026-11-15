@@ -1,7 +1,8 @@
-import { readItemAsUser } from "../jira";
+import { isProjectAdminAsUser, jqlErrorsAsUser, openItemsAsUser, readItemAsUser, withJqls } from "../jira";
 import { readSourceAsUser } from "../source";
-import { getDecisions, getProposals, getRecord, getRules, putDraft, putProposals } from "../store";
+import { getConditionDrafts, getDecisions, getProposals, getRecord, getRules, putConditionDrafts, putDraft, putProposals } from "../store";
 import { peopleFromGraph } from "../twg";
+import type { ConditionDeps } from "./conditions";
 import type { Deps } from "./core";
 
 // Jira reads go through asUser() only. If that fails the action reports "consent"; it never retries as
@@ -19,3 +20,17 @@ export const depsFor = (cloudId: string | null): Deps => ({
   people: (issueId) => peopleFromGraph(cloudId, issueId),
   now: () => new Date().toISOString(),
 });
+
+// All as the caller, so the counts cover only work items the administrator can open.
+export const conditionDeps: ConditionDeps = {
+  getDecisions,
+  isAdmin: isProjectAdminAsUser,
+  jqlErrors: jqlErrorsAsUser,
+  openItems: async (projectKey, jqls) => {
+    const open = await openItemsAsUser(projectKey);
+    return { items: (await withJqls(open.items, jqls, "user")).map((r) => r.item), capped: open.capped };
+  },
+  getDrafts: getConditionDrafts,
+  putDrafts: putConditionDrafts,
+  now: () => new Date().toISOString(),
+};

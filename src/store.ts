@@ -2,6 +2,7 @@ import { kvs } from "@forge/kvs";
 import { appendEvent, type AuditEvent } from "./audit";
 import { touches } from "./decisions/page";
 import { MAX_CANDIDATES } from "./decisions/validate";
+import { MAX_CONDITION_DRAFTS, type ConditionDraft } from "./decisions/conditions";
 import type { Proposal } from "./decisions/types";
 import type { HandoffRecord } from "./handoff/types";
 import { NO_RULES, type Decision, type ProjectRules } from "./rules/types";
@@ -133,6 +134,21 @@ export async function setRule(projectKey: string, rule: keyof ProjectRules, on: 
   const next = { ...(await getRules(projectKey)), [rule]: on };
   await kvs.set(rulesKey(projectKey), next);
   return next;
+}
+
+const conditionDraftsKey = (projectKey: string) => `condition-drafts:${projectKey.toLowerCase()}`;
+
+/** Conditions Rovo drafted for an administrator. A draft binds nothing until a person confirms it. */
+export async function getConditionDrafts(projectKey: string): Promise<ConditionDraft[]> {
+  return (await kvs.get<ConditionDraft[]>(conditionDraftsKey(projectKey))) ?? [];
+}
+
+export async function putConditionDrafts(projectKey: string, drafts: ConditionDraft[]): Promise<void> {
+  await kvs.set(conditionDraftsKey(projectKey), drafts.slice(0, MAX_CONDITION_DRAFTS));
+}
+
+export async function deleteConditionDrafts(projectKey: string): Promise<void> {
+  await kvs.delete(conditionDraftsKey(projectKey));
 }
 
 const draftKey = (issueId: string) => `receipt-draft:${issueId}`;
