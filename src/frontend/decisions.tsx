@@ -80,7 +80,8 @@ const App = () => {
 
   // Any edit clears the preview, so the number on screen is always for the decision as it is now written.
   const edit = (patch: Partial<typeof EMPTY_FORM>) => {
-    setForm({ ...form, ...patch });
+    // From the latest state, not the one this render saw: two fields edited in quick succession must not undo each other.
+    setForm((f) => ({ ...f, ...patch }));
     setPreview(null);
     setFormError(null);
   };
