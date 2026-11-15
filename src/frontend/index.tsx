@@ -11,6 +11,7 @@ import { count } from "../plural";
 import type { AcknowledgeAllReply, PanelState, PracticeReadBackReply } from "../handoff/types";
 import { GUIDE_SOURCE, PATH_NAMES, PRACTICE_NONE, PRACTICE_READBACK_ACCEPTED, PRACTICE_READBACK_BUTTON, PRACTICE_READBACK_HOW, PRACTICE_READBACK_REFUSED, PRACTICE_TITLE, guideView, type GuidePath, type StepNeed, type StepState } from "../guide/steps";
 import { HINTS } from "../guide/hints";
+import { nextStep, SHOW_EVERYTHING, SHOW_LESS } from "../guide/next";
 import { BEFORE_READ_BACK, CONTINGENCY_MAX, READ_BACK_MAX, READ_BACK_MIN, READ_BACK_NOTE } from "../handoff/ipass";
 import { explanationNote, type Explanation } from "../handoff/explain";
 import { TEACH_BACK_NOTE } from "../handoff/teachback";
@@ -74,6 +75,8 @@ const App = () => {
   const [practiceNote, setPracticeNote] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState<boolean | null>(null);
   const [toolsOpen, setToolsOpen] = useState(false);
+  // The panel opens on the viewer's next step; the rest of today's panel is one click away, nothing is removed.
+  const [everything, setEverything] = useState(false);
   const [path, setPath] = useState<GuidePath>("handover");
 
   // Rovo only explains and proposes. Whatever happens here, the verdict shown above stays the rule check's.
@@ -212,6 +215,8 @@ const App = () => {
   const canPick = state.canPrepare && (state.inForceCount > 0 || record !== null);
   const isSender = record !== null && state.viewerId === record.fromId;
   const waiting = record && result ? result.binding.filter((d) => !record.acknowledged.includes(d.id) || state.stale.includes(d.id)) : [];
+  const next = nextStep(state);
+  const show = (...kinds: (typeof next.kind)[]) => everything || kinds.includes(next.kind);
   return (
     <Stack space="space.100">
       {/* A project with no decision in force has one next step, so it comes first and is the only primary button. */}
@@ -251,16 +256,23 @@ const App = () => {
           ))}
         </>
       )}
-      <Text>
-        {PATH_NAMES[path]}: {guide.doneCount} of {guide.total} steps done.
-      </Text>
-      {(Object.keys(PATH_NAMES) as GuidePath[]).map((p) => (
-        <Button key={p} appearance={p === path ? "primary" : undefined} onClick={() => setPath(p)}>
-          {p === path ? `${PATH_NAMES[p]} (selected)` : PATH_NAMES[p]}
-        </Button>
-      ))}
-      <Button onClick={() => setGuideOpen(!open)}>{open ? "Hide help" : "Show help"}</Button>
-      {open &&
+      <SectionMessage appearance="discovery" title={`Your next step: ${next.title}`}>
+        <Text>{next.how}</Text>
+      </SectionMessage>
+      {everything && (
+        <Text>
+          {PATH_NAMES[path]}: {guide.doneCount} of {guide.total} steps done.
+        </Text>
+      )}
+      {everything &&
+        (Object.keys(PATH_NAMES) as GuidePath[]).map((p) => (
+          <Button key={p} appearance={p === path ? "primary" : undefined} onClick={() => setPath(p)}>
+            {p === path ? `${PATH_NAMES[p]} (selected)` : PATH_NAMES[p]}
+          </Button>
+        ))}
+      {everything && <Button onClick={() => setGuideOpen(!open)}>{open ? "Hide help" : "Show help"}</Button>}
+      {everything &&
+        open &&
         guide.steps.map((step) => (
           <Stack key={step.id} space="space.050">
             <Text>
@@ -283,9 +295,9 @@ const App = () => {
             )}
           </Stack>
         ))}
-      {open && <Text>{GUIDE_SOURCE}</Text>}
+      {everything && open && <Text>{GUIDE_SOURCE}</Text>}
       {/* A receiver already has the real read-back form; a second box on the same screen invites answering in the wrong one. */}
-      {state.exampleReadBack !== "" && !state.isReceiver && (
+      {show("practice") && state.exampleReadBack !== "" && !state.isReceiver && (
         <Stack space="space.100">
           <Heading as="h3" size="small">
             Practice read-back
@@ -315,18 +327,18 @@ const App = () => {
           )}
         </Stack>
       )}
-      {canPick && (
+      {show("prepare") && canPick && (
         <UserPicker
           label="Receiver"
           name="receiver"
           onChange={(u: { id: string } | null | undefined) => setPicked(u?.id ?? null)}
         />
       )}
-      {!state.canPrepare && <Text>{PREPARE_DENIED}</Text>}
+      {everything && !state.canPrepare && <Text>{PREPARE_DENIED}</Text>}
       {state.canPrepare && record && confirmAgain && (
         <Text>{`Preparing again clears ${count(record.acknowledged.length, "acknowledgement")} by the receiver and starts over with the receiver you picked.`}</Text>
       )}
-      {canPick && (
+      {show("prepare") && canPick && (
         <Button
           appearance="primary"
           isDisabled={busy || picked === null}
@@ -342,7 +354,7 @@ const App = () => {
       )}
       {record && result ? (
         <>
-          {state.actions.length > 0 && (
+          {everything && state.actions.length > 0 && (
             <SectionMessage appearance="information" title="Action list (one action per finding, worked out by the rule check)">
               <Stack space="space.050">
                 {state.actions.map((a, i) => (
@@ -354,7 +366,7 @@ const App = () => {
               </Stack>
             </SectionMessage>
           )}
-          {state.contingency !== null ? (
+          {!everything ? null : state.contingency !== null ? (
             <>
               <Text>{`Contingency from the sender: "${state.contingency.text}"`}</Text>
               {state.contingency.advisory && <Text>{`${state.contingency.advisory} (advisory, not part of the verdict)`}</Text>}
@@ -362,7 +374,7 @@ const App = () => {
           ) : (
             <Text>The sender has not written a contingency.</Text>
           )}
-          {isSender && (
+          {everything && isSender && (
             <>
               <Text>{`Contingency: if something goes wrong, then what (up to ${CONTINGENCY_MAX} characters).`}</Text>
               <Label labelFor="contingency">Contingency</Label>
@@ -377,7 +389,7 @@ const App = () => {
               </Button>
             </>
           )}
-          {state.advisories.length > 0 && (
+          {everything && state.advisories.length > 0 && (
             <SectionMessage appearance="information" title="Also worth a look (advisory, not part of the verdict)">
               <Stack space="space.050">
                 {state.advisories.map((a, i) => (
@@ -386,8 +398,9 @@ const App = () => {
               </Stack>
             </SectionMessage>
           )}
-          {result.binding.length === 0 && <Text>{NO_BINDING_TEXT}</Text>}
-          {result.binding.map((d) => (
+          {show("read_back") && result.binding.length === 0 && <Text>{NO_BINDING_TEXT}</Text>}
+          {show("read_back") &&
+            result.binding.map((d) => (
             <Stack key={d.id} space="space.050">
               <Text>
                 {d.title} (source: {d.source.kind} {d.source.ref})
@@ -415,14 +428,14 @@ const App = () => {
               <ModelExplanation explanation={explanation} />
             </SectionMessage>
           )}
-          {protocol && record.readBack && <Text>{`Read-back from the receiver: "${record.readBack}"`}</Text>}
-          {protocol && record.receipt && (
+          {everything && protocol && record.readBack && <Text>{`Read-back from the receiver: "${record.readBack}"`}</Text>}
+          {everything && protocol && record.receipt && (
             <Text>{`Answers from the receiver: ${state.slots
               .filter((s) => record.receipt?.[s.key])
               .map((s) => `${s.title}: ${s.kind === "date" ? record.receipt?.[s.key] : "confirmed"}`)
               .join("; ")}.`}</Text>
           )}
-          {protocol && state.isReceiver && waiting.length > 0 && (
+          {show("read_back") && protocol && state.isReceiver && waiting.length > 0 && (
             <>
               <Text>{`Write a read-back (${READ_BACK_MIN} to ${READ_BACK_MAX} characters) that mentions each decision above by its title or by what it sets: a date, a label or a component.`}</Text>
               <Label labelFor="readBack">Your read-back</Label>
@@ -481,7 +494,7 @@ const App = () => {
               </Button>
             </>
           )}
-          {protocol && <Text>{`${READ_BACK_NOTE} ${TEACH_BACK_NOTE}`}</Text>}
+          {show("read_back") && protocol && <Text>{`${READ_BACK_NOTE} ${TEACH_BACK_NOTE}`}</Text>}
         </>
       ) : (
         <Text>
@@ -490,7 +503,7 @@ const App = () => {
             : "No handoff is prepared for this work item."}
         </Text>
       )}
-      {state.fixes.length > 0 && (
+      {show("fix") && state.fixes.length > 0 && (
         <SectionMessage appearance="warning" title="Suggested fixes">
           <Stack space="space.050">
             <Text>These edits would stop this work item contradicting its decisions:</Text>
@@ -501,7 +514,7 @@ const App = () => {
           </Stack>
         </SectionMessage>
       )}
-      {state.proposals.length > 0 && (
+      {everything && state.proposals.length > 0 && (
         <SectionMessage appearance="information" title="Proposed by Rovo (not binding until you confirm)">
           <Stack space="space.100">
             <Text>
@@ -556,10 +569,10 @@ const App = () => {
           </Stack>
         </SectionMessage>
       )}
-      {markedError !== null && (
+      {everything && markedError !== null && (
         <Text>{`Marked decisions could not be read: ${markedError.includes("Allow access") ? CONSENT_TEXT : markedError}`}</Text>
       )}
-      {marked !== null && marked.notInLedger.length > 0 && (
+      {everything && marked !== null && marked.notInLedger.length > 0 && (
         <SectionMessage appearance="information" title="Marked decisions not in the ledger">
           <Stack space="space.050">
             <Text>
@@ -578,13 +591,14 @@ const App = () => {
           </Stack>
         </SectionMessage>
       )}
-      {state.hasSamples && state.canManage && (
+      {everything && state.hasSamples && state.canManage && (
         <Button isDisabled={busy} onClick={() => call("removeSampleDecisions")}>
           Remove sample decisions
         </Button>
       )}
-      <Button onClick={() => setToolsOpen(!toolsOpen)}>{toolsOpen ? "Hide handoff brief and Rovo tools" : "Show handoff brief and Rovo tools"}</Button>
-      {toolsOpen && (
+      <Button onClick={() => setEverything(!everything)}>{everything ? SHOW_LESS : SHOW_EVERYTHING}</Button>
+      {everything && <Button onClick={() => setToolsOpen(!toolsOpen)}>{toolsOpen ? "Hide handoff brief and Rovo tools" : "Show handoff brief and Rovo tools"}</Button>}
+      {everything && toolsOpen && (
       <>
       <Stack space="space.100">
         <Text>Handoff brief</Text>
