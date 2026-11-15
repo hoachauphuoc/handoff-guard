@@ -189,3 +189,16 @@ Not decided yet: the three findings below. Nothing else in the code or prompt wa
 | 3. Next step said "Wait for the receiver" for a filter contradiction (E1) | `src/guide/next.ts`: for anyone but the receiver, a `contradicts_decision` finding gives "Fix the work item"; the receiver's own step is unchanged. Test added. | Not seen on the site yet (code and unit test only). |
 
 Still to run: D2 (needs a second account) and all P1 and P2 cases. The full regression rows of `docs/ROVO-TESTS.md` (1 to 10) were not rerun after the prompt grew; do this before production.
+
+## Run log: 2026-11-15, regression and first P1 cases (development, 10.54.0)
+
+| Case | Result |
+|---|---|
+| ROVO-TESTS rows 2-5, 8-10 at 10.53.0 | Pass |
+| ROVO-TESTS row 1 (no work item open) at 10.53.0 | Fail: the agent called check-handoff with the invented key MOBL-123 |
+| Row 1 after one prompt change (rule 1: never use an example key; with no key and no work item, call no action) at 10.54.0 | Pass: no action called, asks for a key (it still quotes "PROJ-123" as an example of the format) |
+| F5 `duedate < now()` | Pass: 16 match, 35 do not; says it also includes overdue work and that the answer changes over time |
+| F7 `cf[99999] = 1` | Pass: Jira's error word for word, offers a corrected JQL, no counts |
+| F8 `project = TD AND priority = Highest` | Pass: counted within MOBL only (0 / 51); did not claim to check TD |
+
+Not run: ROVO-TESTS rows 6 and 7 (they store proposals), rows 2-10 after the 10.54.0 prompt change, and the other P1 cases.
