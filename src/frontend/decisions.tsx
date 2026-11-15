@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, CodeBlock, DatePicker, Heading, Lozenge, SectionMessage, Select, Stack, Text, Textfield, User, UserPicker } from "@forge/react";
+import ForgeReconciler, { Button, CodeBlock, DatePicker, Heading, Label, Lozenge, SectionMessage, Select, Stack, Text, Textfield, User, UserPicker } from "@forge/react";
 import { invoke } from "@forge/bridge";
 import type { LeavingView } from "../decisions/leaving";
 import { AUDIT_TEXT } from "../audit";
@@ -239,23 +239,33 @@ const App = () => {
             Write a decision the team made. Check shows how many open work items it would contradict before you save it. It binds work items only after
             you save it; nothing here changes Jira.
           </Text>
-          <Textfield name="decision-title" placeholder="Title, up to 120 characters" value={form.title} onChange={(e: { target: { value?: string } }) => edit({ title: e.target.value ?? "" })} />
+          <Label labelFor="decision-title">Title</Label>
+          <Textfield id="decision-title" name="decision-title" placeholder="Title, up to 120 characters" value={form.title} onChange={(e: { target: { value?: string } }) => edit({ title: e.target.value ?? "" })} />
+          <Label labelFor="decision-scope">Applies to</Label>
           <Select
+            inputId="decision-scope"
             name="decision-scope"
             options={SCOPES}
             defaultValue={SCOPES[0]}
             onChange={(o: { value: string }) => edit({ scope: o.value, scopeValue: "" })}
           />
           {form.scope !== "project" && (
+            <>
+            <Label labelFor="decision-scope-value">{form.scope === "label" ? "Label" : "Work item key"}</Label>
             <Textfield
+              id="decision-scope-value"
               name="decision-scope-value"
               placeholder={form.scope === "label" ? "Label" : `Work item key, for example ${state.projectKey}-12`}
               value={form.scopeValue}
               onChange={(e: { target: { value?: string } }) => edit({ scopeValue: e.target.value ?? "" })}
             />
+            </>
           )}
-          <Select name="decision-rule" options={RULES} defaultValue={RULES[0]} onChange={(o: { value: string }) => edit({ constraint: o.value, constraintValue: "" })} />
+          <Label labelFor="decision-rule">The decision says</Label>
+          <Select inputId="decision-rule" name="decision-rule" options={RULES} defaultValue={RULES[0]} onChange={(o: { value: string }) => edit({ constraint: o.value, constraintValue: "" })} />
+          <Label labelFor="decision-rule-value">{form.constraint === "dueNotAfter" ? "Latest date" : form.constraint.startsWith("label") ? "Label" : "Component"}</Label>
           <Textfield
+            id="decision-rule-value"
             name="decision-rule-value"
             placeholder={form.constraint === "dueNotAfter" ? "Date, YYYY-MM-DD" : form.constraint.startsWith("label") ? "Label" : "Component"}
             value={form.constraintValue}
@@ -285,7 +295,8 @@ const App = () => {
         Pick a date to see which prepared handoffs would have had a different verdict then. Only decisions and acknowledgements are replayed;
         work item fields are read as they are now.
       </Text>
-      <DatePicker name="replay-date" placeholder="Pick a date" onChange={(v: string) => void replayOn(v)} />
+      <Label labelFor="replay-date">Replay date</Label>
+      <DatePicker id="replay-date" name="replay-date" placeholder="Pick a date" onChange={(v: string) => void replayOn(v)} />
       {replayError !== null && <Text>{replayError}</Text>}
       {replay !== null && (
         <Stack space="space.050">
@@ -473,7 +484,9 @@ const App = () => {
             Delete removes the same data from the app for good. Handoffs of work items that are already done, or that you cannot see, are not
             reached. Jira is not changed. Export first if you may need it.
           </Text>
+          <Label labelFor="delete-key">{`Project key to confirm (${state.projectKey})`}</Label>
           <Textfield
+            id="delete-key"
             name="delete-key"
             placeholder={`Type ${state.projectKey} to confirm`}
             value={deleteKey}
