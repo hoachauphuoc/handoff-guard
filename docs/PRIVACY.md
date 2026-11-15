@@ -1,6 +1,6 @@
 # Privacy
 
-Handoff Guard stores only work records, in Forge storage of the installation. It has no external service and no network egress (the manifest has no `permissions.external`). It uses Forge LLMs, which runs the model on Atlassian's platform (see below).
+Handoff Guard stores only work records, in Forge storage of the installation. It has no external service and no network egress of its own (the manifest has no `permissions.external`); if a site administrator enables the Rovo MCP server, the client that administrator connects receives tool results under the calling user's permissions. The Rovo agent's chat, and the work item text it reads, go through Rovo, which Atlassian governs. It uses Forge LLMs, which runs the model on Atlassian's platform (see below).
 
 ## What is stored
 
@@ -31,4 +31,4 @@ When a read-back is refused because it contradicts a decision, the app sends the
 
 ## Deletion
 
-Uninstalling the app removes its Forge storage. A project administrator can also export everything the app holds for a project as JSON from the Decisions page, and delete it there (decisions, the activity list, and the handoffs and proposals of the open work items that administrator can see); the administrator types the project key to confirm. Dismissing a proposal deletes it; it may be proposed again.
+Uninstalling the app removes its Forge storage. A project administrator can also export everything the app holds for a project as JSON from the Decisions page, and delete it there (decisions, the activity list, and the handoffs, drafts and proposals of up to 100 open work items that administrator can see); the administrator types the project key to confirm. Records on closed work items or items past that cap, and the project's rule switches, stay until the app is uninstalled. Account IDs are kept in handoff records and in the activity list (the latest 300 events), and deleting one person's data on request is not supported; contact us through GitHub issues. Dismissing a proposal deletes it; it may be proposed again.
