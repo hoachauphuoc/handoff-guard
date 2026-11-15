@@ -13,12 +13,16 @@ A task is handed over on Friday. The team decided it ships by the end of the yea
 - **The receiver reads back, and code can say no.** Before taking the work, the receiver restates each recorded decision that binds it. "I will ship on 15 January 2027" against a decision that says end of 2026 is refused, with the reason, by plain code.
 - **A verdict from rules.** Clear, Needs info or Blocked comes from a rule check on the work item, the recorded decisions and the acknowledgements. A model only writes sentences that are labelled as model-written.
 - **A gate in the workflow.** Where a Jira admin adds the validator, the transition goes through only when the handoff is Clear.
+- **Decisions that keep each other honest, and a record of what went wrong.** A new decision that contradicts one in force is refused unless it supersedes the older one; if the work item changes after the receiver agreed, the acknowledgement goes stale; and handoffs that bounced back are counted with what they lacked, so a project administrator can turn a lack into a rule.
 
 Try it with one account in three minutes: "Testing instructions" below. Everything else the app does is under "What it does".
 
 ## Who it is for
 
-Software teams whose Jira work items change owner while the work is still open: release work passed between engineers, on-call rotation, cover for someone on leave.
+Software teams whose Jira work items change owner while the work is still open: release work passed between engineers, on-call rotation, cover for someone on leave. The buyer we have in mind is an engineering manager or release owner.
+
+- **What it costs a team to start:** a project administrator records the decisions (by hand on the Decisions page, or by confirming what Rovo proposes from text the team already wrote), and a Jira admin adds the validator to the handoff transition. Senders and receivers then work in the panel. Nothing here has been timed with a real team yet.
+- **Who would pay (a hypothesis):** see "What's next". No customer has been asked about price.
 
 ## The problem
 
@@ -64,7 +68,7 @@ Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Fo
 
 ## Measurement
 
-48 synthetic handoffs, labeled by a model (Muse). Agreement with Muse labels: 47 of 48 with recorded decisions, 34 of 48 with the rules alone, 12 of 48 with no check. With human-decided labels: 36 of 40 where two human experts agreed, with recorded decisions. Both figures are agreement with labels, not accuracy on real handoffs. The samples and labels are synthetic and model-written from our own specification, so the figures show that the code matches the specification, not that the specification is right.
+48 synthetic handoffs, labeled by a model (Muse). Agreement with Muse labels: 47 of 48 with recorded decisions, 34 of 48 with the rules alone, 12 of 48 with no check. With human-decided labels: 36 of 40 where two human experts agreed, with recorded decisions. Both figures are agreement with labels, not accuracy on real handoffs. The samples and labels are synthetic and model-written from our own specification, the same model family wrote the samples and labelled them, so the figures show that the code matches the specification, not that the specification is right.
 
 ## Challenges
 
@@ -76,7 +80,6 @@ Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Fo
 
 A pilot with one release team (the plan, with its baseline, sample size and stop conditions, is `docs/PILOT.md`). None of this is measured yet.
 
-- **What it costs a team to start:** a project administrator records the decisions (by hand on the Decisions page, or by confirming what Rovo proposes), and a Jira admin adds the validator to the handoff transition. Senders and receivers then work in the panel.
 - **The one number the pilot is judged on:** handoffs bounced back to the sender or reopened within 7 days of the receiver's read-back, against the same team's four weeks before. Time to the first read-back is watched as the cost, not as the result.
 - **Who would pay (a hypothesis, not a plan):** an engineering manager or release owner. A single project stays free; decisions shared across projects, the validator across many workflows, and export of the activity list are what a paid tier would hold. The untested price: $0.50 per licensed user per month for the first 100 seats, progressive tiers above, floor $10 per month, which is about 6% of Jira Standard's $8.60 per seat. Eligible Forge apps are announced to pay 0% revenue share up to $1M lifetime Forge revenue; the sources, the competitors found, and what the research does not show are in `docs/MARKET.md`. No customer has been asked about price.
 
@@ -105,6 +108,10 @@ Steps 9 and 10 need Rovo enabled on the site. Without Rovo the panel says so.
 10. Optional, MCP: a site admin turns the tools on in Atlassian Administration (Apps, Sites, your site, Connected apps, Handoff Guard, Tools). An MCP client then connects to `https://mcp.atlassian.com/forge/<app UUID>` and calls `check-handoff` with `issueKey`.
 
 Teamwork Graph: **Gather handoff context** in the Rovo agent returns people connected to the work item. On a site with little activity it may say that Teamwork Graph returned nothing; the app says so and uses it for no rule.
+
+## What was seen working, and what was not
+
+Seen on a live Jira Cloud site (development and production builds of this app): the refused read-back, the typed receipt refusing a date after the limit, acknowledgement by a second account, a stale acknowledgement after the due date changed, a Clear verdict, the validator refusing on a transition and on a board drag, and the Teamwork Graph "people connected" query returning one row (a person the work item was shared with). Not seen: the validator letting a Clear handoff through on production, a real bounced handoff, and the Rovo agent on a site other than ours. A site without Rovo or Teamwork Graph access gets a panel that says so, and nothing in the main path depends on them.
 
 ## Bonus prizes
 
