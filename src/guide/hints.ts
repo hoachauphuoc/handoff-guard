@@ -9,10 +9,10 @@ export const HINTS: Record<Finding["rule"], string> = {
   empty_description: "Write a description that tells the receiver what the work is and where it stands.",
   no_due_date: "Set a due date on the work item. If the project does not show a Due date field, add it to the work item layout first.",
   invalid_due_date: "Replace the due date with a real calendar date.",
-  invalid_constraint: "Ask the decision owner to correct the date written in that decision.",
-  contradicts_decision: "Change the work item to fit the decision, or ask the decision owner to supersede it.",
+  invalid_constraint: "Ask the person who recorded that decision to correct it; if it is a Jira filter, reload this panel in a moment, as Jira may not have answered in time.",
+  contradicts_decision: "Change the work item so it follows that rule, or ask the person who recorded it to replace it.",
   no_contingency: "The sender writes it in the panel: if something goes wrong, then what.",
   contingency_not_if_then: "Rewrite the contingency as: if something happens, then what the receiver should do.",
   receiver_not_assignee: "Assign the work item to the receiver, or prepare the handoff again for the current assignee.",
-  decision_not_acknowledged: "The receiver acknowledges it in the panel; a handoff prepared now takes one read-back for all its decisions.",
+  decision_not_acknowledged: "The receiver opens this work item and says in their own words what they will do about each rule (one read-back covers them all).",
 };
