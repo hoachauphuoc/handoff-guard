@@ -1,4 +1,11 @@
+/// <reference types="vite/client" />
 import { describe, expect, it } from "vitest";
+import coreRaw from "../src/actions/core?raw";
+import contextRaw from "../src/context-fn?raw";
+import leavingRaw from "../src/decisions/leaving?raw";
+import inflightRaw from "../src/handoff/inflight?raw";
+import resolversRaw from "../src/resolvers/index?raw";
+import validatorRaw from "../src/validator?raw";
 import { handoffFrom, toWorkItem } from "../src/handoff/build";
 import type { HandoffRecord } from "../src/handoff/types";
 import { checkHandoff } from "../src/rules/checkHandoff";
@@ -44,11 +51,10 @@ describe("the if-then form", () => {
 });
 
 describe("every verdict for a stored handoff reads the project's rules", () => {
-  it("passes rules wherever src builds a handoff from a record", async () => {
-    const { readFileSync } = await import("node:fs");
-    const files = ["src/actions/core.ts", "src/context-fn.ts", "src/decisions/leaving.ts", "src/handoff/inflight.ts", "src/resolvers/index.ts", "src/validator.ts"];
-    for (const f of files) {
-      const calls = readFileSync(f, "utf8").split("\n").filter((l) => l.includes("handoffFrom(") && !l.includes("import"));
+  it("passes rules wherever src builds a handoff from a record", () => {
+    for (const source of [coreRaw, contextRaw, leavingRaw, inflightRaw, resolversRaw, validatorRaw]) {
+      const calls = source.split("
+").filter((l: string) => l.includes("handoffFrom(") && !l.includes("import"));
       expect(calls.length).toBeGreaterThan(0);
       for (const line of calls) expect(line).toMatch(/[rR]ules/);
     }
