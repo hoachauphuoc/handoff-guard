@@ -94,6 +94,9 @@ describe("condition assistant rule", () => {
     for (const phrase of [
       "always call check-condition before you answer",
       "give the errors word for word and offer a corrected JQL",
+      "never correct, shorten or complete it",
+      "check it only after the administrator says yes",
+      "what it also includes, for example work that is already overdue",
       "Never say whether the rule is a good idea and never call the counts a verdict",
       "Only when the administrator asks you to save it, call draft-condition",
       "Never say a condition is in force",
