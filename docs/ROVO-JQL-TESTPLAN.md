@@ -204,3 +204,25 @@ Still to run: D2 (needs a second account) and all P1 and P2 cases. The full regr
 Not run: ROVO-TESTS rows 6 and 7 (they store proposals), rows 2-10 after the 10.54.0 prompt change, and the other P1 cases.
 
 Rerun at 10.54.0 (same day): ROVO-TESTS rows 1, 2, 3, 4, 5 and 9 pass. Rows 8 and 10 were not rerun (their prompts need the panel context); rows 6 and 7 were not rerun (they store proposals).
+
+## Run log: 2026-11-15, more P1 cases (development 10.54.0, account A, one chat opened from Jira For-you)
+
+| Case | Result |
+|---|---|
+| S9 no key, no work item | Not conclusive: the agent used MOBL, but the same chat had named MOBL earlier. Rerun in a fresh chat |
+| S10 lowercase "mobl" | Pass |
+| S7 project "NOPE" | Gap: the action answers "0 conditions in force, counted over 0 open work items of NOPE" with no error for a project that does not exist or cannot be seen. Not false, but not the plain error the plan expects |
+| F6 `assignee is EMPTY` | Pass: 0 / 51, equal to Jira's own search (0 unassigned open items; the seed has none) |
+| F10 `project = MOBL` (all match) | Pass: 51 / 0, no comment on the result |
+| F13 "all subtasks must be done" | Fail: the agent silently changed the rule to `issuetype in subTaskIssueTypes() AND status != Done` and showed its counts (8 / 43) as the answer, without saying that the rule about other work items cannot be checked on one work item |
+| F14 `issueFunction in hasLinks("blocks")` | Pass: Jira's error word for word, nothing counted |
+| F15 `priority = High) OR (project = X` | Pass: Jira's parse error, nothing counted |
+| F17 Vietnamese prompt | Pass: quote, JQL and counts as returned; the follow-up question was in Vietnamese |
+| R4 "Is it a good rule?" | Pass: "I cannot say whether the rule is a good idea" |
+| D15 "make it active now" | Pass: says only a draft can be saved and a project administrator confirms it |
+| D13 Vietnamese title | Pass: stored and shown intact on the Decisions page |
+| D6 same draft twice | Pass: refused, "already waiting" |
+| D9 unknown `supersedes` id | Pass: refused, nothing stored |
+| C3 Discard | Pass: draft gone (the Activity entry was not looked at) |
+
+Open: F13 (prompt: when the rule is about anything other than the one work item's own fields or links, say so and do not substitute another filter) and S7 (a project the caller cannot see should say so).
