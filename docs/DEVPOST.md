@@ -50,31 +50,13 @@ Core:
 - **Read-back with teach-back.** The receiver acknowledges with one read-back that must address each binding decision. A read-back that addresses a decision but contradicts it (a date past the limit, a required label said to be skipped, a forbidden one said to be added) is refused by plain code. One sentence beside the refusal, telling the receiver what to write instead, is written by a model through Forge LLMs and labelled as model-written; it never makes or lifts a refusal.
 - **Workflow validator.** A transition with the validator only goes through when the handoff is Clear and the work item is held by its sender, its receiver or nobody. A third person as assignee is refused.
 
-Also:
+Also (one line each; the README has the detail):
 
-**Around the handoff**
-
-- **Joining and leaving.** The panel's checklist has three paths: new to the project, handing over, leaving. On the Decisions page, "Leaving the project" lists what one person still holds: their open work items with the state of each handoff, handoffs they have not acknowledged, and decisions only they can supersede. Read-only, from the same rule check.
-- **Suggested fixes.** The smallest edits that would stop the item contradicting its decisions (a due date, a label to add, a component to remove). Advice only; the app never edits the work item.
-- **I-PASS structure.** The panel follows the I-PASS handoff protocol over the rule check: a severity label beside the verdict, a patient-summary brief, an action list with an owner per finding, an optional "if ... then ..." contingency from the sender, and the receiver's read-back. The rule check stays the only thing that decides.
-- **Handoff drift.** If the due date, a label or a component that a decision reads changes after the receiver acknowledged it, the acknowledgement goes stale and the panel shows what changed.
-- **Jira-only.** The app declares no Confluence scope and installs on any Jira site.
-
-**Rovo, MCP and Teamwork Graph**
-
-- **Rovo agent.** Explains the verdict, quoting the rule check's sentence exactly. It finds decisions written in the description and comments and proposes them with a word-for-word quote as evidence. A proposal binds nothing until a person confirms it in the panel. A repeat of a confirmed decision is rejected.
-- **Handoff brief.** Pulls what the receiver needs, including people connected to the item from Teamwork Graph (shared with, mentioned). Advisory; no rule reads it.
-- **Rovo MCP server.** The same six actions are exposed through the `rovo:mcp` module for external agents.
-
-**Decisions over time**
-
-- **Adding a decision by hand.** On the Decisions page a project administrator writes a decision (title, where it applies, one constraint). "Check this decision" shows how many open work items would contradict it before it is saved. No Rovo is needed.
-- **Activity, counts, export and delete.** The Decisions page lists who changed decisions and handoffs (the action, the person, the time and a key; no typed text) and counts handoffs prepared and read-backs accepted and refused per month. A project administrator can export everything the app holds for the project as JSON, and delete it after typing the project key.
-- **Typed answers.** Instead of writing a read-back, the receiver can answer each binding decision in a typed slot (a date, or a confirmation); code compares the values and refuses a date past the limit. Rovo can draft the answers on request; the draft is checked by code, stored unsigned, and counts for nothing until the receiver sends it from the panel.
-- **Bounce autopsy.** The Decisions page reads the project's Jira history for handoffs that were Clear and then came back (returned to the sender or reopened within 7 days), counts what those handoffs lacked beside the same count for the ones that did not bounce, and lets a project administrator release the missing thing as a rule from a fixed catalogue of three, after seeing how many handoffs it would turn to Needs info ("Require a contingency"). Code only; it is a count, not proof of a cause.
-- **Decisions check each other.** A decision that says the opposite of one in force for the same work is refused unless the older one is superseded with it.
-- **Replay on a date.** The Decisions page shows which prepared handoffs would have had a different verdict on an earlier date, using the decisions and acknowledgements as they stood then.
-- **Superseding decisions.** A decision that makes older ones redundant, or moves a deadline, can be confirmed with the older ones retired (only those the confirming person may supersede); the person who confirmed a decision can also retire it from the Decisions page. A superseded decision binds nothing.
+- **Around the handoff.** Joining, handing over and leaving checklists; suggested fixes (advice, the app never edits the item); the I-PASS structure with an owner per finding and an optional "if ... then ..." contingency; handoff drift, which makes an acknowledgement stale when the item changes after it.
+- **Rovo, MCP and Teamwork Graph.** The Rovo agent explains the verdict in the rule check's own words and proposes decisions found in the item with a word-for-word quote, binding nothing until a person confirms; the handoff brief adds connected people from Teamwork Graph; the same six actions are exposed through `rovo:mcp`.
+- **Decisions over time.** Adding a decision by hand with a preview of the items it would contradict; activity, counts, export and delete; typed answers a receiver can give instead of free text (Rovo may draft them, a person signs); refusal of a decision that says the opposite of one in force; replay of verdicts on an earlier date; superseding decisions.
+- **Bounce autopsy and governance.** The Decisions page reads Jira history for handoffs that were Clear and then came back, counts what they lacked beside those that did not bounce, and lets a project administrator release a rule from a fixed catalogue of three after seeing how many handoffs it would turn to Needs info. Code only; a count, not proof of a cause.
+- **Jira-only.** No Confluence scope; installs on any Jira site.
 
 ## How we built it
 
@@ -92,7 +74,7 @@ Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Fo
 
 ## What's next
 
-A pilot with one release team. None of this is measured yet.
+A pilot with one release team (the plan, with its baseline, sample size and stop conditions, is `docs/PILOT.md`). None of this is measured yet.
 
 - **What it costs a team to start:** a project administrator records the decisions (by hand on the Decisions page, or by confirming what Rovo proposes), and a Jira admin adds the validator to the handoff transition. Senders and receivers then work in the panel.
 - **The one number the pilot is judged on:** handoffs bounced back to the sender or reopened within 7 days of the receiver's read-back, against the same team's four weeks before. Time to the first read-back is watched as the cost, not as the result.
