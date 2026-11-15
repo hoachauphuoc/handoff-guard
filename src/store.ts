@@ -125,9 +125,9 @@ export async function getRules(projectKey: string): Promise<ProjectRules> {
 }
 
 /**
- * Changes one rule. The stored rules are read again right before the write, so a rule another administrator
- * switched a moment ago is kept; without that, two switches would overwrite each other. As with decisions,
- * this narrows the race and does not close it.
+ * Changes one rule. The stored rules are read once, just before the write, so a rule another administrator
+ * switched earlier is kept. There is no version check like the one for decisions: two switches within
+ * milliseconds can still lose one.
  */
 export async function setRule(projectKey: string, rule: keyof ProjectRules, on: boolean): Promise<ProjectRules> {
   const next = { ...(await getRules(projectKey)), [rule]: on };

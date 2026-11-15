@@ -35,6 +35,8 @@ const App = () => {
   const [autopsyNote, setAutopsyNote] = useState<string | null>(null);
   const [exported, setExported] = useState<string | null>(null);
   const [deleteKey, setDeleteKey] = useState("");
+  const [ruleError, setRuleError] = useState<string | null>(null);
+  const [ruleBusy, setRuleBusy] = useState(false);
   const [pending, setPending] = useState<{ rule: RuleName; impact: RuleImpact } | null>(null);
   const [dataNote, setDataNote] = useState<string | null>(null);
   const [state, setState] = useState<DecisionsPageView | null>(null);
@@ -118,20 +120,33 @@ const App = () => {
       (e) => setAutopsyNote(plainError(e)),
     );
   };
-  const setRule = (rule: RuleName, on: boolean) =>
-    invoke("setProjectRule", { rule, on }).then(
-      () => {
-        setPending(null);
-        return load();
-      },
-      (e) => setAutopsyNote(plainError(e)),
-    );
+  const setRule = (rule: RuleName, on: boolean) => {
+    setRuleBusy(true);
+    setRuleError(null);
+    return invoke("setProjectRule", { rule, on })
+      .then(
+        () => {
+          setPending(null);
+          return load();
+        },
+        (e) => {
+          setPending(null);
+          setRuleError(plainError(e));
+        },
+      )
+      .finally(() => setRuleBusy(false));
+  };
   // A release is two steps: the administrator first sees what it would do to today's handoffs.
-  const previewRule = (rule: RuleName) =>
-    invoke<RuleImpact>("previewRule", { rule }).then(
-      (impact) => setPending({ rule, impact: impact as RuleImpact }),
-      (e) => setAutopsyNote(plainError(e)),
-    );
+  const previewRule = (rule: RuleName) => {
+    setRuleBusy(true);
+    setRuleError(null);
+    return invoke<RuleImpact>("previewRule", { rule })
+      .then(
+        (impact) => setPending({ rule, impact: impact as RuleImpact }),
+        (e) => setRuleError(plainError(e)),
+      )
+      .finally(() => setRuleBusy(false));
+  };
   const exportData = () =>
     invoke<string>("exportProject").then(
       (json) => {
@@ -327,6 +342,7 @@ const App = () => {
         </Stack>
       )}
       <Heading size="small">Governance: rules this project can release</Heading><Text>A rule is a draft until a project administrator releases it.</Text>
+      {ruleError !== null && <Text>{ruleError}</Text>}
       {(
         [
           ["requireContingency", "Require a contingency from the sender", "no_contingency"],
@@ -342,8 +358,8 @@ const App = () => {
               <Lozenge appearance={released ? "success" : "default"}>{released ? "Released" : "Draft"}</Lozenge> {label}
               {seen && autopsy && autopsy.bounced.length > 0 ? ` (${seen.bouncedWith} of ${autopsy.bounced.length} bounced handoffs lacked this)` : ""}
             </Text>
-            {state.canManage && released && <Button onClick={() => void setRule(rule, false)}>Retire this rule</Button>}
-            {state.canManage && !released && <Button onClick={() => void previewRule(rule)}>See what releasing it would change</Button>}
+            {state.canManage && released && <Button isDisabled={ruleBusy} onClick={() => void setRule(rule, false)}>Retire this rule</Button>}
+            {state.canManage && !released && <Button isDisabled={ruleBusy} onClick={() => void previewRule(rule)}>See what releasing it would change</Button>}
             {pending?.rule === rule && (
               <Stack space="space.050">
                 <Text>
@@ -351,7 +367,7 @@ const App = () => {
                     ? `Of ${count(pending.impact.checked, "prepared handoff")} read, none that is Clear now would need information.`
                     : `Of ${count(pending.impact.checked, "prepared handoff")} read, ${pending.impact.wouldTurn} that ${pending.impact.wouldTurn === 1 ? "is" : "are"} Clear now would need information: ${pending.impact.keys.join(", ")}.`}
                 </Text>
-                <Button appearance="primary" onClick={() => void setRule(rule, true)}>Release this rule</Button>
+                <Button appearance="primary" isDisabled={ruleBusy} onClick={() => void setRule(rule, true)}>Release this rule</Button>
                 <Button onClick={() => setPending(null)}>Keep it a draft</Button>
               </Stack>
             )}
