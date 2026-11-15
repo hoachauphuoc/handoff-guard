@@ -179,3 +179,13 @@ Not decided yet: the three findings below. Nothing else in the code or prompt wa
 1. **The agent changes the filter on its own (F3b, F4).** Rule 20 says to give the error and *offer* a corrected filter, then check again. Fix: add a prompt sentence that the agent must not check a filter other than the one asked for, and must say what it would change before it does.
 2. **Time words (F12b).** The agent turned "within 7 days" into a filter that includes overdue work. Fix: a prompt sentence to state, beside the JQL, what it includes in plain words.
 3. **Next step is wrong for a filter contradiction (E1).** A work item Blocked by a filter says "Your next step: Wait for the receiver", but only the sender, by changing the work item, can clear it. Code change in `src/guide/next.ts`: a contradiction finding the receiver cannot fix gives "Fix the work item" with the filter named.
+
+### 2026-11-15, development 10.53.0: the three findings fixed
+
+| Finding | Change | Rerun |
+|---|---|---|
+| 1. The agent changed the filter itself (F3b, F4) | Rule 20: pass the filter to `check-condition` character for character, even when broken; offer a correction and check it only after a yes. The first wording alone (10.52.0) did not stop it; the second, with the example `status in (Review, Done`, did. | F3b pass: "Jira cannot run this filter: Error in the JQL Query: Expecting ')' before the end of the query." with the filter as typed, then an offer. F4 pass: "A filter here cannot sort: remove ORDER BY.", filter as typed, then an offer. |
+| 2. Time filters hid what they include (F12b) | Rule 20: say in one sentence what a date filter also includes. | Pass (10.52.0): "This filter also includes work that is already overdue." |
+| 3. Next step said "Wait for the receiver" for a filter contradiction (E1) | `src/guide/next.ts`: for anyone but the receiver, a `contradicts_decision` finding gives "Fix the work item"; the receiver's own step is unchanged. Test added. | Not seen on the site yet (code and unit test only). |
+
+Still to run: D2 (needs a second account) and all P1 and P2 cases. The full regression rows of `docs/ROVO-TESTS.md` (1 to 10) were not rerun after the prompt grew; do this before production.
