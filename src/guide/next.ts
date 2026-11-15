@@ -30,6 +30,10 @@ export function nextStep(s: PanelState): NextStep {
     if (!s.isReceiver && s.fixes.length > 0) {
       return { kind: "fix", title: "Fix the work item", how: "The work item breaks a rule that applies to it. Make the change below in Jira, then reload this panel." };
     }
+    // A Jira filter has no edit to suggest, but the receiver cannot clear it either: the work item has to change.
+    if (!s.isReceiver && result.findings.some((f) => f.rule === "contradicts_decision")) {
+      return { kind: "fix", title: "Fix the work item", how: "The work item breaks a rule that applies to it, named in the list above. Change it in Jira so it follows the rule, then reload this panel." };
+    }
     return { kind: "wait_receiver", title: "Wait for the receiver", how: "The person who takes over opens this work item and says in their own words what they will do. The list above says what is still missing." };
   }
   if (s.exampleReadBack === "" && !s.canPrepare) {

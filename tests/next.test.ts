@@ -39,6 +39,13 @@ describe("the viewer's next step", () => {
     expect(nextStep(state({ record, result: blocked })).kind).toBe("wait_receiver");
   });
 
+  it("is fixing the work item when a rule it breaks has no suggested edit, such as a Jira filter", () => {
+    const filter: HandoffResult = { ...blocked, verdict: "blocked", findings: [{ rule: "contradicts_decision", severity: "block", message: "m" }] };
+    expect(nextStep(state({ record, result: filter })).kind).toBe("fix");
+    // The receiver cannot change the work item to match; their own next step stays what it was.
+    expect(nextStep(state({ record, result: filter, isReceiver: true, viewerId: "you" })).kind).not.toBe("fix");
+  });
+
   it("speaks plain words: every step explains itself without Jira or I-PASS terms", () => {
     const all = [
       state({ inForceCount: 0 }),
