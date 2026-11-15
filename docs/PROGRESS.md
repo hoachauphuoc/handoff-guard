@@ -478,4 +478,5 @@ Plan: `keen-tinkering-marshmallow.md` (owner's "làm toàn diện"; work runs co
 - Two actions, also on `rovo:mcp`: `check-condition` (conditions in force with counts, or Jira's parse errors and counts for a given filter; reads as the caller) and `draft-condition` (project administrators only, fails closed; same build and Jira parse as the form; stored under `condition-drafts:<project>`, at most 10). Agent prompt rule 20.
 - Decisions page: "Drafted with Rovo (not in force)" with Confirm (or Confirm and supersede) and Discard; confirming goes through `manualDecision`, so a draft has no shorter path than the form. Discard is logged as `draft_discarded`. Export and delete cover drafts.
 - Development 10.51.0, MOBL: ROVO-TESTS 11-13 pass as administrator. Confirm superseded the old test rule; the test rule was then superseded, so no condition is in force on development.
-- Not done: the non-administrator refusal on the site, production deploy, README/DEVPOST text for the assistant.
+- Production 3.31.0 deployed on the owner's order; both installs up to date. ROVO-TESTS 11 on the production agent: "0 conditions in force, counted over 51 open work items of MOBL." (production has no condition decision).
+- Not done: the non-administrator refusal on the site, README/DEVPOST text for the assistant.
