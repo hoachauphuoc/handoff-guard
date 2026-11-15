@@ -202,3 +202,5 @@ Still to run: D2 (needs a second account) and all P1 and P2 cases. The full regr
 | F8 `project = TD AND priority = Highest` | Pass: counted within MOBL only (0 / 51); did not claim to check TD |
 
 Not run: ROVO-TESTS rows 6 and 7 (they store proposals), rows 2-10 after the 10.54.0 prompt change, and the other P1 cases.
+
+Rerun at 10.54.0 (same day): ROVO-TESTS rows 1, 2, 3, 4, 5 and 9 pass. Rows 8 and 10 were not rerun (their prompts need the panel context); rows 6 and 7 were not rerun (they store proposals).
