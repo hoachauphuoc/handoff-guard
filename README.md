@@ -106,6 +106,15 @@ The four rules-versus-people disagreements are all samples with no due date: the
 
 ## Limits
 
+The four that matter most; the full list follows.
+
+- The read-back checks that each decision is addressed and catches a fixed list of contradictions; it does not prove the receiver understood.
+- Reaching Clear needs a second person as receiver; one account shows a refused and an accepted read-back.
+- Decisions, rules and the activity list are stored per project in Forge storage with a version check that narrows, but does not close, a race between two saves.
+- The app is Jira-only, and the Rovo, MCP and Teamwork Graph paths name their source when they are unavailable.
+
+All of them:
+
 - "Leaving the project" covers only the open work items of that project that you can see, up to the page's limit, and it does not know whether a person has left: someone picks the name.
 - The workflow validator reads the work item as the app, not as the person making the transition, so it can check an item that person may not see. It returns only findings. Project rules are re-read just before each change and the activity list is re-read just before each append; neither is atomic, so two changes within milliseconds can lose one.
 - Decisions are stored under one storage key per project, and a save is refused when another save landed first. Forge storage has no atomic compare-and-set here, so a window of a few milliseconds remains, and a project with a very large number of decisions would still hit the size limit of its value.
