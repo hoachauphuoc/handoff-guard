@@ -10,7 +10,6 @@ Dev-only. Nothing here is in `src/` or in the product. Cheapest runner first (se
 | `design` (`accessibility-review`, `ux-copy`, `design-critique`) | The keyboard and screen-reader pass, wording of panel text | Before the code freeze (2026-12-10) |
 | `product-management` (`write-spec`, `competitive-brief`) | Pilot protocol, pricing hypothesis | Only when the owner asks |
 | `anthropic-skills:built-in-browser` | Checking the panel and the Decisions page on the demo site | After each deploy |
-
 | `agent-handoff` (`plan`, `execute`, `verify`, `setup-handoff`) | Splitting a plan between a planner and an executor session | When a change is big enough for a plan file and a separate executor |
 | `operations` (`runbook`, `risk-assessment`, `change-request`, `status-report`) | Release runbook, risk list before the production deploy, status line for the owner | Release and filming weeks |
 | `data` (`validate-data`, `statistical-analysis`, `analyze`) | Checking the sample sets and the label-agreement figures before they reach the README | When `data/` or `scripts/measure` changes |
