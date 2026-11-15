@@ -63,7 +63,7 @@ Handoff Guard follows the structure of the I-PASS handoff protocol (illness seve
 | Illness severity | The verdict with its I-PASS name beside it: Clear is Stable, Needs info is Watcher, Blocked is Unstable. It is a label for the verdict, not a second scale. |
 | Patient summary | The handoff brief: the work item, the decisions that bind it and the findings. |
 | Action list | One action per finding with its owner (sender, receiver or decision owner), read from the findings. No findings, no actions. |
-| Situation awareness and contingency | An optional "if … then …" written by the sender and shown to the receiver. If it is not in that form the panel says so; that is advice, not a finding, unless a project administrator switched on one of the two project rules ("Require a contingency", "Require the if-then form"), which make it a Needs info finding. |
+| Situation awareness and contingency | An optional "if … then …" written by the sender and shown to the receiver. If it is not in that form the panel says so; that is advice, not a finding, unless a project administrator released one of the project rules ("Require a contingency", "Require the if-then form"), which make it a Needs info finding. |
 | Synthesis by receiver | One read-back for the whole handoff. It must mention each binding decision by its title or by a date, label or component it sets. |
 
 The read-back checks that each decision is addressed, not that it was understood.
@@ -107,6 +107,7 @@ The four rules-versus-people disagreements are all samples with no due date: the
 ## Limits
 
 - "Leaving the project" covers only the open work items of that project that you can see, up to the page's limit, and it does not know whether a person has left: someone picks the name.
+- The workflow validator reads the work item as the app, not as the person making the transition, so it can check an item that person may not see. It returns only findings. Project rules are re-read just before each change and the activity list is re-read just before each append; neither is atomic, so two changes within milliseconds can lose one.
 - Decisions are stored under one storage key per project, and a save is refused when another save landed first. Forge storage has no atomic compare-and-set here, so a window of a few milliseconds remains, and a project with a very large number of decisions would still hit the size limit of its value.
 - The workflow validator lets a transition through when the prepared handoff is Clear and the work item is held by its sender, its receiver or nobody. It refuses when a third person is the assignee. It does not require that the receiver is already the assignee; the panel shows that mismatch as advice.
 - Confirming, adding and superseding a decision, and loading or removing sample decisions, need a project administrator (Jira's own "Administer projects" permission, asked as the person). If Jira cannot answer, the app treats the person as not an administrator. Once a handoff is prepared, only its sender, the assignee or a project administrator can prepare it again.
