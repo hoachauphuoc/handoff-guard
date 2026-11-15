@@ -86,7 +86,12 @@ describe("who may change decisions", () => {
 
 describe("load sample decisions", () => {
   it("is offered when nothing is in force, not only when nothing is stored", () => {
-    expect(panel).toMatch(/state\.inForceCount === 0 && !state\.hasSamples && state\.canManage && \(\s*<Button[\s\S]{0,80}loadSampleDecisions/);
+    expect(panel).toMatch(/state\.inForceCount === 0 && \([\s\S]{0,400}!state\.hasSamples && state\.canManage && \(\s*<Button[\s\S]{0,120}loadSampleDecisions/);
+  });
+
+  it("comes before the verdict, as a primary button, when nothing is in force", () => {
+    expect(panel.indexOf("loadSampleDecisions")).toBeLessThan(panel.indexOf("{record && result && ("));
+    expect(panel).toMatch(/appearance="primary" isDisabled=\{busy\} onClick=\{\(\) => call\("loadSampleDecisions"\)\}/);
   });
 });
 

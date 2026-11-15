@@ -206,12 +206,26 @@ const App = () => {
 
   const { record, result } = state;
   const guide = guideView(state, path);
-  const open = guideOpen ?? record === null;
+  const open = guideOpen ?? (record === null && state.inForceCount > 0);
   const protocol = record?.protocol === 1;
+  // Nothing to hand over against until a decision is in force; a record that already exists keeps its controls.
+  const canPick = state.canPrepare && (state.inForceCount > 0 || record !== null);
   const isSender = record !== null && state.viewerId === record.fromId;
   const waiting = record && result ? result.binding.filter((d) => !record.acknowledged.includes(d.id) || state.stale.includes(d.id)) : [];
   return (
     <Stack space="space.100">
+      {/* A project with no decision in force has one next step, so it comes first and is the only primary button. */}
+      {state.inForceCount === 0 && (
+        <Stack space="space.100">
+          {state.decisionCount === 0 && <Text>{NO_DECISIONS_TEXT}</Text>}
+          {!state.hasSamples && !state.canManage && <Text>{MANAGE_DENIED}</Text>}
+          {!state.hasSamples && state.canManage && (
+            <Button appearance="primary" isDisabled={busy} onClick={() => call("loadSampleDecisions")}>
+              Load sample decisions (demo)
+            </Button>
+          )}
+        </Stack>
+      )}
       {/* The answer first: the verdict and its findings lead the panel; help, practice and the controls follow. */}
       {record && result && (
         <>
@@ -237,7 +251,7 @@ const App = () => {
       </Text>
       {(Object.keys(PATH_NAMES) as GuidePath[]).map((p) => (
         <Button key={p} appearance={p === path ? "primary" : undefined} onClick={() => setPath(p)}>
-          {PATH_NAMES[p]}
+          {p === path ? `${PATH_NAMES[p]} (selected)` : PATH_NAMES[p]}
         </Button>
       ))}
       <Button onClick={() => setGuideOpen(!open)}>{open ? "Hide help" : "Show help"}</Button>
@@ -296,7 +310,7 @@ const App = () => {
           )}
         </Stack>
       )}
-      {state.canPrepare && (
+      {canPick && (
         <UserPicker
           label="Receiver"
           name="receiver"
@@ -307,7 +321,7 @@ const App = () => {
       {state.canPrepare && record && confirmAgain && (
         <Text>{`Preparing again clears ${count(record.acknowledged.length, "acknowledgement")} by the receiver and starts over with the receiver you picked.`}</Text>
       )}
-      {state.canPrepare && (
+      {canPick && (
         <Button
           appearance="primary"
           isDisabled={busy || picked === null}
@@ -554,14 +568,6 @@ const App = () => {
             </Button>
           </Stack>
         </SectionMessage>
-      )}
-      {state.decisionCount === 0 && <Text>{NO_DECISIONS_TEXT}</Text>}
-      {/* Offered whenever nothing is in force: a project left with only superseded decisions must not lose the way in. */}
-      {state.inForceCount === 0 && !state.hasSamples && !state.canManage && <Text>{MANAGE_DENIED}</Text>}
-      {state.inForceCount === 0 && !state.hasSamples && state.canManage && (
-        <Button isDisabled={busy} onClick={() => call("loadSampleDecisions")}>
-          Load sample decisions (demo)
-        </Button>
       )}
       {state.hasSamples && state.canManage && (
         <Button isDisabled={busy} onClick={() => call("removeSampleDecisions")}>
