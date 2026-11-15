@@ -479,4 +479,5 @@ Plan: `keen-tinkering-marshmallow.md` (owner's "làm toàn diện"; work runs co
 - Decisions page: "Drafted with Rovo (not in force)" with Confirm (or Confirm and supersede) and Discard; confirming goes through `manualDecision`, so a draft has no shorter path than the form. Discard is logged as `draft_discarded`. Export and delete cover drafts.
 - Development 10.51.0, MOBL: ROVO-TESTS 11-13 pass as administrator. Confirm superseded the old test rule; the test rule was then superseded, so no condition is in force on development.
 - Production 3.31.0 deployed on the owner's order; both installs up to date. ROVO-TESTS 11 on the production agent: "0 conditions in force, counted over 51 open work items of MOBL." (production has no condition decision).
+- Production 3.32.0 deployed on the owner's order (adds the next-step fix for a work item that breaks a filter rule and the agent prompt changes: check the filter exactly as typed, never use an example work item key). The Rovo regression was run on development 10.54.0 only; not rerun on the production agent.
 - Not done: the non-administrator refusal on the site, README/DEVPOST text for the assistant.
