@@ -1,6 +1,6 @@
 # Devpost submission draft
 
-Owner submits. Category: Apps for Software Teams. Bonus prizes: Best Agents (rovo:agent and five actions), Best app with MCP (rovo:mcp), Best apps with Teamwork Graph integration.
+Owner submits. Category: Apps for Software Teams. Bonus prizes: Best Agents (rovo:agent and six actions), Best app with MCP (rovo:mcp), Best apps with Teamwork Graph integration.
 
 ## Tagline
 
@@ -64,13 +64,13 @@ Also:
 
 - **Rovo agent.** Explains the verdict, quoting the rule check's sentence exactly. It finds decisions written in the description and comments and proposes them with a word-for-word quote as evidence. A proposal binds nothing until a person confirms it in the panel. A repeat of a confirmed decision is rejected.
 - **Handoff brief.** Pulls what the receiver needs, including people connected to the item from Teamwork Graph (shared with, mentioned). Advisory; no rule reads it.
-- **Rovo MCP server.** The same five actions are exposed through the `rovo:mcp` module for external agents.
+- **Rovo MCP server.** The same six actions are exposed through the `rovo:mcp` module for external agents.
 
 **Decisions over time**
 
 - **Adding a decision by hand.** On the Decisions page a project administrator writes a decision (title, where it applies, one constraint). "Check this decision" shows how many open work items would contradict it before it is saved. No Rovo is needed.
 - **Activity, counts, export and delete.** The Decisions page lists who changed decisions and handoffs (the action, the person, the time and a key; no typed text) and counts handoffs prepared and read-backs accepted and refused per month. A project administrator can export everything the app holds for the project as JSON, and delete it after typing the project key.
-- **Typed answers.** Instead of writing a read-back, the receiver can answer each binding decision in a typed slot (a date, or a confirmation); code compares the values and refuses a date past the limit.
+- **Typed answers.** Instead of writing a read-back, the receiver can answer each binding decision in a typed slot (a date, or a confirmation); code compares the values and refuses a date past the limit. Rovo can draft the answers on request; the draft is checked by code, stored unsigned, and counts for nothing until the receiver sends it from the panel.
 - **Bounce autopsy.** The Decisions page reads the project's Jira history for handoffs that were Clear and then came back (returned to the sender or reopened within 7 days), counts what those handoffs lacked beside the same count for the ones that did not bounce, and lets a project administrator switch the missing thing on as a rule ("Require a contingency"). Code only; it is a count, not proof of a cause.
 - **Decisions check each other.** A decision that says the opposite of one in force for the same work is refused unless the older one is superseded with it.
 - **Replay on a date.** The Decisions page shows which prepared handoffs would have had a different verdict on an earlier date, using the decisions and acknowledgements as they stood then.
@@ -78,7 +78,7 @@ Also:
 
 ## How we built it
 
-Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Forge imports, `rovo:agent` with five actions, a `rovo:skill` ("Handoff check") that runs the rule check for other agents, `rovo:mcp`, `jira:workflowValidator`, and two saved Teamwork Graph Cypher queries called with `asUser()`. Unit tests cover every rule and principle and run with one command. Only decisions, handoff records and proposals are stored; no chat is stored.
+Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Forge imports, `rovo:agent` with six actions, a `rovo:skill` ("Handoff check") that runs the rule check for other agents, `rovo:mcp`, `jira:workflowValidator`, and two saved Teamwork Graph Cypher queries called with `asUser()`. Unit tests cover every rule and principle and run with one command. Only decisions, handoff records and proposals are stored; no chat is stored.
 
 ## Measurement
 
@@ -126,8 +126,8 @@ Teamwork Graph: **Gather handoff context** in the Rovo agent returns people conn
 
 ## Bonus prizes
 
-- **Best Agents.** `rovo:agent` "Handoff Guard" with five `action` modules, and a `rovo:skill` ("Handoff check") that other agents can use. The agent explains and proposes; the rule check decides.
-- **Best app with MCP.** One `rovo:mcp` module exposes the same five actions as tools to external MCP clients, run with the calling user's permissions.
+- **Best Agents.** `rovo:agent` "Handoff Guard" with six `action` modules, and a `rovo:skill` ("Handoff check") that other agents can use. The agent explains and proposes; the rule check decides.
+- **Best app with MCP.** One `rovo:mcp` module exposes the same six actions as tools to external MCP clients, run with the calling user's permissions.
 - **Best apps with Teamwork Graph integration.** The app consumes the Teamwork Graph API: two saved Cypher queries, called as the current user, return people the work item was shared with or who are mentioned on it.
 
 ## Links

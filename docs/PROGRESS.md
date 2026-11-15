@@ -434,3 +434,9 @@ Plan: three changes after Muse Wonder's answer on the Innovation ceiling (`resea
 - Typed decision receipt: `src/handoff/receipt.ts` (one slot per constraint; `checkReceipt` compares typed values; `acknowledgeWithReceipt` has the same guards and effect as `acknowledgeAll`, stores only the values and drops an older read-back). Resolver `acknowledgeReceipt`; the panel shows "Or answer each decision" under the read-back box for the receiver. Teach-back is unchanged.
 - Seen on development, MOBL-58 (the test handoff was prepared again for this, which cleared its two acknowledgements): 2027-01-15 is refused in the red box with "later than 2026-12-31"; 2026-12-15 with the confirmation is accepted, both decisions read Acknowledged and the panel shows "Answers from the receiver".
 - Not built: the Rovo half of B (a `draft-receipt` action that stores an unsigned draft the receiver signs). It needs a sixth action in the manifest and the agent prompt; left for a later session.
+
+## 2026-11-15: B of the approved plan, the Rovo half
+
+- Sixth action `draft-receipt` (GET, like `propose-decisions`): typed answers are checked by `checkReceipt`; a refused draft stores nothing and returns the code's reasons; an accepted one is stored under `receipt-draft:<issueId>`. `list-binding-decisions` now returns the slots. The panel shows "Drafted by Rovo, not signed" to the receiver only, with "Fill in the draft"; sending runs the check again and removes the draft. Agent prompt rule 19: only on the user's request, only values the user gave.
+- Tests: `tests/draftReceipt.test.ts` (never touches a record or proposals), manifest and schema parity in `tests/agent.test.ts` (six actions, same set for the agent and MCP).
+- Not verified: a real Rovo chat calling `draft-receipt` and the draft showing in the panel. Needs Rovo on the site and a handoff with a receiver who has not acknowledged.
