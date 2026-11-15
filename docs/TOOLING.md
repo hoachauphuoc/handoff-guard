@@ -11,7 +11,16 @@ Dev-only. Nothing here is in `src/` or in the product. Cheapest runner first (se
 | `product-management` (`write-spec`, `competitive-brief`) | Pilot protocol, pricing hypothesis | Only when the owner asks |
 | `anthropic-skills:built-in-browser` | Checking the panel and the Decisions page on the demo site | After each deploy |
 
-Not used on this project: `sales`, `data`, `render`, `operations`, `desktop-commander`, `productivity`. They add skills to every session's list and cost tokens for no gain here.
+| `agent-handoff` (`plan`, `execute`, `verify`, `setup-handoff`) | Splitting a plan between a planner and an executor session | When a change is big enough for a plan file and a separate executor |
+| `operations` (`runbook`, `risk-assessment`, `change-request`, `status-report`) | Release runbook, risk list before the production deploy, status line for the owner | Release and filming weeks |
+| `data` (`validate-data`, `statistical-analysis`, `analyze`) | Checking the sample sets and the label-agreement figures before they reach the README | When `data/` or `scripts/measure` changes |
+| `render` (`render-debug`, `render-static-sites`) | Only if a static page for the demo or privacy policy is hosted | Optional, Marketplace listing needs a privacy URL |
+| `sales` (`competitive-intelligence`, `draft-outreach`, `call-prep`) | Competitor notes, and asking pilot teams about price | After the code freeze, with the owner's approval for any outreach |
+| `desktop-commander` (`terminal`, `knowledge-base`) | Long local commands and file work outside the repo | Rare; the built-in tools cover most of it |
+| `productivity` (`task-management`, `memory-management`) | The owner's daily list and the memory files | Daily sessions |
+| `anthropic-skills` (`pdf`, `docx`, `pptx`, `xlsx`, `skill-creator`) | A slide deck or PDF of the pitch if a judge asks for one | Only on request |
+
+All the plugins installed in Claude desktop are listed. A plugin that adds skills to every session's list costs tokens whether or not it is used, so the first group above is the one in routine use and the rest are called by name when a task fits.
 
 ## Rules that stay in force
 
