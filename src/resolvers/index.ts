@@ -19,12 +19,14 @@ import type { AcknowledgeAllReply, HandoffRecord, PanelState, PracticeReadBackRe
 import { explainRefusal } from "../llm";
 import { MANAGE_DENIED } from "../authz";
 import { monthCounts, type AuditAction, type AuditEvent, type MonthCounts } from "../audit";
-import { isProjectAdminAsUser, openItemsAsUser, readItemAsUser as readItem } from "../jira";
+import { changesAsUser, doneStatusIdsAsUser, isProjectAdminAsUser, openItemsAsUser, readItemAsUser as readItem } from "../jira";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
 import { changeText, suggestFixes } from "../rules/feasible";
 import { impactOf } from "../rules/impact";
-import { replayDiff, replayInstant, type ReplayChange } from "../rules/replay";
+import { decisionsAsOf, replayAt, replayDiff, replayInstant, type ReplayChange } from "../rules/replay";
+import { bounceOf, lastAcknowledgedAt } from "../autopsy/bounce";
+import { autopsy, type Autopsy, type AutopsyHandoff } from "../autopsy/causes";
 import type { Proposal } from "../decisions/types";
 import type { Decision, Finding } from "../rules/types";
 import { hasSamples, mergeDecisions, sampleDecisions, withoutSamples } from "../samples/decisions";
@@ -408,6 +410,40 @@ resolver.define("addDecision", async ({ context, payload }) => {
   const nowIso = new Date().toISOString();
   await updateDecisions(projectKey, (current) => mergeDecisions(supersede(current, retire, nowIso, decision.id), [decision]));
   await log(projectKey, ctx.accountId, "decision_added", decision.id);
+});
+
+const AUTOPSY_CAP = 50;
+
+export type AutopsyState = Autopsy & { withHandoff: number; capped: boolean; notClear: number };
+
+// Looks through the project's stored handoffs for ones that were Clear when the receiver last acknowledged and
+// then bounced. Everything is read as the viewer and nothing is written. The verdict "then" uses the decisions
+// as they stood at that time and the work item as it is now, the same limit Replay has.
+resolver.define("bounceAutopsy", async ({ context }): Promise<AutopsyState> => {
+  const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
+  const [open, decisions, done] = await Promise.all([openItemsAsUser(projectKey), getDecisions(projectKey), doneStatusIdsAsUser(projectKey)]);
+  const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
+  const held = open.items.flatMap((i, n) => (records[n] ? [{ item: i.item, record: records[n] as HandoffRecord }] : []));
+  const read = held.slice(0, AUTOPSY_CAP);
+  let notClear = 0;
+  const handoffs: AutopsyHandoff[] = [];
+  for (const { item, record } of read) {
+    const ack = lastAcknowledgedAt(record);
+    const asOf = ack === null ? [] : decisionsAsOf(decisions, ack);
+    const then = ack === null ? null : replayAt({ item, fromId: record.fromId, toId: record.toId, acknowledged: record.acknowledged, acknowledgedAt: record.acknowledgedAt, preparedAt: record.preparedAt }, asOf, ack);
+    if (ack === null || then === null || then.verdict !== "clear") {
+      notClear += 1;
+      continue;
+    }
+    handoffs.push({
+      key: item.key,
+      record,
+      bounce: bounceOf(await changesAsUser(item.key), record, done),
+      drifted: Object.values(driftByDecision(record.acknowledged, record.acknowledgedWith, item)).some((d) => d.length > 0),
+      bindingCount: bindingDecisions(asOf, item).length,
+    });
+  }
+  return { ...autopsy(handoffs), withHandoff: held.length, capped: open.capped || held.length > AUTOPSY_CAP, notClear };
 });
 
 // Everything the app holds for one project, for a project administrator: decisions, the handoffs of the open

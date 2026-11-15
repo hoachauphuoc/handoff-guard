@@ -1,5 +1,6 @@
 import api, { route } from "@forge/api";
 import { hasAdminPermission } from "./authz";
+import { doneStatusIds, toChanges, type Change } from "./autopsy/bounce";
 import { itemsFromSearch, toWorkItem } from "./handoff/build";
 import { JiraReadError } from "./jira-error";
 import type { WorkItem } from "./rules/types";
@@ -45,4 +46,19 @@ export async function isProjectAdminAsUser(projectKey: string): Promise<boolean>
   } catch {
     return false;
   }
+}
+
+// The latest changes of one work item, as the caller (Jira returns the most recent 100 with the item).
+export async function changesAsUser(key: string): Promise<Change[]> {
+  const res = await api.asUser().requestJira(route`/rest/api/3/issue/${key}?expand=changelog&fields=summary`);
+  checkStatus(res, key);
+  return toChanges((await res.json()).changelog);
+}
+
+// Which statuses of the project count as Done, as the caller.
+export async function doneStatusIdsAsUser(projectKey: string): Promise<string[]> {
+  if (!/^[A-Za-z][A-Za-z0-9_]*$/.test(projectKey)) throw new JiraReadError("jira_error", "That project key is not valid.");
+  const res = await api.asUser().requestJira(route`/rest/api/3/project/${projectKey}/statuses`);
+  checkStatus(res, projectKey);
+  return doneStatusIds(await res.json());
 }

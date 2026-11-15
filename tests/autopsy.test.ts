@@ -69,3 +69,18 @@ describe("autopsy", () => {
     expect(autopsy([]).causes.filter((c) => c.rule !== null).map((c) => c.id)).toEqual(["no_contingency", "contingency_not_if_then"]);
   });
 });
+
+describe("reading Jira", () => {
+  it("reads the changelog expanded on a work item", () => {
+    expect(toChanges({ histories: [{ created: "2026-11-03T10:00:00.000Z", items: [{ field: "status", from: "1", to: "2" }] }] })).toHaveLength(1);
+  });
+  it("collects the Done status ids of a project once each", async () => {
+    const { doneStatusIds } = await import("../src/autopsy/bounce");
+    const raw = [
+      { statuses: [{ id: "1", statusCategory: { key: "new" } }, { id: "3", statusCategory: { key: "done" } }] },
+      { statuses: [{ id: "3", statusCategory: { key: "done" } }, { id: "4", statusCategory: { key: "done" } }] },
+    ];
+    expect(doneStatusIds(raw)).toEqual(["3", "4"]);
+    expect(doneStatusIds({})).toEqual([]);
+  });
+});

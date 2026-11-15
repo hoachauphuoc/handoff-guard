@@ -6,7 +6,7 @@ import { AUDIT_TEXT } from "../audit";
 import { MANAGE_DENIED } from "../authz";
 import { plainError } from "../errors";
 import { count } from "../plural";
-import type { DecisionsPageView, ReplayState } from "../resolvers";
+import type { AutopsyState, DecisionsPageView, ReplayState } from "../resolvers";
 
 const VERDICT = { blocked: { text: "Blocked", appearance: "removed" }, needs_info: { text: "Needs info", appearance: "moved" } } as const;
 
@@ -29,6 +29,8 @@ const App = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [autopsy, setAutopsy] = useState<AutopsyState | null>(null);
+  const [autopsyNote, setAutopsyNote] = useState<string | null>(null);
   const [exported, setExported] = useState<string | null>(null);
   const [deleteKey, setDeleteKey] = useState("");
   const [dataNote, setDataNote] = useState<string | null>(null);
@@ -103,6 +105,16 @@ const App = () => {
       (e) => setFormError(plainError(e)),
     );
 
+  const runAutopsy = () => {
+    setAutopsyNote("Reading the history of the handoffs…");
+    return invoke<AutopsyState>("bounceAutopsy").then(
+      (a) => {
+        setAutopsy(a as AutopsyState);
+        setAutopsyNote(null);
+      },
+      (e) => setAutopsyNote(plainError(e)),
+    );
+  };
   const exportData = () =>
     invoke<string>("exportProject").then(
       (json) => {
@@ -261,6 +273,40 @@ const App = () => {
           {replay.changes.map((c) => (
             <Text key={c.key}>{`${c.key} ${c.summary}: ${c.then} then, ${c.now} now. ${c.changedBy.length > 0 ? `Changed by: ${c.changedBy.join("; ")}.` : "No decision explains the change."}`}</Text>
           ))}
+        </Stack>
+      )}
+      <Text>Bounce autopsy</Text>
+      <Text>
+        Which handoffs were Clear when the receiver acknowledged and then came back: reassigned to the sender, or reopened, within 7 days. For
+        those, what the handoff lacked. Read from this project's Jira history as you; nothing is written and no model takes part.
+      </Text>
+      <Button onClick={() => void runAutopsy()}>Look for bounced handoffs</Button>
+      {autopsyNote !== null && <Text>{autopsyNote}</Text>}
+      {autopsy !== null && (
+        <Stack space="space.050">
+          <Text>
+            {`${count(autopsy.withHandoff, "open work item")} with a prepared handoff${autopsy.capped ? " (list cut, so these are at least)" : ""}; ${count(autopsy.total, "handoff")} ${autopsy.total === 1 ? "was" : "were"} Clear at the last acknowledgement, ${autopsy.notClear} ${autopsy.notClear === 1 ? "was" : "were"} not and ${autopsy.notClear === 1 ? "is" : "are"} left out.`}
+          </Text>
+          {autopsy.bounced.length === 0 ? (
+            <Text>
+              No Clear handoff bounced. A bounce is a work item that goes back to the sender, or leaves a Done status, within 7 days of the
+              receiver's last acknowledgement.
+            </Text>
+          ) : (
+            <>
+              <Text>{`${count(autopsy.bounced.length, "Clear handoff")} bounced: ${autopsy.bounced
+                .map((b) => `${b.key} (${b.kind === "reopened" ? "reopened" : "returned to the sender"} on ${b.at.slice(0, 10)})`)
+                .join(", ")}.`}</Text>
+              {autopsy.causes
+                .filter((c) => c.bouncedWith > 0)
+                .map((c) => (
+                  <Text key={c.id}>
+                    {`• ${c.text}: ${c.bouncedWith} of ${autopsy.bounced.length} that bounced, ${c.othersWith} of ${autopsy.total - autopsy.bounced.length} that did not.`}
+                  </Text>
+                ))}
+              <Text>These are counts from stored handoffs, not proof of a cause. The work item is read as it is now.</Text>
+            </>
+          )}
         </Stack>
       )}
       <Text>Handoffs in flight</Text>

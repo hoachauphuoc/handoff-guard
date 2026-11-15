@@ -7,6 +7,20 @@ export type Change = { created: string; items: { field: string; from: string | n
 
 export const BOUNCE_WINDOW_DAYS = 7;
 
+/** Status ids of the Done category, from the body of GET /project/{key}/statuses. */
+export function doneStatusIds(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const ids = raw.flatMap((type) => {
+    const statuses = (type as { statuses?: unknown } | null)?.statuses;
+    if (!Array.isArray(statuses)) return [];
+    return statuses.flatMap((s) => {
+      const st = s as { id?: unknown; statusCategory?: { key?: unknown } };
+      return typeof st?.id === "string" && st.statusCategory?.key === "done" ? [st.id] : [];
+    });
+  });
+  return [...new Set(ids)];
+}
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 const same = (a: string | null, b: string): boolean => a !== null && a.trim().toLowerCase() === b.trim().toLowerCase();
 
@@ -16,9 +30,13 @@ export function lastAcknowledgedAt(record: HandoffRecord): string | null {
   return times.length === 0 ? null : times.reduce((a, b) => (Date.parse(a) >= Date.parse(b) ? a : b));
 }
 
-/** Reads the untyped changelog Jira returns. Anything that is not an entry with a time and items is dropped. */
+/**
+ * Reads the untyped changelog Jira returns, either a changelog page (`values`) or the one expanded on a work
+ * item (`histories`). Anything that is not an entry with a time and items is dropped.
+ */
 export function toChanges(raw: unknown): Change[] {
-  const values = (raw as { values?: unknown } | null)?.values;
+  const body = raw as { values?: unknown; histories?: unknown } | null;
+  const values = body?.values ?? body?.histories;
   if (!Array.isArray(values)) return [];
   return values.flatMap((v) => {
     const e = v as { created?: unknown; items?: unknown };
