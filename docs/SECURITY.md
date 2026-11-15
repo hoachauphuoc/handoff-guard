@@ -14,3 +14,14 @@
 - Not covered: `propose-decisions` writes proposals to storage, also when called over MCP. It keeps at most 5 per work item and replaces that item's pending proposals, so a call can displace proposals waiting there. Nothing binds until a person confirms.
 - Partly covered: decisions are stored per project with a version check, so one project cannot break another. A single project with a very large number of decisions would still hit the size limit. The old site-wide key is kept, read-only, until the owner confirms the new keys work. The trigger writes a handoff record whenever an assignee changes; the app never writes to Jira, so there is no loop.
 - `npm audit` reports vulnerabilities only inside the dependencies of `@forge/react` and `@forge/bridge` (mostly an editor library). The app uses no editor and runs in Forge's sandbox; they can be fixed only by a Forge release.
+
+## Bounds the app relies on
+
+| What | Bound | Where |
+|---|---|---|
+| Open work items read for a project page | 100, and the page says when the list was cut | `src/jira.ts` |
+| Work items read by Bounce autopsy | 50 with a stored handoff, changed in the last 60 days | `src/resolvers/index.ts` |
+| Activity list per project | latest 300 events | `src/audit.ts` |
+| Proposals per work item | 5 | `src/decisions/validate.ts` |
+| Decisions per project | one storage value per project; not capped by the app, so a very large number would meet the storage value limit | `src/store.ts` |
+| Jira and storage calls | no retry; a failed call is shown as an error with its source, and the validator fails closed | `src/jira.ts`, `src/validator.ts` |
