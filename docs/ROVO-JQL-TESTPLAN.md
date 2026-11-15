@@ -233,3 +233,9 @@ Open: F13 (prompt: when the rule is about anything other than the one work item'
 - F13: rule 20 now says a filter answers yes or no about one work item and the agent must not substitute another filter. Rerun "all subtasks must be done": pass ("cannot be written as a filter here", asks what to do, no counts).
 - S9 in a fresh chat: pass (asks which project).
 - ROVO-TESTS rows 1 to 5 and 9 rerun at 10.55.0: pass (row 1 asks for a key and calls no action).
+
+## More cases and one more fix, 2026-11-15 (development 10.56.0)
+
+- F3 (`priority = = Highest`), D4 (draft with ORDER BY: refused at the check, nothing stored), D5 (empty title: the agent asks for a title before calling): pass.
+- Finding on F3/F4 at 10.55.0: the agent wrote "Matches: 0, Does not match: 0" for a filter Jira could not run, although `checked.counts` was null. This is the blocker named in the pass rule (a count shown for a filter Jira could not run). One prompt change in rule 20: show no counts, not even zeros, when Jira cannot run the filter.
+- Rerun at 10.56.0: F3 and F4 show no counts (pass); ROVO-TESTS 11, 12 and F1 pass.
