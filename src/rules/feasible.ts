@@ -1,5 +1,5 @@
 import { bindingDecisions, has, isIsoDate, norm } from "./checkHandoff";
-import type { Decision, WorkItem } from "./types";
+import type { Constraint, Decision, WorkItem } from "./types";
 
 export type FeasibleSpace = {
   /** The earliest valid dueNotAfter date among the binding decisions. */
@@ -24,8 +24,9 @@ export type Unresolved = { field: "labels" | "components"; value: string; requir
 
 export type Fixes = { space: FeasibleSpace; changes: Change[]; unresolved: Unresolved[]; after: WorkItem };
 
-type Kind = "labelRequired" | "labelForbidden" | "componentRequired" | "componentForbidden";
-const valueOf = (c: Decision["constraints"][number]): string => ("label" in c ? c.label : "component" in c ? c.component : "");
+// A date limit is compared, not collected; a JQL condition cannot be compared with labels or components at all.
+type Kind = Exclude<Constraint["kind"], "dueNotAfter" | "condition">;
+const valueOf = (c: Extract<Constraint, { kind: Kind }>): string => ("label" in c ? c.label : c.component);
 
 // Keeps the first spelling of each value, comparing the way the rules do.
 function dedupe(values: string[]): string[] {
@@ -44,7 +45,9 @@ export function feasibleSpace(binding: Decision[]): FeasibleSpace {
       if (c.kind === "dueNotAfter") {
         if (!isIsoDate(c.date)) invalid.push({ decisionId: d.id, title: d.title, constraint: c.date });
         else if (latest === null || c.date < latest) latest = c.date;
-      } else lists[c.kind].push(valueOf(c));
+      } else if (c.kind !== "condition") {
+        lists[c.kind].push(valueOf(c));
+      }
     }
   }
   return {

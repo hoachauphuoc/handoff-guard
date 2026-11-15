@@ -21,10 +21,21 @@ export function slotsFor(binding: Decision[]): Slot[] {
     if (d.constraints.length === 0) return [{ ...base, key: `${d.id}:0`, kind: "confirm", ask: `I have read "${d.title}".` }];
     return d.constraints.map((c, i): Slot => {
       const key = `${d.id}:${i}`;
-      if (c.kind === "dueNotAfter") return { ...base, key, kind: "date", limit: c.date, ask: `The date I will deliver by (no later than ${c.date}).` };
-      const what = "label" in c ? `the label "${c.label}"` : `the component "${c.component}"`;
-      const keep = c.kind === "labelRequired" || c.kind === "componentRequired";
-      return { ...base, key, kind: "confirm", ask: keep ? `I will keep ${what} on this work item.` : `I will not add ${what} to this work item.` };
+      // Exhaustive on purpose: a new kind must get its own slot, never fall through as a component.
+      switch (c.kind) {
+        case "dueNotAfter":
+          return { ...base, key, kind: "date", limit: c.date, ask: `The date I will deliver by (no later than ${c.date}).` };
+        case "labelRequired":
+          return { ...base, key, kind: "confirm", ask: `I will keep the label "${c.label}" on this work item.` };
+        case "componentRequired":
+          return { ...base, key, kind: "confirm", ask: `I will keep the component "${c.component}" on this work item.` };
+        case "labelForbidden":
+          return { ...base, key, kind: "confirm", ask: `I will not add the label "${c.label}" to this work item.` };
+        case "componentForbidden":
+          return { ...base, key, kind: "confirm", ask: `I will not add the component "${c.component}" to this work item.` };
+        case "condition":
+          return { ...base, key, kind: "confirm", ask: `I will keep this work item matching the Jira filter: ${c.jql}` };
+      }
     });
   });
 }

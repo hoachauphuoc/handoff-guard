@@ -25,5 +25,7 @@ export function constraintText(c: Constraint): string {
       return `The component "${c.component}" is required.`;
     case "componentForbidden":
       return `The component "${c.component}" is not allowed.`;
+    case "condition":
+      return `Must match the Jira filter: ${c.jql}`;
   }
 }

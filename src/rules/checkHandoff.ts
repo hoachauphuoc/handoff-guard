@@ -54,6 +54,16 @@ function violation(constraint: Constraint, item: WorkItem, decision: Decision): 
       return has(item.components, constraint.component)
         ? contradiction(decision, `component "${constraint.component}" is not allowed`)
         : null;
+    case "condition": {
+      // Jira evaluated the JQL elsewhere; an answer that never arrived waits instead of guessing either way.
+      const result = item.conditions?.[constraint.jql];
+      if (result === true) return null;
+      if (result === false) return contradiction(decision, `does not match the Jira filter ${constraint.jql}`);
+      return {
+        rule: "invalid_constraint",
+        message: `"${decision.title}" could not be checked by Jira just now: ${constraint.jql}. The verdict waits for Jira.`,
+      };
+    }
   }
 }
 

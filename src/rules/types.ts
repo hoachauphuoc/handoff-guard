@@ -8,6 +8,11 @@ export type WorkItem = {
   /** ISO date (YYYY-MM-DD), or null when unset. */
   dueDate: string | null;
   assigneeId: string | null;
+  /**
+   * Jira's answer per JQL text, keyed by the exact query. Jira evaluates elsewhere; the rules only read
+   * the result. True means the item matches, false that it does not, null or a missing key that it could not be checked.
+   */
+  conditions?: Record<string, boolean | null>;
 };
 
 /** A structured condition a decision places on work. Structured so that code, not a model, decides. */
@@ -16,7 +21,8 @@ export type Constraint =
   | { kind: "labelRequired"; label: string }
   | { kind: "labelForbidden"; label: string }
   | { kind: "componentRequired"; component: string }
-  | { kind: "componentForbidden"; component: string };
+  | { kind: "componentForbidden"; component: string }
+  | { kind: "condition"; jql: string };
 
 export type DecisionScope =
   | { kind: "project"; projectKey: string }

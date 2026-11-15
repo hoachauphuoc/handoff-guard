@@ -74,12 +74,21 @@ export const READ_BACK_MIN = 20;
 /** Room for about seven decisions at roughly 80 characters each. */
 export const READ_BACK_MAX = 600;
 
-const valueOf = (c: Constraint): { text: string; value: string } =>
-  c.kind === "dueNotAfter"
-    ? { text: `date ${c.date}`, value: c.date }
-    : "label" in c
-      ? { text: `label ${c.label}`, value: c.label }
-      : { text: `component ${c.component}`, value: c.component };
+// Exhaustive on purpose: a new kind must name its own value, never fall through as a component.
+const valueOf = (c: Constraint): { text: string; value: string } => {
+  switch (c.kind) {
+    case "dueNotAfter":
+      return { text: `date ${c.date}`, value: c.date };
+    case "labelRequired":
+    case "labelForbidden":
+      return { text: `label ${c.label}`, value: c.label };
+    case "componentRequired":
+    case "componentForbidden":
+      return { text: `component ${c.component}`, value: c.component };
+    case "condition":
+      return { text: `condition ${c.jql}`, value: c.jql };
+  }
+};
 
 const escape = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // A value counts only as a whole word, so the label "ui" is not found inside "build".

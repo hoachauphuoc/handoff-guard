@@ -20,7 +20,21 @@ export function reachCovers(a: DecisionScope, b: DecisionScope): boolean {
   return a.kind === "project" && b.kind === "workItem" && norm(b.key).startsWith(norm(a.projectKey) + "-");
 }
 
-const valueOf = (c: Constraint): string => (c.kind === "dueNotAfter" ? c.date.trim() : "label" in c ? norm(c.label) : norm(c.component));
+// Exhaustive on purpose: a new kind must name its own value, never fall through as a component.
+const valueOf = (c: Constraint): string => {
+  switch (c.kind) {
+    case "dueNotAfter":
+      return c.date.trim();
+    case "labelRequired":
+    case "labelForbidden":
+      return norm(c.label);
+    case "componentRequired":
+    case "componentForbidden":
+      return norm(c.component);
+    case "condition":
+      return norm(c.jql);
+  }
+};
 
 /** True when meeting `strong` always meets `weak`: the same rule, or an earlier date limit. */
 function implies(strong: Constraint, weak: Constraint): boolean {

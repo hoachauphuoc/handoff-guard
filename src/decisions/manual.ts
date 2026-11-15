@@ -47,6 +47,7 @@ function constraintOf(input: ManualInput): Constraint | string {
   if (input.constraint === "dueNotAfter") return isIsoDate(v) ? { kind: "dueNotAfter", date: v } : "The date must be a real calendar date written YYYY-MM-DD.";
   if (v === "") return "Write the label or component the decision names.";
   if (input.constraint === "labelRequired" || input.constraint === "labelForbidden") return { kind: input.constraint, label: v };
+  if (input.constraint === "condition") return "This form does not take a Jira filter.";
   return { kind: input.constraint, component: v };
 }
 

@@ -197,6 +197,9 @@ function contradictionOf(text: string, d: Decision, c: Constraint, fromIso: stri
       const where = affirmed(text, [tokens(value)]);
       return where ? `Your read-back says "${where}", but "${d.title}" forbids ${c.kind === "labelForbidden" ? "label" : "component"} ${value}.` : null;
     }
+    // Code cannot compare prose with JQL, so a condition is never contradicted here.
+    case "condition":
+      return null;
   }
 }
 
