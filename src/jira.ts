@@ -4,7 +4,7 @@ import { doneStatusIds, toChanges, type Change } from "./autopsy/bounce";
 import { itemsFromSearch, toWorkItem } from "./handoff/build";
 import { JiraReadError } from "./jira-error";
 import type { StartProject } from "./guide/start";
-import { CONDITION_CAP, conditionJqls, conditionsOf, keyListJql, validJqls, withAnswers } from "./decisions/conditions";
+import { CONDITION_CAP, conditionJqls, conditionsOf, keyListJql, parseErrors, validJqls, withAnswers } from "./decisions/conditions";
 import type { Decision, WorkItem } from "./rules/types";
 import { getDecisions } from "./store";
 
@@ -78,6 +78,17 @@ export async function withConditions<T extends { item: WorkItem }>(rows: T[], de
     }),
   );
   return withAnswers(rows, conditionsOf(keys, all, matched));
+}
+
+// Jira's own words for why a filter cannot run, as the caller; empty when it can. Asked before a condition is saved.
+export async function jqlErrorsAsUser(jql: string): Promise<string[]> {
+  const res = await api.asUser().requestJira(route`/rest/api/3/jql/parse?validation=strict`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ queries: [jql] }),
+  });
+  if (!res.ok) return [`Jira could not check the filter (status ${res.status}).`];
+  return parseErrors(await res.json());
 }
 
 // The projects the caller can see, for the start page's picker. At most 50: the page is a front door, not a list.

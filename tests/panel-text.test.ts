@@ -84,6 +84,19 @@ describe("who may change decisions", () => {
   });
 });
 
+describe("a decision with a Jira filter", () => {
+  it("is saved only after Jira says it can run the filter", () => {
+    const body = resolvers.slice(resolvers.indexOf("async function manualDecision"), resolvers.indexOf('resolver.define("previewDecision"'));
+    expect(body).toMatch(/jqlErrorsAsUser\(c\.jql\)[\s\S]*Nothing was saved/);
+  });
+  it("is previewed with Jira's answer, and items Jira could not answer are counted apart", () => {
+    const start = resolvers.indexOf('resolver.define("previewDecision"');
+    const body = resolvers.slice(start, resolvers.indexOf("resolver.define(", start + 1));
+    expect(body).toContain('withConditions(open.items, [decision], "user")');
+    expect(body).toContain("unchecked:");
+  });
+});
+
 describe("load sample decisions", () => {
   it("is offered when nothing is in force, not only when nothing is stored", () => {
     expect(panel).toMatch(/state\.inForceCount === 0 && \([\s\S]{0,400}!state\.hasSamples && state\.canManage && \(\s*<Button[\s\S]{0,120}loadSampleDecisions/);

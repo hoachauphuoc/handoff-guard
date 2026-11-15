@@ -21,7 +21,7 @@ import type { AcknowledgeAllReply, HandoffRecord, PanelState, PracticeReadBackRe
 import { explainRefusal } from "../llm";
 import { MANAGE_DENIED } from "../authz";
 import { monthCounts, type AuditAction, type AuditEvent, type MonthCounts } from "../audit";
-import { changesAsUser, doneStatusIdsAsUser, isProjectAdminAsUser, latestOpenItemAsUser, openItemsAsUser, projectsAsUser, RECENT_DAYS, recentItemsAsUser, readItemAsUser as readItem } from "../jira";
+import { changesAsUser, doneStatusIdsAsUser, isProjectAdminAsUser, jqlErrorsAsUser, latestOpenItemAsUser, withConditions, openItemsAsUser, projectsAsUser, RECENT_DAYS, recentItemsAsUser, readItemAsUser as readItem } from "../jira";
 import { appIds, startView, type StartProject, type StartView } from "../guide/start";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
@@ -445,6 +445,11 @@ async function manualDecision(ctx: { accountId?: string; extension: { project: {
   const stored = await getDecisions(projectKey);
   const built = buildManualDecision(input, projectKey, stored, ctx.accountId, new Date().toISOString());
   if (!built.ok) throw new Error(built.reason);
+  for (const c of built.decision.constraints) {
+    if (c.kind !== "condition") continue;
+    const errors = await jqlErrorsAsUser(c.jql);
+    if (errors.length > 0) throw new Error(`Jira cannot run this filter: ${errors.join(" ")} Nothing was saved.`);
+  }
   return { projectKey, stored, decision: built.decision, retire: built.retire };
 }
 
@@ -453,8 +458,12 @@ resolver.define("previewDecision", async ({ context, payload }) => {
   // The preview is built as if the person had agreed to supersede, so it can name what saving would retire.
   const { projectKey, decision, stored } = await manualDecision(ctx, { ...(payload as object), supersede: true });
   const open = await openItemsAsUser(projectKey);
-  const hit = impactOf(decision, open.items.map((i) => i.item));
+  // A new filter has no answer yet; Jira is asked for it here, and items it could not answer are counted apart.
+  const items = (await withConditions(open.items, [decision], "user")).map((i) => i.item);
+  const hit = impactOf(decision, items);
+  const jqls = decision.constraints.flatMap((c) => (c.kind === "condition" ? [c.jql] : []));
   return {
+    unchecked: items.filter((i) => jqls.some((q) => typeof i.conditions?.[q] !== "boolean")).length,
     count: hit.length,
     keys: hit.slice(0, 10).map((h) => h.key),
     scanned: open.items.length,

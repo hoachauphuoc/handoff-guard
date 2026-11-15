@@ -1,5 +1,6 @@
 import { isIsoDate } from "../rules/checkHandoff";
 import type { Constraint, Decision, DecisionScope } from "../rules/types";
+import { CONDITION_MAX_LENGTH } from "./conditions";
 import { fnv1a } from "./hash";
 import { clashText } from "./confirm";
 import { canSupersede, clashes, relate } from "./supersede";
@@ -17,7 +18,7 @@ export type ManualInput = {
 
 export type ManualResult = { ok: true; decision: Decision; retire: string[] } | { ok: false; reason: string };
 
-const KINDS: Constraint["kind"][] = ["dueNotAfter", "labelRequired", "labelForbidden", "componentRequired", "componentForbidden"];
+const KINDS: Constraint["kind"][] = ["dueNotAfter", "labelRequired", "labelForbidden", "componentRequired", "componentForbidden", "condition"];
 
 const text = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
@@ -45,10 +46,18 @@ function scopeOf(input: ManualInput, projectKey: string): DecisionScope | string
 function constraintOf(input: ManualInput): Constraint | string {
   const v = input.constraintValue;
   if (input.constraint === "dueNotAfter") return isIsoDate(v) ? { kind: "dueNotAfter", date: v } : "The date must be a real calendar date written YYYY-MM-DD.";
+  if (input.constraint === "condition") return conditionOf(v);
   if (v === "") return "Write the label or component the decision names.";
   if (input.constraint === "labelRequired" || input.constraint === "labelForbidden") return { kind: input.constraint, label: v };
-  if (input.constraint === "condition") return "This form does not take a Jira filter.";
   return { kind: input.constraint, component: v };
+}
+
+// Only the shape is checked here; whether Jira can run it is asked of Jira before saving.
+function conditionOf(jql: string): Constraint | string {
+  if (jql === "") return "Write the Jira filter (JQL) the work item must match, for example priority = Highest.";
+  if (jql.length > CONDITION_MAX_LENGTH) return `A Jira filter here is at most ${CONDITION_MAX_LENGTH} characters.`;
+  if (/\border\s+by\b/i.test(jql)) return "A filter here cannot sort: remove ORDER BY.";
+  return { kind: "condition", jql };
 }
 
 /**

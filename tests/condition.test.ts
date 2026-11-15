@@ -156,7 +156,21 @@ describe("condition between decisions", () => {
     expect(constraintText({ kind: "condition", jql: "priority = Highest" })).toBe("Must match the Jira filter: priority = Highest");
   });
 
-  it("cannot be saved yet, through proposals or by hand", () => {
+  it("is typed in by hand: refused when empty, sorted or too long, kept as typed otherwise", () => {
+    const base: ManualInput = { title: "Only the highest priority ships", scope: "project", scopeValue: "", constraint: "condition", constraintValue: JQL, supersede: false };
+    const made = buildManualDecision(base, "OPS", [], "u-ana", "2026-11-15T00:00:00.000Z");
+    expect(made.ok && made.decision.constraints).toEqual([{ kind: "condition", jql: JQL }]);
+    const reason = (v: string) => {
+      const r = buildManualDecision({ ...base, constraintValue: v }, "OPS", [], "u-ana", "2026-11-15T00:00:00.000Z");
+      return r.ok ? null : r.reason;
+    };
+    expect(reason("")).toContain("Write the Jira filter");
+    expect(reason("priority = Highest ORDER BY key")).toContain("ORDER BY");
+    expect(reason("x".repeat(301))).toContain("at most 300");
+    expect(reason("summary ~ border")).toBeNull();
+  });
+
+  it("cannot come from a Rovo proposal", () => {
     const parts = [{ from: "OPS-12 description", text: "Decision: only the highest priority ships, everyone agreed." }];
     const out = validateCandidates(
       [{ title: "Only the highest priority ships", scope: { kind: "project", projectKey: "OPS" }, constraints: [{ kind: "condition", jql: JQL }], evidence: { quote: "only the highest priority ships" } }],
@@ -166,9 +180,6 @@ describe("condition between decisions", () => {
     );
     expect(out.kept).toEqual([]);
     expect(out.rejected).toEqual([{ index: 0, reason: "bad_constraint" }]);
-    const input: ManualInput = { title: "Only the highest priority ships", scope: "project", scopeValue: "", constraint: "condition", constraintValue: JQL, supersede: false };
-    const manual = buildManualDecision(input, "OPS", [], "u-ana", "2026-11-15T00:00:00.000Z");
-    expect(manual.ok).toBe(false);
   });
 });
 

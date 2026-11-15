@@ -12,7 +12,7 @@ import type { AutopsyState, DecisionsPageView, ReplayState } from "../resolvers"
 
 const VERDICT = { blocked: { text: "Blocked", appearance: "removed" }, needs_info: { text: "Needs info", appearance: "moved" } } as const;
 
-type Preview = { count: number; keys: string[]; scanned: number; capped: boolean; clash: string[] };
+type Preview = { count: number; keys: string[]; scanned: number; capped: boolean; clash: string[]; unchecked: number };
 const SCOPES = [
   { label: "The whole project", value: "project" },
   { label: "Work items with a label", value: "label" },
@@ -24,7 +24,12 @@ const RULES = [
   { label: "Must not carry the label", value: "labelForbidden" },
   { label: "Must have the component", value: "componentRequired" },
   { label: "Must not have the component", value: "componentForbidden" },
+  { label: "Must match a Jira filter (JQL)", value: "condition" },
 ];
+const VALUE_LABEL: Record<string, string> = { dueNotAfter: "Latest date", condition: "Jira filter (JQL)" };
+const VALUE_HINT: Record<string, string> = { dueNotAfter: "Date, YYYY-MM-DD", condition: "For example: priority = Highest" };
+const valueLabel = (kind: string) => VALUE_LABEL[kind] ?? (kind.startsWith("label") ? "Label" : "Component");
+const valueHint = (kind: string) => VALUE_HINT[kind] ?? valueLabel(kind);
 const EMPTY_FORM = { title: "", scope: "project", scopeValue: "", constraint: "dueNotAfter", constraintValue: "" };
 
 const App = () => {
@@ -263,11 +268,11 @@ const App = () => {
           )}
           <Label labelFor="decision-rule">The decision says</Label>
           <Select inputId="decision-rule" name="decision-rule" options={RULES} defaultValue={RULES[0]} onChange={(o: { value: string }) => edit({ constraint: o.value, constraintValue: "" })} />
-          <Label labelFor="decision-rule-value">{form.constraint === "dueNotAfter" ? "Latest date" : form.constraint.startsWith("label") ? "Label" : "Component"}</Label>
+          <Label labelFor="decision-rule-value">{valueLabel(form.constraint)}</Label>
           <Textfield
             id="decision-rule-value"
             name="decision-rule-value"
-            placeholder={form.constraint === "dueNotAfter" ? "Date, YYYY-MM-DD" : form.constraint.startsWith("label") ? "Label" : "Component"}
+            placeholder={valueHint(form.constraint)}
             value={form.constraintValue}
             onChange={(e: { target: { value?: string } }) => edit({ constraintValue: e.target.value ?? "" })}
           />
@@ -280,6 +285,7 @@ const App = () => {
                   ? `No open work item contradicts it, among ${count(preview.scanned, "open work item")}${preview.capped ? " (list cut at 100)" : ""}.`
                   : `${count(preview.count, "open work item")} would contradict it: ${preview.keys.join(", ")}${preview.count > preview.keys.length ? ", …" : ""}.`}
               </Text>
+              {preview.unchecked > 0 && <Text>{`Jira could not answer the filter for ${count(preview.unchecked, "open work item")}; they are not counted, and their handoffs wait until Jira answers.`}</Text>}
               {preview.clash.length > 0 && (
             <Text>{`It clashes with ${preview.clash.map((t) => `"${t}"`).join(", ")}, in force for the same work. Both cannot be in force, so saving it supersedes the older one.`}</Text>
           )}
