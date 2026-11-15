@@ -264,4 +264,11 @@ Open: F13 (prompt: when the rule is about anything other than the one work item'
 | E3 priority set back to Highest | Pass: the contradiction is gone; only the acknowledgement finding is left |
 | Browser note | Clicks by coordinate missed the Confirm / Discard buttons (the page is scaled); clicks by element reference work |
 
-Not run: D2, C4, F16, D12, S3 to S6, R8 (second account, second project, bigger project or MCP client needed); E2 (validator on a transition); E4; D7 and D14 (many drafts); N1 (not timed); proposals left from ROVO-TESTS row 7 on MOBL-53.
+### Sweep part 3 (development, 2026-11-16)
+
+| Case | Result |
+|---|---|
+| N1 "which rules are in force, how many break each" (51 open items) | Pass: answer in about 10 seconds; "0 conditions in force, counted over 51 open work items of MOBL." |
+| D14 three rules in one message | Pass: three separate checks with their own JQL and counts (2/49, 17/34, 51/0), nothing stored, then asks whether to save them as drafts |
+
+Not run: D2, C4, F16, D12, S3 to S6, R8 (second account, second project, bigger project or MCP client needed); E2 (validator on a transition); E4; D7 (ten drafts; the cap is covered by a unit test); proposals left from ROVO-TESTS row 7 on MOBL-53.
