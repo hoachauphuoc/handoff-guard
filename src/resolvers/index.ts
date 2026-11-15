@@ -22,7 +22,7 @@ import { explainRefusal } from "../llm";
 import { MANAGE_DENIED } from "../authz";
 import { monthCounts, type AuditAction, type AuditEvent, type MonthCounts } from "../audit";
 import { changesAsUser, doneStatusIdsAsUser, isProjectAdminAsUser, jqlErrorsAsUser, latestOpenItemAsUser, withConditions, openItemsAsUser, projectsAsUser, RECENT_DAYS, recentItemsAsUser, readItemAsUser as readItem } from "../jira";
-import { appIds, startView, type StartProject, type StartView } from "../guide/start";
+import { firstProject, startView, type StartProject, type StartView } from "../guide/start";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
 import { changeText, suggestFixes } from "../rules/feasible";
@@ -145,15 +145,17 @@ resolver.define("getPanel", ({ context }) => panelState(context as Ctx));
 export type StartState = StartView & { projects: StartProject[] };
 
 // The start page reads as the viewer, like the panel; it stores nothing.
-resolver.define("getStart", async ({ context, payload }): Promise<StartState> => {
+resolver.define("getStart", async ({ payload }): Promise<StartState> => {
   const projects = await projectsAsUser();
+  const stored = await Promise.all(projects.map((p) => getDecisions(p.key)));
+  const inForce = Object.fromEntries(
+    projects.map((p, i) => [p.key, (stored[i] ?? []).filter((d) => d.status === "decided" && touches(d, p.key) && !(d.scope.kind === "label" && d.scope.projectKey === undefined)).length]),
+  );
   const asked = typeof payload?.projectKey === "string" ? payload.projectKey : null;
-  const project = projects.find((p) => p.key === asked) ?? projects[0] ?? null;
-  const ids = appIds((context as { localId?: string }).localId);
-  if (!project) return { ...startView({ project: null, inForceCount: 0, itemKey: null, ids }), projects };
-  const [decisions, itemKey] = await Promise.all([getDecisions(project.key), latestOpenItemAsUser(project.key)]);
-  const inForceCount = decisions.filter((d) => d.status === "decided" && touches(d, project.key) && !(d.scope.kind === "label" && d.scope.projectKey === undefined)).length;
-  return { ...startView({ project, inForceCount, itemKey, ids }), projects };
+  const project = projects.find((p) => p.key === asked) ?? firstProject(projects, inForce);
+  if (!project) return { ...startView({ project: null, inForceCount: 0, itemKey: null }), projects };
+  const itemKey = await latestOpenItemAsUser(project.key);
+  return { ...startView({ project, inForceCount: inForce[project.key] ?? 0, itemKey }), projects };
 });
 
 resolver.define("prepareHandoff", async ({ context, payload }) => {

@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, Heading, Label, Lozenge, SectionMessage, Select, Stack, Text } from "@forge/react";
+import ForgeReconciler, { Button, Heading, Inline, Label, Lozenge, SectionMessage, Select, Stack, Text } from "@forge/react";
 import { invoke, router } from "@forge/bridge";
-import { GLOSSARY, NO_PROJECT_TEXT, START_INTRO, START_TITLE } from "../guide/start";
+import { GLOSSARY, NO_PROJECT_TEXT, START_INTRO, type StartGo } from "../guide/start";
 import { plainError } from "../errors";
 import type { StartState } from "../resolvers";
 
 const STATE_LOOK = { done: { text: "Done", appearance: "success" }, next: { text: "Next", appearance: "inprogress" }, open: { text: "Then", appearance: "default" } } as const;
+
+// The decisions page is this app's project page; Jira finds it by its module key.
+const go = (to: StartGo) =>
+  router.navigate(to.kind === "issue" ? { target: "issue", issueKey: to.issueKey } : { target: "module", moduleKey: "handoff-guard-decisions", projectKey: to.projectKey });
 
 const App = () => {
   const [state, setState] = useState<StartState | null>(null);
@@ -29,7 +33,6 @@ const App = () => {
 
   return (
     <Stack space="space.200">
-      <Heading as="h1">{START_TITLE}</Heading>
       <Text>{START_INTRO}</Text>
       {error && <SectionMessage appearance="error" title="The start page could not be read">{<Text>{error}</Text>}</SectionMessage>}
       {!state && !error && <Text>Reading your projects…</Text>}
@@ -42,14 +45,16 @@ const App = () => {
       )}
       {state?.steps.map((s) => (
         <Stack key={s.n} space="space.100">
+          <Inline space="space.100" alignBlock="center">
             <Heading as="h2">{`${s.n}. ${s.title}`}</Heading>
             <Lozenge appearance={STATE_LOOK[s.state].appearance}>{STATE_LOOK[s.state].text}</Lozenge>
-            <Text>{s.how}</Text>
-            {s.href && (
-              <Button appearance={s.state === "next" ? "primary" : "default"} onClick={() => void router.navigate(s.href!)}>
-                {s.button}
-              </Button>
-            )}
+          </Inline>
+          <Text>{s.how}</Text>
+          {s.go && (
+            <Button appearance={s.state === "next" ? "primary" : "default"} onClick={() => void go(s.go!)}>
+              {s.button}
+            </Button>
+          )}
         </Stack>
       ))}
       <Heading as="h2">Jira words used here</Heading>
