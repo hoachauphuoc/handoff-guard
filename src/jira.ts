@@ -4,7 +4,9 @@ import { doneStatusIds, toChanges, type Change } from "./autopsy/bounce";
 import { itemsFromSearch, toWorkItem } from "./handoff/build";
 import { JiraReadError } from "./jira-error";
 import type { StartProject } from "./guide/start";
-import type { WorkItem } from "./rules/types";
+import { CONDITION_CAP, conditionJqls, conditionsOf, keyListJql, validJqls, withAnswers } from "./decisions/conditions";
+import type { Decision, WorkItem } from "./rules/types";
+import { getDecisions } from "./store";
 
 // API v2 returns the description as plain text; v3 returns a document tree the rules cannot read.
 export const FIELDS = "summary,description,labels,components,duedate,assignee,project";
@@ -27,9 +29,55 @@ export function recentItemsAsUser(projectKey: string): Promise<{ items: { item: 
 async function searchAsUser(projectKey: string, rest: string): Promise<{ items: { item: WorkItem; issueId: string }[]; capped: boolean }> {
   if (!/^[A-Za-z][A-Za-z0-9_]*$/.test(projectKey)) throw new JiraReadError("jira_error", "That project key is not valid.");
   const jql = `project = "${projectKey}" AND ${rest}`;
-  const res = await api.asUser().requestJira(route`/rest/api/2/search/jql?jql=${jql}&fields=${FIELDS}&maxResults=${OPEN_ITEM_CAP}`);
+  const [res, decisions] = await Promise.all([
+    api.asUser().requestJira(route`/rest/api/2/search/jql?jql=${jql}&fields=${FIELDS}&maxResults=${OPEN_ITEM_CAP}`),
+    getDecisions(projectKey),
+  ]);
   checkStatus(res, projectKey);
-  return itemsFromSearch(await res.json());
+  const found = itemsFromSearch(await res.json());
+  return { ...found, items: await withConditions(found.items, decisions, "user") };
+}
+
+type As = "user" | "app";
+const requester = (as: As) => (as === "user" ? api.asUser() : api.asApp());
+
+/**
+ * Fills each work item's answer to the JQL conditions of the decisions in force: one parse for all of them,
+ * then one search per condition over all the given work items. Nothing is asked when no decision has a
+ * condition. Any failure leaves that answer null, which the rules report as not checked, never as a match.
+ * The panel and the actions ask as the viewer; the validator, which has no viewer, asks as the app.
+ */
+export async function withConditions<T extends { item: WorkItem }>(rows: T[], decisions: Decision[], as: As): Promise<T[]> {
+  const all = conditionJqls(decisions);
+  if (all.length === 0 || rows.length === 0) return rows;
+  const jqls = all.slice(0, CONDITION_CAP);
+  const keys = rows.map((r) => r.item.key);
+  const matched = new Map<string, Set<string> | null>();
+  let valid = new Set<string>();
+  try {
+    const res = await requester(as).requestJira(route`/rest/api/3/jql/parse?validation=strict`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ queries: jqls }),
+    });
+    if (res.ok) valid = validJqls(jqls, await res.json());
+  } catch {
+    // Left empty: every condition reads as not checked.
+  }
+  await Promise.all(
+    jqls.map(async (jql) => {
+      if (!valid.has(jql)) return matched.set(jql, null);
+      try {
+        const query = keyListJql(keys, jql);
+        const res = await requester(as).requestJira(route`/rest/api/3/search/jql?jql=${query}&fields=summary&maxResults=${keys.length}`);
+        const body = res.ok ? ((await res.json()) as { issues?: { key: string }[] }) : null;
+        return matched.set(jql, body ? new Set((body.issues ?? []).map((i) => i.key)) : null);
+      } catch {
+        return matched.set(jql, null);
+      }
+    }),
+  );
+  return withAnswers(rows, conditionsOf(keys, all, matched));
 }
 
 // The projects the caller can see, for the start page's picker. At most 50: the page is a front door, not a list.
@@ -61,11 +109,17 @@ export function checkStatus(res: { status: number; ok: boolean }, key: string): 
 }
 
 // Reads as the caller, so a person only sees what their own permissions allow.
+// The project's decisions are read beside the work item, from the key, so a work item with no condition
+// waits no longer than before; a moved work item reads its new project's decisions after.
 export async function readItemAsUser(key: string): Promise<{ item: WorkItem; issueId: string }> {
-  const res = await api.asUser().requestJira(route`/rest/api/2/issue/${key}?fields=${FIELDS}`);
+  const guess = key.split("-")[0] ?? "";
+  const [res, guessed] = await Promise.all([api.asUser().requestJira(route`/rest/api/2/issue/${key}?fields=${FIELDS}`), getDecisions(guess)]);
   checkStatus(res, key);
   const body = await res.json();
-  return { item: toWorkItem(key, body.fields), issueId: String(body.id) };
+  const row = { item: toWorkItem(key, body.fields), issueId: String(body.id) };
+  const decisions = row.item.projectKey === guess ? guessed : await getDecisions(row.item.projectKey);
+  const [filled] = await withConditions([row], decisions, "user");
+  return filled ?? row;
 }
 
 // Fails closed: a refused or failed permission read means "not an administrator", never "allowed".
