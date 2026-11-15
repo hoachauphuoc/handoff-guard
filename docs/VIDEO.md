@@ -30,4 +30,6 @@ One story carries the video: a handoff where the receiver's read-back contradict
 
 Rules for the cut: no real customer data, only the demo site. No measurement figure is shown on screen: a percentage in a video is read as accuracy whatever the narration says (council review, 2026-11-14). The figures stay in the README, called "agreement with labels", with the samples stated as synthetic and the labels as model-written.
 
+Bounce autopsy can take one scene before the closing card if real bounced handoffs exist on the demo site: make them by hand (reach Clear with two accounts, then reassign back to the sender), and say in the narration that this history was made for the demo. Without them, leave it out.
+
 Out of the video, in the product and the docs only: Leaving the project, the I-PASS labels, Activity, counts, export and delete, adding a decision by hand. Scene 5 needs two accounts: it is the only place a judge sees Clear.

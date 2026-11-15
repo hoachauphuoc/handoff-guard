@@ -15,6 +15,14 @@ Use an account that is a project administrator of the Jira project. Load sample 
 
 That refusal is the point of the app: the receiver restates each decision, and plain code refuses a restatement that contradicts one in ways it can detect. It does not catch every contradiction or prove understanding. The practice check stores nothing and gives no verdict. A real handoff, with a second user as receiver, reaches Clear through the same check; the 10-minute path is in `docs/DEVPOST.md`.
 
+## Bounce autopsy and project rules
+
+On the Decisions page, **Look for bounced handoffs** reads the Jira history of the project's work items changed in the last 60 days that have a stored handoff. A handoff counts when it was Clear at the receiver's last acknowledgement; it bounced when, within 7 days, the work item went back to the sender or left a Done status. For the bounced ones the page counts what the stored handoff lacked, from a fixed list, next to the same count for the handoffs that did not bounce. It is a count, not proof of a cause, and no model takes part.
+
+Two of those causes can be switched on as project rules by a project administrator: require a contingency from the sender, and require it in the "if … then …" form. A rule that is on is part of the same rule check: the handoff is Needs info until it is met, in the panel, the workflow validator, the context row and the Rovo actions. Both are off as installed. The verdict "then" uses the decisions as they stood at that time and the work item as it is now; Replay on a date does not apply the project rules.
+
+A decision that says the opposite of one in force for the same work (a required label against the same label forbidden, or another date limit) cannot be saved beside it: it is saved only together with superseding the older one.
+
 ## Accessibility
 
 Every text box in the panel has a label, the verdict and each step carry a word as well as a colour, and a refusal is shown in an error box with its reasons as text. The panel has not been tested with a screen reader or with the keyboard alone.
@@ -53,7 +61,7 @@ Handoff Guard follows the structure of the I-PASS handoff protocol (illness seve
 | Illness severity | The verdict with its I-PASS name beside it: Clear is Stable, Needs info is Watcher, Blocked is Unstable. It is a label for the verdict, not a second scale. |
 | Patient summary | The handoff brief: the work item, the decisions that bind it and the findings. |
 | Action list | One action per finding with its owner (sender, receiver or decision owner), read from the findings. No findings, no actions. |
-| Situation awareness and contingency | An optional "if … then …" written by the sender and shown to the receiver. If it is not in that form the panel says so; that is advice, not a finding. |
+| Situation awareness and contingency | An optional "if … then …" written by the sender and shown to the receiver. If it is not in that form the panel says so; that is advice, not a finding, unless a project administrator switched on one of the two project rules ("Require a contingency", "Require the if-then form"), which make it a Needs info finding. |
 | Synthesis by receiver | One read-back for the whole handoff. It must mention each binding decision by its title or by a date, label or component it sets. |
 
 The read-back checks that each decision is addressed, not that it was understood.
