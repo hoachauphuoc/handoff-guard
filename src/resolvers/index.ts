@@ -138,6 +138,8 @@ resolver.define("prepareHandoff", async ({ context, payload }) => {
   const ctx = context as Ctx;
   const toId = String((payload as { toId?: string }).toId ?? "");
   if (!ctx.accountId || !toId) throw new Error("Pick a receiver first.");
+  // An Atlassian account id is short and has no spaces; anything else is not a person Jira can name.
+  if (!/^[A-Za-z0-9:_-]{1,128}$/.test(toId)) throw new Error("That is not a valid receiver.");
   const { item, issueId } = await readItem(ctx.extension.issue.key);
   if (!mayPrepare(await getRecord(issueId), ctx.accountId, item.assigneeId, await isProjectAdminAsUser(item.projectKey))) throw new Error(PREPARE_DENIED);
   // Preparing again replaces the record, so earlier acknowledgements never carry over to a new receiver.
