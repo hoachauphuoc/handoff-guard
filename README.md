@@ -1,5 +1,7 @@
 # Handoff Guard
 
+**The read-back gate for Jira handoffs:** the receiver restates the decisions that bind the work, and plain code refuses a restatement that contradicts one.
+
 For software teams whose Jira work items change owner while the work is still open: release work passed between engineers, on-call rotation, cover for someone on leave. The decisions that bind such work often live in one person's head, a page or a comment, and the next person finds them late.
 
 A Forge app for Jira. When a work item is handed to someone else, the receiver restates each recorded decision that binds it, and plain code refuses a restatement that contradicts one in ways it can detect, for example a date after a recorded limit or a required label described as skipped. It does not catch every contradiction or prove understanding. Rules also check what is missing from the work item. The verdict (Clear, Needs info, Blocked) always comes from plain code (`checkHandoff()`); Rovo only explains it and proposes decisions that a person must confirm.

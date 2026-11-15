@@ -4,13 +4,13 @@ Owner submits. Category: Apps for Software Teams. Bonus prizes: Best Agents (rov
 
 ## Tagline
 
-A Jira handoff goes through only when the receiver's own read-back agrees with the decisions the team recorded.
+The read-back gate for Jira handoffs: the work changes hands only when the receiver's own read-back agrees with the decisions the team recorded.
 
 A task is handed over on Friday. The team decided it ships by the end of the year, but nobody told the receiver. With Handoff Guard the receiver restates each recorded decision before taking the work, and plain code refuses a restatement that contradicts one in ways it can detect, for example a date after a recorded limit or a required label described as skipped. It does not catch every contradiction or prove understanding.
 
 ## In short
 
-- **The receiver reads back, and code can say no.** Before taking the work, the receiver restates each recorded decision that binds it. "I will ship on 15 January 2027" against a decision that says end of 2026 is refused, with the reason, by plain code.
+- **The read-back gate: the receiver reads back, and code can say no.** Before taking the work, the receiver restates each recorded decision that binds it. "I will ship on 15 January 2027" against a decision that says end of 2026 is refused, with the reason, by plain code.
 - **A verdict from rules.** Clear, Needs info or Blocked comes from a rule check on the work item, the recorded decisions and the acknowledgements. A model only writes sentences that are labelled as model-written.
 - **A gate in the workflow.** Where a Jira admin adds the validator, the transition goes through only when the handoff is Clear.
 - **Decisions that keep each other honest, and a record of what went wrong.** A new decision that contradicts one in force is refused unless it supersedes the older one; if the work item changes after the receiver agreed, the acknowledgement goes stale; and handoffs that bounced back are counted with what they lacked, so a project administrator can turn a lack into a rule.
