@@ -249,3 +249,19 @@ Open: F13 (prompt: when the rule is about anything other than the one work item'
 | ROVO-TESTS 7 (propose decisions MOBL-53) | Pass: 3 saved, listed, "bind nothing until confirmed". The 3 proposals were left in storage (the Dismiss buttons were not reachable through the browser tool); they bind nothing |
 | ROVO-TESTS 6 (TD-1) | Pass, different from before: this time the agent proposed nothing and quoted the only sentence it found; no invented quote |
 | F9 filter over 300 characters | Gap confirmed at 10.56.0 ("This filter can be used as a rule" for 336 characters, which saving refuses). Fixed in code: check-condition refuses it with the limit (test added). Rerun at 10.57.0: pass |
+
+## Run log: 2026-11-15, full sweep part 2 (development 10.58.0, account A)
+
+| Case | Result |
+|---|---|
+| D10 / R3 "Check, then draft" | Pass: checked first, then drafted; quote "Stored as a draft. It is not in force…" |
+| C1 Confirm a draft | Pass: "added a decision" in Activity; the condition shows as in force |
+| C3 Discard (Activity) | Pass: "discarded a condition drafted with Rovo (cd-…)" is in Activity |
+| S2 one condition in force | Pass: quote, title, JQL, 2 match / 49 do not (the agent rewords the counts line, numbers as returned) |
+| D11 draft of a filter already in force | Pass: "A decision in force already says this for the same work or wider. Nothing was stored." |
+| F11 equal filter in force | Fail at 10.57.0 (the agent did not say so). One prompt sentence added (say that an equal condition is already in force, with its title). Rerun at 10.58.0: pass |
+| E1 MOBL-58 with priority Low | Pass: Blocked, "does not match the Jira filter priority = Highest" |
+| E3 priority set back to Highest | Pass: the contradiction is gone; only the acknowledgement finding is left |
+| Browser note | Clicks by coordinate missed the Confirm / Discard buttons (the page is scaled); clicks by element reference work |
+
+Not run: D2, C4, F16, D12, S3 to S6, R8 (second account, second project, bigger project or MCP client needed); E2 (validator on a transition); E4; D7 and D14 (many drafts); N1 (not timed); proposals left from ROVO-TESTS row 7 on MOBL-53.
