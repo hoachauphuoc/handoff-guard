@@ -1,5 +1,5 @@
 import { checkHandoff } from "../rules/checkHandoff";
-import type { Decision, Verdict, WorkItem } from "../rules/types";
+import type { Decision, Verdict, WorkItem, ProjectRules } from "../rules/types";
 import { handoffFrom } from "./build";
 import type { HandoffRecord } from "./types";
 
@@ -22,12 +22,12 @@ const RANK: Record<InFlight["verdict"], number> = { blocked: 0, needs_info: 1 };
  * Prepared handoffs whose check is not Clear, worst first: blocked before needs info, then the oldest. The
  * order is plain code. The clock is passed in, so the same input always gives the same list.
  */
-export function inFlight(entries: { item: WorkItem; record: HandoffRecord | null }[], decisions: Decision[], nowIso: string): InFlight[] {
+export function inFlight(entries: { item: WorkItem; record: HandoffRecord | null }[], decisions: Decision[], nowIso: string, rules?: ProjectRules): InFlight[] {
   const now = Date.parse(nowIso);
   const out: InFlight[] = [];
   for (const { item, record } of entries) {
     if (record === null) continue;
-    const result = checkHandoff(handoffFrom(item, record, decisions), decisions);
+    const result = checkHandoff(handoffFrom(item, record, decisions, rules), decisions);
     if (result.verdict === "clear") continue;
     const title = (id: string | undefined) => result.binding.find((d) => d.id === id)?.title;
     out.push({

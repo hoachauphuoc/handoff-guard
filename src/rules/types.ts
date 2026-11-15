@@ -45,6 +45,10 @@ export type Decision = {
   supersededBy?: string;
 };
 
+/** Optional checks a project administrator switched on for one project. Both off is the app as installed. */
+export type ProjectRules = { requireContingency: boolean; requireIfThen: boolean };
+export const NO_RULES: ProjectRules = { requireContingency: false, requireIfThen: false };
+
 export type Handoff = {
   item: WorkItem;
   fromId: string | null;
@@ -56,6 +60,9 @@ export type Handoff = {
    * given). Worked out outside the rules from the record; here it is plain data, like `acknowledged`.
    */
   stale?: Record<string, string>;
+  /** The sender's contingency and the project's optional rules. Absent means no optional rule applies. */
+  contingency?: string | null;
+  rules?: ProjectRules;
 };
 
 export type Finding = {
@@ -68,7 +75,9 @@ export type Finding = {
     | "invalid_due_date"
     | "invalid_constraint"
     | "contradicts_decision"
-    | "decision_not_acknowledged";
+    | "decision_not_acknowledged"
+    | "no_contingency"
+    | "contingency_not_if_then";
   severity: "block" | "info_needed";
   message: string;
   decisionId?: string;

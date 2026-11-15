@@ -1,5 +1,5 @@
 import { bindingDecisions } from "../rules/checkHandoff";
-import type { Decision, Finding, Handoff, HandoffResult, WorkItem } from "../rules/types";
+import { NO_RULES, type Decision, type Finding, type Handoff, type HandoffResult, type ProjectRules, type WorkItem } from "../rules/types";
 import { staleAcks } from "./drift";
 import type { HandoffRecord, ValidatorResponse } from "./types";
 
@@ -58,7 +58,7 @@ export function itemsFromSearch(json: unknown): { items: { item: WorkItem; issue
   return { items, capped: body.isLast === false || typeof body.nextPageToken === "string" };
 }
 
-export function handoffFrom(item: WorkItem, record: HandoffRecord | null, decisions: Decision[]): Handoff {
+export function handoffFrom(item: WorkItem, record: HandoffRecord | null, decisions: Decision[], rules: ProjectRules = NO_RULES): Handoff {
   return record
     ? {
         item,
@@ -66,6 +66,8 @@ export function handoffFrom(item: WorkItem, record: HandoffRecord | null, decisi
         toId: record.toId,
         acknowledged: record.acknowledged,
         stale: staleAcks(record.acknowledged, record.acknowledgedWith, item, bindingDecisions(decisions, item)),
+        contingency: record.contingency ?? null,
+        rules,
       }
     : { item, fromId: null, toId: null, acknowledged: [] };
 }

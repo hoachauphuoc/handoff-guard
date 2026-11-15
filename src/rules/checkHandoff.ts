@@ -81,6 +81,14 @@ function decisionFindings(decision: Decision, item: WorkItem): Finding[] {
   return findings;
 }
 
+// Kept in this file, not a module of its own: scripts/measure loads this file directly and it must stay free of runtime imports.
+export const CONTINGENCY_MIN = 20;
+
+const IF_THEN = /\bif\b.+\bthen\b/i;
+
+/** Whether a contingency reads as a plan: long enough and written as "if … then …". */
+export const isIfThen = (text: string): boolean => text.trim().length >= CONTINGENCY_MIN && IF_THEN.test(text.trim());
+
 /**
  * What the work item itself gets wrong against its binding decisions, with no handoff involved. Used to
  * gate a transition that is not a handoff; it never produces a verdict.
@@ -112,6 +120,15 @@ export function checkHandoff(handoff: Handoff, decisions: Decision[]): HandoffRe
       severity: "info_needed",
       message: `The due date "${item.dueDate}" is not a valid YYYY-MM-DD date.`,
     });
+  }
+
+  // Optional rules of the project. Both are information the sender still owes, never a block, and with no
+  // rules switched on this adds nothing: the check is then exactly what it was.
+  const contingency = (handoff.contingency ?? "").trim();
+  if (handoff.rules?.requireContingency && contingency === "") {
+    findings.push({ rule: "no_contingency", severity: "info_needed", message: "The sender has not written a contingency, which this project requires." });
+  } else if (handoff.rules?.requireIfThen && contingency !== "" && !isIfThen(contingency)) {
+    findings.push({ rule: "contingency_not_if_then", severity: "info_needed", message: 'The contingency is not written as "if … then …", which this project requires.' });
   }
 
   const binding = bindingDecisions(decisions, item);

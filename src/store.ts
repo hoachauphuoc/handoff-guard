@@ -4,7 +4,7 @@ import { touches } from "./decisions/page";
 import { MAX_CANDIDATES } from "./decisions/validate";
 import type { Proposal } from "./decisions/types";
 import type { HandoffRecord } from "./handoff/types";
-import type { Decision } from "./rules/types";
+import { NO_RULES, type Decision, type ProjectRules } from "./rules/types";
 
 // Only get/set: kvs queries are eventually consistent, and a panel that just saved must read its own write.
 // Decisions are stored per project, so a save in one project can not overwrite another's and no single value
@@ -112,4 +112,15 @@ export async function purgeLegacyDecisions(projectKey: string): Promise<number> 
 
 export async function resetAudit(projectKey: string, first: AuditEvent): Promise<void> {
   await kvs.set(auditKey(projectKey), [first]);
+}
+
+const rulesKey = (projectKey: string) => `settings:${projectKey.toLowerCase()}`;
+
+/** The optional rules a project administrator switched on. Nothing stored means none. */
+export async function getRules(projectKey: string): Promise<ProjectRules> {
+  return { ...NO_RULES, ...((await kvs.get<Partial<ProjectRules>>(rulesKey(projectKey))) ?? {}) };
+}
+
+export async function putRules(projectKey: string, rules: ProjectRules): Promise<void> {
+  await kvs.set(rulesKey(projectKey), rules);
 }

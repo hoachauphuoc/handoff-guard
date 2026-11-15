@@ -1,5 +1,5 @@
 import { HINTS } from "../guide/hints";
-import { norm } from "../rules/checkHandoff";
+import { CONTINGENCY_MIN, isIfThen, norm } from "../rules/checkHandoff";
 import { changeText, type Change } from "../rules/feasible";
 import type { Constraint, Decision, Finding, HandoffResult, Verdict } from "../rules/types";
 
@@ -29,6 +29,8 @@ const OWNER: Record<Finding["rule"], Owner> = {
   contradicts_decision: "sender",
   invalid_constraint: "decision owner",
   decision_not_acknowledged: "receiver",
+  no_contingency: "sender",
+  contingency_not_if_then: "sender",
 };
 const WITH_HINT: Finding["rule"][] = ["empty_description", "no_due_date", "invalid_due_date"];
 
@@ -54,9 +56,8 @@ export function actionList(result: HandoffResult, people: { fromId: string; toId
   return [...actions.filter((a) => a.severity === "block"), ...actions.filter((a) => a.severity !== "block")].map((a) => a.action);
 }
 
-export const CONTINGENCY_MIN = 20;
+export { CONTINGENCY_MIN };
 export const CONTINGENCY_MAX = 300;
-const IF_THEN = /\bif\b.+\bthen\b/i;
 
 /** Length is a hard limit on what is stored; the if-then form is only a hint to the sender. */
 export const contingencyTooLong = (text: string): boolean => text.trim().length > CONTINGENCY_MAX;
@@ -64,7 +65,7 @@ export const contingencyTooLong = (text: string): boolean => text.trim().length 
 /** Advice for the person reading a stored contingency. Never a finding, so it cannot change a verdict. */
 export function contingencyAdvisory(text: string): string | null {
   const t = text.trim();
-  if (t.length >= CONTINGENCY_MIN && IF_THEN.test(t)) return null;
+  if (isIfThen(t)) return null;
   return `The contingency is not written as "if … then …" (at least ${CONTINGENCY_MIN} characters), so the receiver may not read it as a plan.`;
 }
 

@@ -28,10 +28,10 @@ import { decisionsAsOf, replayAt, replayDiff, replayInstant, type ReplayChange }
 import { bounceOf, lastAcknowledgedAt } from "../autopsy/bounce";
 import { autopsy, type Autopsy, type AutopsyHandoff } from "../autopsy/causes";
 import type { Proposal } from "../decisions/types";
-import type { Decision, Finding } from "../rules/types";
+import type { Decision, Finding, ProjectRules } from "../rules/types";
 import { hasSamples, mergeDecisions, sampleDecisions, withoutSamples } from "../samples/decisions";
 import { readSourceAsUser } from "../source";
-import { addAudit, deleteItemData, getAudit, getDecisions, getProposals, getRecord, putProposals, purgeLegacyDecisions, putRecord, replaceRecord, resetAudit, updateDecisions } from "../store";
+import { addAudit, deleteItemData, getAudit, getDecisions, getProposals, getRecord, putProposals, getRules, purgeLegacyDecisions, putRecord, putRules, replaceRecord, resetAudit, updateDecisions } from "../store";
 
 const resolver = new Resolver();
 
@@ -82,12 +82,13 @@ function overlapFor(proposals: Proposal[], decisions: Decision[], viewerId: stri
 async function panelState(ctx: Ctx): Promise<PanelState> {
   const { item, issueId } = await readItem(ctx.extension.issue.key);
   const [decisions, record, stored, canManage] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId), getProposals(issueId), isProjectAdminAsUser(item.projectKey)]);
+  const rules = await getRules(item.projectKey);
   const proposals = inProject(stored, item.projectKey);
   const viewerId = ctx.accountId ?? null;
   // Decisions that name this project. Samples are loaded per project, so a site-wide count, or an old label
   // decision stored before labels carried a project, would hide the sample button here.
   const own = decisions.filter((d) => touches(d, item.projectKey) && !(d.scope.kind === "label" && d.scope.projectKey === undefined));
-  const result = record ? checkHandoff(handoffFrom(item, record, decisions), decisions) : null;
+  const result = record ? checkHandoff(handoffFrom(item, record, decisions, rules), decisions) : null;
   const practice = checkHandoff(
     walkthroughHandoff(item, viewerId, bindingDecisions(decisions, item).map((d) => d.id)),
     decisions,
@@ -298,13 +299,13 @@ resolver.define("getMarked", async ({ context }): Promise<MarkedState> => {
 // may see, and the page says when the cap cut the list. Nothing is written.
 const ACTIVITY_SHOWN = 20;
 
-export type DecisionsPageView = DecisionsPageState & { activity: AuditEvent[]; counts: MonthCounts[]; clashes: { a: string; b: string }[] };
+export type DecisionsPageView = DecisionsPageState & { activity: AuditEvent[]; counts: MonthCounts[]; clashes: { a: string; b: string }[]; rules: ProjectRules };
 
 resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageView> => {
   const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
   const viewerId = (context as { accountId?: string }).accountId ?? null;
   const [open, decisions, canManage] = await Promise.all([openItemsAsUser(projectKey), getDecisions(projectKey), isProjectAdminAsUser(projectKey)]);
-  const audit = await getAudit(projectKey);
+  const [audit, rules] = await Promise.all([getAudit(projectKey), getRules(projectKey)]);
   const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
   return {
     ...buildDecisionsPage(
@@ -315,7 +316,9 @@ resolver.define("getDecisionsPage", async ({ context }): Promise<DecisionsPageVi
       new Date().toISOString(),
       viewerId,
       canManage,
+      rules,
     ),
+    rules,
     clashes: storedClashes(decisions.filter((d) => touches(d, projectKey))).map((c) => ({ a: c.a.title, b: c.b.title })),
     activity: audit.slice(0, ACTIVITY_SHOWN),
     counts: monthCounts(audit),
@@ -336,6 +339,7 @@ resolver.define("getLeaving", async ({ context, payload }): Promise<LeavingView>
     projectKey,
     open.items.length,
     open.capped,
+    await getRules(projectKey),
   );
 });
 
@@ -410,6 +414,20 @@ resolver.define("addDecision", async ({ context, payload }) => {
   const nowIso = new Date().toISOString();
   await updateDecisions(projectKey, (current) => mergeDecisions(supersede(current, retire, nowIso, decision.id), [decision]));
   await log(projectKey, ctx.accountId, "decision_added", decision.id);
+});
+
+// A project administrator switches an optional rule on or off. From then on the rule check asks for it in
+// every handoff of the project: panel, validator, context row and the Rovo actions read the same setting.
+resolver.define("setProjectRule", async ({ context, payload }) => {
+  const ctx = context as { accountId?: string; extension: { project: { key: string } } };
+  const projectKey = String(ctx.extension.project.key);
+  await requireAdmin(projectKey);
+  const { rule, on } = payload as { rule?: string; on?: boolean };
+  if (rule !== "requireContingency" && rule !== "requireIfThen") throw new Error("That is not a rule this project can switch.");
+  const next = { ...(await getRules(projectKey)), [rule]: on === true };
+  await putRules(projectKey, next);
+  await log(projectKey, ctx.accountId, "rule_changed", `${rule} ${on === true ? "on" : "off"}`);
+  return next;
 });
 
 const AUTOPSY_CAP = 50;

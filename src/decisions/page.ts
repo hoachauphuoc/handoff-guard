@@ -1,7 +1,7 @@
 import { inFlight, type InFlight } from "../handoff/inflight";
 import type { HandoffRecord } from "../handoff/types";
 import { impactOf } from "../rules/impact";
-import type { Decision, WorkItem } from "../rules/types";
+import type { Decision, ProjectRules, WorkItem } from "../rules/types";
 import { canSupersede } from "./supersede";
 import { constraintText, reachText } from "./reach";
 
@@ -61,6 +61,7 @@ export function buildDecisionsPage(
   nowIso: string,
   viewerId: string | null,
   canManage: boolean,
+  rules?: ProjectRules,
 ): DecisionsPageState {
   const items = open.map((o) => o.item);
   const rows = decisions
@@ -82,5 +83,5 @@ export function buildDecisionsPage(
         impact: hit === null ? null : { count: hit.length, keys: hit.slice(0, MAX_KEYS).map((h) => h.key) },
       };
     });
-  return { projectKey, rows, scanned: open.length, capped, inFlight: inFlight(open, decisions, nowIso), nowIso, canManage };
+  return { projectKey, rows, scanned: open.length, capped, inFlight: inFlight(open, decisions, nowIso, rules), nowIso, canManage };
 }

@@ -11,5 +11,7 @@ export const HINTS: Record<Finding["rule"], string> = {
   invalid_due_date: "Replace the due date with a real calendar date.",
   invalid_constraint: "Ask the decision owner to correct the date written in that decision.",
   contradicts_decision: "Change the work item to fit the decision, or ask the decision owner to supersede it.",
+  no_contingency: "The sender writes it in the panel: if something goes wrong, then what.",
+  contingency_not_if_then: "Rewrite the contingency as: if something happens, then what the receiver should do.",
   decision_not_acknowledged: "The receiver acknowledges it in the panel; a handoff prepared now takes one read-back for all its decisions.",
 };

@@ -74,3 +74,13 @@ describe("handoff record saves", () => {
     expect((await getRecord("1"))?.acknowledged).toEqual([]);
   });
 });
+
+describe("project rules", () => {
+  it("are off until stored, per project", async () => {
+    const { getRules, putRules } = await import("../src/store");
+    expect(await getRules("OPS")).toEqual({ requireContingency: false, requireIfThen: false });
+    await putRules("OPS", { requireContingency: true, requireIfThen: false });
+    expect(await getRules("ops")).toEqual({ requireContingency: true, requireIfThen: false });
+    expect(await getRules("HR")).toEqual({ requireContingency: false, requireIfThen: false });
+  });
+});

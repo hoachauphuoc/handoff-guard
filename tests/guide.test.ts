@@ -121,6 +121,8 @@ describe("hints", () => {
     "invalid_constraint",
     "contradicts_decision",
     "decision_not_acknowledged",
+    "no_contingency",
+    "contingency_not_if_then",
   ];
   it("covers every rule with one imperative sentence and no verdict language", () => {
     expect(Object.keys(HINTS).sort()).toEqual([...rules].sort());

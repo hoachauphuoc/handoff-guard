@@ -40,7 +40,7 @@ describe("handoffFrom", () => {
   });
   it("copies the record", () => {
     const r: HandoffRecord = { fromId: "a", toId: "b", acknowledged: ["d"], preparedAt: "t", acknowledgedAt: {} };
-    expect(handoffFrom(item, r, [])).toEqual({ item, fromId: "a", toId: "b", acknowledged: ["d"], stale: {} });
+    expect(handoffFrom(item, r, [])).toEqual({ item, fromId: "a", toId: "b", acknowledged: ["d"], stale: {}, contingency: null, rules: { requireContingency: false, requireIfThen: false } });
   });
 });
 

@@ -4,7 +4,7 @@ import { applyModifiedFields, decisionGuardResponse, handoffFrom, heldByThirdPer
 import type { ValidatorResponse } from "./handoff/types";
 import { checkHandoff, checkItem } from "./rules/checkHandoff";
 import type { WorkItem } from "./rules/types";
-import { getDecisions, getRecord } from "./store";
+import { getDecisions, getRecord, getRules } from "./store";
 
 type ValidatorPayload = {
   issue: { key: string };
@@ -28,11 +28,11 @@ async function readAfterTransition({ issue, transition }: ValidatorPayload): Pro
 export async function validate(payload: ValidatorPayload): Promise<ValidatorResponse> {
   try {
     const { item, issueId } = await readAfterTransition(payload);
-    const [decisions, record] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId)]);
+    const [decisions, record, rules] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId), getRules(item.projectKey)]);
     if (!record) {
       return { result: false, errorMessage: "Prepare the handoff in the Handoff Guard panel first." };
     }
-    const response = validatorResponse(checkHandoff(handoffFrom(item, record, decisions), decisions));
+    const response = validatorResponse(checkHandoff(handoffFrom(item, record, decisions, rules), decisions));
     // Checked only when the handoff is otherwise Clear: other findings already refuse and say why.
     return response.result && heldByThirdPerson(item, record) ? { result: false, errorMessage: THIRD_PERSON } : response;
   } catch (e) {

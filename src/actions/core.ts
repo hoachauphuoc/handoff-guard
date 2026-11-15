@@ -10,7 +10,7 @@ import { count } from "../plural";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import { changeText, suggestFixes } from "../rules/feasible";
-import type { Decision, HandoffResult, Verdict, WorkItem } from "../rules/types";
+import type { Decision, HandoffResult, ProjectRules, Verdict, WorkItem } from "../rules/types";
 import {
   SCHEMA_VERSION,
   type ActionError,
@@ -30,6 +30,8 @@ export type Deps = {
   readItem: (key: string) => Promise<{ item: WorkItem; issueId: string }>;
   getDecisions: (projectKey: string) => Promise<Decision[]>;
   getRecord: (issueId: string) => Promise<HandoffRecord | null>;
+  /** The project's optional rules; absent in a caller that has none, which means no optional rule. */
+  getRules?: (projectKey: string) => Promise<ProjectRules>;
   readSource: (key: string) => Promise<DecisionSource>;
   getProposals: (issueId: string) => Promise<Proposal[]>;
   putProposals: (issueId: string, proposals: Proposal[]) => Promise<void>;
@@ -160,7 +162,7 @@ export async function runCheckHandoff(payload: unknown, accountId: string | null
         quote: quoteFor(key, null),
       };
     }
-    const handoff = stored ? handoffFrom(item, record, decisions) : previewHandoff(item, record, receiver as string, accountId);
+    const handoff = stored ? handoffFrom(item, record, decisions, await deps.getRules?.(item.projectKey)) : previewHandoff(item, record, receiver as string, accountId);
     const result = checkHandoff(handoff, decisions);
     return {
       schema,
@@ -363,7 +365,7 @@ export async function runGatherHandoffContext(payload: unknown, accountId: strin
     const people = await readPeople(issueId, deps);
     // Only for a stored handoff: a preview has no record, so no sender's contingency and no owners to name.
     const stored = check.basis === "stored" && record !== null;
-    const result = stored ? checkHandoff(handoffFrom(item, record, decisions), decisions) : null;
+    const result = stored ? checkHandoff(handoffFrom(item, record, decisions, await deps.getRules?.(item.projectKey)), decisions) : null;
     const comments = src.parts
       .filter((p) => p.from.startsWith(`${key} comment `))
       .slice(0, MAX_BRIEF_COMMENTS)

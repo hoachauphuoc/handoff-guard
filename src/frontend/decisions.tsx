@@ -115,6 +115,11 @@ const App = () => {
       (e) => setAutopsyNote(plainError(e)),
     );
   };
+  const setRule = (rule: "requireContingency" | "requireIfThen", on: boolean) =>
+    invoke("setProjectRule", { rule, on }).then(
+      () => load(),
+      (e) => setAutopsyNote(plainError(e)),
+    );
   const exportData = () =>
     invoke<string>("exportProject").then(
       (json) => {
@@ -309,6 +314,28 @@ const App = () => {
           )}
         </Stack>
       )}
+      <Text>Project rules (off unless a project administrator switches them on)</Text>
+      {(
+        [
+          ["requireContingency", "Require a contingency from the sender", "no_contingency"],
+          ["requireIfThen", 'Require the contingency to be written as "if … then …"', "contingency_not_if_then"],
+        ] as const
+      ).map(([rule, label, cause]) => {
+        const seen = autopsy?.causes.find((c) => c.id === cause);
+        return (
+          <Stack key={rule} space="space.050">
+            <Text>
+              <Lozenge appearance={state.rules[rule] ? "success" : "default"}>{state.rules[rule] ? "On" : "Off"}</Lozenge> {label}
+              {seen && autopsy && autopsy.bounced.length > 0 ? ` (${seen.bouncedWith} of ${autopsy.bounced.length} bounced handoffs lacked this)` : ""}
+            </Text>
+            {state.canManage && <Button onClick={() => void setRule(rule, !state.rules[rule])}>{state.rules[rule] ? "Switch off" : "Switch on"}</Button>}
+          </Stack>
+        );
+      })}
+      <Text>
+        A rule that is on is checked by the same rule check as everything else: a handoff that lacks it is Needs info in the panel and is
+        refused by the workflow validator.
+      </Text>
       <Text>Handoffs in flight</Text>
       {state.inFlight.length === 0 && <Text>No prepared handoff in this project is waiting on anything.</Text>}
       {state.inFlight.map((h) => (

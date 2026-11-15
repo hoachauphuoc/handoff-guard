@@ -1,6 +1,6 @@
 import { readItemAsUser } from "../jira";
 import { readSourceAsUser } from "../source";
-import { getDecisions, getProposals, getRecord, putProposals } from "../store";
+import { getDecisions, getProposals, getRecord, getRules, putProposals } from "../store";
 import { peopleFromGraph } from "../twg";
 import type { Deps } from "./core";
 
@@ -11,6 +11,7 @@ export const depsFor = (cloudId: string | null): Deps => ({
   readItem: readItemAsUser,
   getDecisions,
   getRecord,
+  getRules,
   readSource: readSourceAsUser,
   getProposals,
   putProposals,

@@ -9,7 +9,8 @@ export type AuditAction =
   | "handoff_prepared"
   | "handoff_acknowledged"
   | "readback_refused"
-  | "data_deleted";
+  | "data_deleted"
+  | "rule_changed";
 
 export type AuditEvent = { at: string; who: string; action: AuditAction; ref: string };
 
@@ -30,6 +31,7 @@ export const AUDIT_TEXT: Record<AuditAction, string> = {
   handoff_acknowledged: "acknowledged with a read-back",
   readback_refused: "had a read-back refused",
   data_deleted: "deleted this project's app data",
+  rule_changed: "switched a project rule",
 };
 
 export type MonthCounts = { month: string; prepared: number; acknowledged: number; refused: number; decisions: number };

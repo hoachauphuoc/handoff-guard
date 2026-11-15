@@ -234,8 +234,12 @@ describe("principle guards", () => {
     for (const src of [ipassSource, contingencySource, acknowledgeSource]) expect(src).not.toMatch(/@forge|Date\.now|new Date/);
   });
 
-  it("keeps severity, read-back and contingency out of the verdict path", () => {
-    for (const src of [checkSource, validator]) expect(src).not.toMatch(/ipass|readBack|contingency|severityOf|severityText/i);
+  it("keeps severity and the read-back out of the verdict path, and the contingency behind the project's optional rules", () => {
+    for (const src of [checkSource, validator]) expect(src).not.toMatch(/ipass|readBack|severityOf|severityText/i);
+    expect(validator).not.toMatch(/contingency/i);
+    // The rule check reads the contingency only where a project rule asks for it; with no rule it adds nothing.
+    expect(checkSource).toMatch(/if \(handoff\.rules\?\.requireContingency && contingency === ""\)/);
+    expect(checkSource).toMatch(/else if \(handoff\.rules\?\.requireIfThen && /);
   });
 
   it("gives no action a way to write a read-back or a contingency", () => {

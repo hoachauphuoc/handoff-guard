@@ -2,7 +2,7 @@ import { contextStatus, NOT_CHECKED, type ContextStatus } from "./handoff/contex
 import { handoffFrom } from "./handoff/build";
 import { readItemAsUser } from "./jira";
 import { checkHandoff } from "./rules/checkHandoff";
-import { getDecisions, getRecord } from "./store";
+import { getDecisions, getRecord, getRules } from "./store";
 
 type ContextPayload = { extension: { issue: { key: string } } };
 
@@ -11,8 +11,8 @@ type ContextPayload = { extension: { issue: { key: string } } };
 export async function contextProperties(payload: ContextPayload): Promise<ContextStatus> {
   try {
     const { item, issueId } = await readItemAsUser(payload.extension.issue.key);
-    const [decisions, record] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId)]);
-    return contextStatus(record ? checkHandoff(handoffFrom(item, record, decisions), decisions) : null);
+    const [decisions, record, rules] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId), getRules(item.projectKey)]);
+    return contextStatus(record ? checkHandoff(handoffFrom(item, record, decisions, rules), decisions) : null);
   } catch (e) {
     // The error's name only: a message could one day carry work item text, which must not reach the logs.
     console.log(`contextProperties failed: ${e instanceof Error ? e.name : typeof e}`);
