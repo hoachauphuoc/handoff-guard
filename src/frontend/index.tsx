@@ -479,7 +479,11 @@ const App = () => {
           {protocol && <Text>{`${READ_BACK_NOTE} ${TEACH_BACK_NOTE}`}</Text>}
         </>
       ) : (
-        <Text>No handoff is prepared for this work item. Pick a receiver above, then click Prepare handoff.</Text>
+        <Text>
+          {canPick
+            ? "No handoff is prepared for this work item. Pick a receiver above, then click Prepare handoff."
+            : "No handoff is prepared for this work item."}
+        </Text>
       )}
       {state.fixes.length > 0 && (
         <SectionMessage appearance="warning" title="Suggested fixes">
