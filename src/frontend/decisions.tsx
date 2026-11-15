@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, CodeBlock, DatePicker, Lozenge, SectionMessage, Select, Stack, Text, Textfield, User, UserPicker } from "@forge/react";
+import ForgeReconciler, { Button, CodeBlock, DatePicker, Heading, Lozenge, SectionMessage, Select, Stack, Text, Textfield, User, UserPicker } from "@forge/react";
 import { invoke } from "@forge/bridge";
 import type { LeavingView } from "../decisions/leaving";
 import { AUDIT_TEXT } from "../audit";
@@ -176,7 +176,7 @@ const App = () => {
           state.capped ? "; the list was cut at 100, so the counts are at least these numbers" : ""
         }. Nothing here changes Jira.`}
       </Text>
-      <Text>Decisions</Text>
+      <Heading size="small">Decisions</Heading>
       {state.rows.length === 0 && <Text>No decision applies to this project yet. Add one below, or confirm one from the Handoff Guard panel on a work item.</Text>}
       {state.rows.map((d) => (
         <Stack key={d.id} space="space.050">
@@ -219,7 +219,7 @@ const App = () => {
             ))}
           </SectionMessage>
         )}
-        <Text>Add a decision</Text>
+        <Heading size="small">Add a decision</Heading>
           <Text>
             Write a decision the team made. Check shows how many open work items it would contradict before you save it. It binds work items only after
             you save it; nothing here changes Jira.
@@ -265,7 +265,7 @@ const App = () => {
           )}
         </Stack>
       )}
-      <Text>Replay on a date</Text>
+      <Heading size="small">Replay on a date</Heading>
       <Text>
         Pick a date to see which prepared handoffs would have had a different verdict then. Only decisions and acknowledgements are replayed;
         work item fields are read as they are now.
@@ -292,7 +292,7 @@ const App = () => {
           ))}
         </Stack>
       )}
-      <Text>Bounce autopsy</Text>
+      <Heading size="small">Handoffs that came back (bounce autopsy)</Heading>
       <Text>
         Which handoffs were Clear when the receiver acknowledged and then came back: reassigned to the sender, or reopened, within 7 days. For
         those, what the handoff lacked. Read from this project's Jira history as you; nothing is written and no model takes part.
@@ -326,7 +326,7 @@ const App = () => {
           )}
         </Stack>
       )}
-      <Text>Governance: rules this project can release (a rule is a draft until a project administrator releases it)</Text>
+      <Heading size="small">Governance: rules this project can release</Heading><Text>A rule is a draft until a project administrator releases it.</Text>
       {(
         [
           ["requireContingency", "Require a contingency from the sender", "no_contingency"],
@@ -362,7 +362,7 @@ const App = () => {
         A released rule is checked by the same rule check as everything else: a handoff that lacks it is Needs info in the panel and is
         refused by the workflow validator. Rules come from this fixed list; code decides, and every release or retirement is written to Activity.
       </Text>
-      <Text>Handoffs in flight</Text>
+      <Heading size="small">Handoffs in flight</Heading>
       {state.inFlight.length === 0 && <Text>No prepared handoff in this project is waiting on anything.</Text>}
       {state.inFlight.map((h) => (
         <Stack key={h.key} space="space.050">
@@ -376,7 +376,7 @@ const App = () => {
           {h.unacknowledged > 0 && <Text>{`${count(h.unacknowledged, "decision")} not acknowledged by the receiver.`}</Text>}
         </Stack>
       ))}
-      <Text>Leaving the project</Text>
+      <Heading size="small">Leaving the project</Heading>
       <Text>
         Everything a person still holds in this project: their open work items, handoffs they have not acknowledged, and decisions only they can
         supersede.
@@ -412,7 +412,7 @@ const App = () => {
               <Text>{`${count(t.waiting, "decision")} to acknowledge with a read-back on the work item.`}</Text>
             </Stack>
           ))}
-          <Text>Decisions only they can supersede</Text>
+          <Heading size="small">Decisions only they can supersede</Heading>
           {leaving.decisions.length === 0 && <Text>None.</Text>}
           {leaving.decisions.map((d) => (
             <Stack key={d.id} space="space.050">
@@ -423,7 +423,7 @@ const App = () => {
           ))}
         </>
       )}
-      <Text>Activity</Text>
+      <Heading size="small">Activity</Heading>
       <Text>
         Who changed decisions and handoffs in this project, newest first. Only the action, the person, the time and the work item or decision are
         kept; nothing anyone typed.
@@ -436,7 +436,7 @@ const App = () => {
           {` ${AUDIT_TEXT[e.action]} (${e.ref}).`}
         </Text>
       ))}
-      <Text>Counts by month</Text>
+      <Heading size="small">Counts by month</Heading>
       {state.counts.length === 0 && <Text>Nothing to count yet.</Text>}
       {state.counts.map((c) => (
         <Text key={c.month}>
@@ -446,7 +446,7 @@ const App = () => {
       <Text>Counts come from the activity list above, which keeps the latest 300 entries; older months can be incomplete.</Text>
       {state.canManage && (
         <Stack space="space.100">
-          <Text>Export and delete (project administrators)</Text>
+          <Heading size="small">Export and delete (project administrators)</Heading>
           <Text>
             Export shows everything the app holds for this project as JSON: decisions, the handoffs of open work items you can see, and the
             activity list. Copy it from the box.
