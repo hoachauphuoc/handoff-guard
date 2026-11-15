@@ -227,7 +227,7 @@ const App = () => {
                   : `${count(preview.count, "open work item")} would contradict it: ${preview.keys.join(", ")}${preview.count > preview.keys.length ? ", …" : ""}.`}
               </Text>
               {preview.clash.length > 0 && (
-            <Text>{`It says the opposite of ${preview.clash.map((t) => `"${t}"`).join(", ")}, in force for the same work. Both cannot be in force, so saving it supersedes the older one.`}</Text>
+            <Text>{`It clashes with ${preview.clash.map((t) => `"${t}"`).join(", ")}, in force for the same work. Both cannot be in force, so saving it supersedes the older one.`}</Text>
           )}
           <Button onClick={() => void saveForm(preview.clash.length > 0)}>
             {preview.clash.length > 0 ? `Save and supersede ${preview.clash.map((t) => `"${t}"`).join(", ")}` : "Save decision"}

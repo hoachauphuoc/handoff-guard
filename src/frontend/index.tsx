@@ -428,7 +428,7 @@ const App = () => {
                 <Text>{`Evidence: "${p.evidence.quote}" (${p.evidence.from})`}</Text>
                 {!state.canManage && <Text>{MANAGE_DENIED}</Text>}
                 {(state.clash[p.id] ?? []).length > 0 && (
-                  <Text>{`It says the opposite of ${(state.clash[p.id] ?? []).map((d) => `"${d.title}"`).join(", ")}, in force for the same work. Both cannot be in force: it can only be confirmed together with superseding the older one.`}</Text>
+                  <Text>{`It clashes with ${(state.clash[p.id] ?? []).map((d) => `"${d.title}"`).join(", ")}, in force for the same work. Both cannot be in force: it can only be confirmed together with superseding the older one.`}</Text>
                 )}
                 {state.canManage && (state.clash[p.id] ?? []).length === 0 && (
                   <Button isDisabled={busy} onClick={() => call("confirmProposal", { proposalId: p.id }).then(() => void readMarked())}>
