@@ -23,6 +23,8 @@ export type HandoffRecord = {
   contingency?: string;
   /** Written by the receiver when acknowledging under protocol 1; replaced each time. At most 600 characters. */
   readBack?: string;
+  /** Typed answers the receiver gave instead of a read-back: a date or "yes" per slot. Replaced each time. */
+  receipt?: Record<string, string>;
   /** Counts saves of this record, so a save made from an older copy is refused. Set by the store only. */
   rev?: number;
 };
