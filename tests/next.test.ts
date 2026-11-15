@@ -64,6 +64,9 @@ describe("focused panel", () => {
     const card = panel.indexOf("Your next step:");
     expect(verdict).toBeGreaterThan(-1);
     expect(verdict).toBeLessThan(card);
-    expect(panel.slice(verdict, card)).not.toContain("everything");
+    const top = panel.slice(verdict, card);
+    expect(top).toMatch(/\n\s*\{result\.findings\.map\(/);
+    expect(top).toMatch(/\n\s*<Lozenge appearance=\{LOOK\[result\.verdict\]\.appearance\}>/);
+    expect(top).toMatch(/\n\s*\{state\.gateHeld && \(/);
   });
 });

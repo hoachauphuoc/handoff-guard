@@ -236,7 +236,9 @@ const App = () => {
         <>
           <Text>
             Handoff <User accountId={record.fromId} /> to <User accountId={record.toId} />:{" "}
-            <Lozenge appearance={LOOK[result.verdict].appearance}>{LOOK[result.verdict].text}</Lozenge> ({state.severity})
+            <Lozenge appearance={LOOK[result.verdict].appearance}>{LOOK[result.verdict].text}</Lozenge>
+            {/* The I-PASS name is a clinical term; a first-time reader gets it only with everything shown. */}
+            {everything && state.severity ? ` (${state.severity})` : ""}
           </Text>
           {!protocol && <Text>{BEFORE_READ_BACK}</Text>}
           {state.gateHeld && (
