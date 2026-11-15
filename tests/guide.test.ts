@@ -29,6 +29,7 @@ const state = (over: Partial<PanelState> = {}): PanelState => ({
   clash: {},
   inForceCount: 0,
   exampleReadBack: "",
+  gateHeld: false,
   decisionCount: 0,
   practiceFindings: [],
   proposals: [],

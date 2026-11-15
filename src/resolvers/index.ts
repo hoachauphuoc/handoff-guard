@@ -15,7 +15,7 @@ import { exampleReadBack } from "../handoff/example";
 import { acknowledgeWithReceipt, slotsFor, type Receipt } from "../handoff/receipt";
 import { withContingency } from "../handoff/contingency";
 import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass";
-import { handoffFrom, walkthroughHandoff } from "../handoff/build";
+import { handoffFrom, heldByThirdPerson, walkthroughHandoff } from "../handoff/build";
 import { driftByDecision, fingerprintOf, staleAcks } from "../handoff/drift";
 import type { AcknowledgeAllReply, HandoffRecord, PanelState, PracticeReadBackReply } from "../handoff/types";
 import { explainRefusal } from "../llm";
@@ -117,6 +117,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     exampleReadBack: exampleReadBack(bindingDecisions(decisions, item)),
     canPrepare: mayPrepare(record, viewerId, item.assigneeId, canManage),
     isReceiver: record !== null && viewerId !== null && viewerId === record.toId,
+    gateHeld: record !== null && heldByThirdPerson(item, record),
     decisionCount: own.length,
     proposals,
     practiceFindings: practice.findings.filter((f) => PRACTICE_RULES.includes(f.rule)),

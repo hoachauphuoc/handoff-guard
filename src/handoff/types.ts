@@ -38,6 +38,8 @@ export type PanelState = {
   result: HandoffResult | null;
   viewerId: string | null;
   isReceiver: boolean;
+  /** The validator's extra refusal: the item is held by someone who is neither sender nor receiver. Shown so a Clear panel never meets a closed gate unexplained. */
+  gateHeld: boolean;
   /** A read-back that the check accepts, built from the decisions that bind this item; empty when none bind. For the practice box. */
   exampleReadBack: string;
   /** Stored decisions for this project that are in force. With none, and no samples, the panel offers the samples. */

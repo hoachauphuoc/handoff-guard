@@ -234,6 +234,11 @@ const App = () => {
             <Lozenge appearance={LOOK[result.verdict].appearance}>{LOOK[result.verdict].text}</Lozenge> ({state.severity})
           </Text>
           {!protocol && <Text>{BEFORE_READ_BACK}</Text>}
+          {state.gateHeld && (
+            <SectionMessage appearance="warning" title="The workflow gate will refuse this work item">
+              <Text>It is assigned to someone who is neither the sender nor the receiver. Assign it to the receiver, or prepare the handoff again for the current assignee.</Text>
+            </SectionMessage>
+          )}
           {record.origin === "reassignment" && (
             <Text>{`Detected from a change of assignee on ${record.preparedAt.slice(0, 10)}. Prepare the handoff again to name a different receiver.`}</Text>
           )}

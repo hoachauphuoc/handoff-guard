@@ -109,6 +109,11 @@ describe("validator", () => {
   it("refuses a Clear handoff when a third person holds the work item", () => {
     expect(validatorRaw).toMatch(/response\.result && heldByThirdPerson\(item, record\) \? \{ result: false, errorMessage: THIRD_PERSON \}/);
   });
+
+  it("is announced in the panel with the same check, so a Clear panel never meets a closed gate unexplained", () => {
+    expect(resolvers).toContain("gateHeld: record !== null && heldByThirdPerson(item, record),");
+    expect(panel).toMatch(/state\.gateHeld && \(\s*<SectionMessage appearance="warning" title="The workflow gate will refuse this work item">/);
+  });
 });
 
 describe("typed receipt", () => {
