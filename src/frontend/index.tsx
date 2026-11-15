@@ -265,7 +265,8 @@ const App = () => {
           </Stack>
         ))}
       {open && <Text>{GUIDE_SOURCE}</Text>}
-      {state.exampleReadBack !== "" && (
+      {/* A receiver already has the real read-back form; a second box on the same screen invites answering in the wrong one. */}
+      {state.exampleReadBack !== "" && !state.isReceiver && (
         <Stack space="space.100">
           <Heading as="h3" size="small">
             Practice read-back
@@ -273,9 +274,9 @@ const App = () => {
           <Text>{PRACTICE_READBACK_HOW}</Text>
           <Label labelFor="practiceReadBack">Your practice read-back</Label>
           <TextArea id="practiceReadBack" name="practiceReadBack" value={practiceText} onChange={(e) => setPracticeText(e.target.value)} />
-            <Button isDisabled={busy} onClick={() => setPracticeText(state.exampleReadBack)}>
-              Fill an example
-            </Button>
+          <Button isDisabled={busy} onClick={() => setPracticeText(state.exampleReadBack)}>
+            Fill an example
+          </Button>
           <Button isDisabled={busy} onClick={() => void tryPracticeReadBack()}>
             {PRACTICE_READBACK_BUTTON}
           </Button>
@@ -295,11 +296,13 @@ const App = () => {
           )}
         </Stack>
       )}
-      <UserPicker
-        label="Receiver"
-        name="receiver"
-        onChange={(u: { id: string } | null | undefined) => setPicked(u?.id ?? null)}
-      />
+      {state.canPrepare && (
+        <UserPicker
+          label="Receiver"
+          name="receiver"
+          onChange={(u: { id: string } | null | undefined) => setPicked(u?.id ?? null)}
+        />
+      )}
       {!state.canPrepare && <Text>{PREPARE_DENIED}</Text>}
       {state.canPrepare && record && confirmAgain && (
         <Text>{`Preparing again clears ${count(record.acknowledged.length, "acknowledgement")} by the receiver and starts over with the receiver you picked.`}</Text>
