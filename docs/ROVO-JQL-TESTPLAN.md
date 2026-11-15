@@ -239,3 +239,13 @@ Open: F13 (prompt: when the rule is about anything other than the one work item'
 - F3 (`priority = = Highest`), D4 (draft with ORDER BY: refused at the check, nothing stored), D5 (empty title: the agent asks for a title before calling): pass.
 - Finding on F3/F4 at 10.55.0: the agent wrote "Matches: 0, Does not match: 0" for a filter Jira could not run, although `checked.counts` was null. This is the blocker named in the pass rule (a count shown for a filter Jira could not run). One prompt change in rule 20: show no counts, not even zeros, when Jira cannot run the filter.
 - Rerun at 10.56.0: F3 and F4 show no counts (pass); ROVO-TESTS 11, 12 and F1 pass.
+
+## Run log: 2026-11-15, full sweep part 1 (development, account A)
+
+| Case | Result |
+|---|---|
+| ROVO-TESTS 8 (brief MOBL-53) | Pass: headings, closing sentence |
+| ROVO-TESTS 10 (receiver, action list, contingency) | Pass, weak: no prepared handoff, so no action list; says the sender has not written a contingency |
+| ROVO-TESTS 7 (propose decisions MOBL-53) | Pass: 3 saved, listed, "bind nothing until confirmed". The 3 proposals were left in storage (the Dismiss buttons were not reachable through the browser tool); they bind nothing |
+| ROVO-TESTS 6 (TD-1) | Pass, different from before: this time the agent proposed nothing and quoted the only sentence it found; no invented quote |
+| F9 filter over 300 characters | Gap confirmed at 10.56.0 ("This filter can be used as a rule" for 336 characters, which saving refuses). Fixed in code: check-condition refuses it with the limit (test added). Rerun at 10.57.0: pass |
