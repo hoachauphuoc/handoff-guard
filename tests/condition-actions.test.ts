@@ -108,6 +108,13 @@ describe("check-condition", () => {
     expect(!r.ok && r.error.code).toBe("not_found");
   });
 
+  it("refuses a filter longer than a rule can hold, as saving does", async () => {
+    const f = fake();
+    const r = await runCheckCondition({ projectKey: "OPS", jql: "labels = " + "a".repeat(300) }, f.deps);
+    expect(!r.ok && r.error.message).toContain("at most 300 characters");
+    expect(f.calls.openItems).toEqual([]);
+  });
+
   it("says when only the first 100 open work items were counted", async () => {
     const r = await runCheckCondition({ projectKey: "OPS" }, fake({ openItems: async () => ({ items: [], capped: true }) }).deps);
     expect(r.ok && r.capped).toBe(true);

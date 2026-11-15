@@ -1,4 +1,4 @@
-import { conditionJqls, MAX_CONDITION_DRAFTS, tally, type ConditionDraft } from "../decisions/conditions";
+import { CONDITION_MAX_LENGTH, conditionJqls, MAX_CONDITION_DRAFTS, tally, type ConditionDraft } from "../decisions/conditions";
 import { fnv1a } from "../decisions/hash";
 import { buildManualDecision } from "../decisions/manual";
 import { projectOfKey, touches } from "../decisions/page";
@@ -58,6 +58,10 @@ export async function runCheckCondition(payload: unknown, deps: ConditionDeps): 
   const projectKey = projectOf(p);
   if (typeof projectKey !== "string") return refusal(schema, "bad_input", projectKey.message);
   const jql = text(p.jql);
+  // The same limit as saving, so a filter that passes here is not refused at the draft.
+  if (jql.length > CONDITION_MAX_LENGTH) {
+    return refusal(schema, "bad_input", `A filter for a rule can be at most ${CONDITION_MAX_LENGTH} characters; this one has ${jql.length}. Nothing was counted.`);
+  }
   try {
     const decisions = (await deps.getDecisions(projectKey)).filter((d) => touches(d, projectKey));
     const errors = jql === "" ? [] : await deps.jqlErrors(jql);
