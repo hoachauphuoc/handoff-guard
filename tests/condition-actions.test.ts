@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DRAFT_STORED, runCheckCondition, runDraftCondition, type ConditionDeps } from "../src/actions/conditions";
+import { JiraReadError } from "../src/jira-error";
 import { MAX_CONDITION_DRAFTS, tally, type ConditionDraft } from "../src/decisions/conditions";
 import type { Decision, WorkItem } from "../src/rules/types";
 
@@ -95,6 +96,16 @@ describe("check-condition", () => {
     expect(bad.ok).toBe(false);
     const none = await runCheckCondition({}, fake().deps);
     expect(!none.ok && none.error.code).toBe("bad_input");
+  });
+
+  it("reports a project Jira does not show as an error, not as zero conditions", async () => {
+    const gone = fake({
+      openItems: async () => {
+        throw new JiraReadError("not_found", "Jira has no project NOPE that you can see.");
+      },
+    });
+    const r = await runCheckCondition({ projectKey: "NOPE" }, gone.deps);
+    expect(!r.ok && r.error.code).toBe("not_found");
   });
 
   it("says when only the first 100 open work items were counted", async () => {

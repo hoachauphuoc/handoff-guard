@@ -18,6 +18,13 @@ export function openItemsAsUser(projectKey: string): Promise<{ items: { item: Wo
   return searchAsUser(projectKey, "statusCategory != Done ORDER BY key");
 }
 
+/** Jira answers a search in a project that does not exist, or that the caller cannot see, with an empty list; this tells the two apart. */
+export async function assertProjectVisibleAsUser(projectKey: string): Promise<void> {
+  const res = await api.asUser().requestJira(route`/rest/api/3/project/${projectKey}`);
+  if (res.status === 404) throw new JiraReadError("not_found", `Jira has no project ${projectKey} that you can see.`);
+  checkStatus(res, projectKey);
+}
+
 export const RECENT_DAYS = 60;
 
 // Work items of one project changed lately, done or not, newest first. The autopsy needs the finished ones

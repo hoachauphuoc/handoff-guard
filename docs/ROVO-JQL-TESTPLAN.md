@@ -226,3 +226,10 @@ Rerun at 10.54.0 (same day): ROVO-TESTS rows 1, 2, 3, 4, 5 and 9 pass. Rows 8 an
 | C3 Discard | Pass: draft gone (the Activity entry was not looked at) |
 
 Open: F13 (prompt: when the rule is about anything other than the one work item's own fields or links, say so and do not substitute another filter) and S7 (a project the caller cannot see should say so).
+
+## Fixes and rerun, 2026-11-15 (development 10.55.0)
+
+- S7: `check-condition` now asks Jira whether the project is visible when it finds no open work item; a project that does not exist or cannot be seen gives "Jira has no project NOPE that you can see." (test added). Rerun: pass.
+- F13: rule 20 now says a filter answers yes or no about one work item and the agent must not substitute another filter. Rerun "all subtasks must be done": pass ("cannot be written as a filter here", asks what to do, no counts).
+- S9 in a fresh chat: pass (asks which project).
+- ROVO-TESTS rows 1 to 5 and 9 rerun at 10.55.0: pass (row 1 asks for a key and calls no action).
