@@ -38,7 +38,8 @@ export type Decision = {
   title: string;
   status: "decided" | "superseded";
   /** Where a person can read the decision: a work item, or this app's ledger. `confluence` only appears in sample data. */
-  source: { kind: "confluence" | "jira" | "ledger"; ref: string };
+  /** `link` is where the decision was made, given by a person; Handoff Guard never opens or reads it. */
+  source: { kind: "confluence" | "jira" | "ledger"; ref: string; link?: string };
   scope: DecisionScope;
   constraints: Constraint[];
   /** Set when a person confirmed a proposal. The rules ignore both fields. */

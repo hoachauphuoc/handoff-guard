@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, CodeBlock, DatePicker, Heading, Label, Lozenge, SectionMessage, Select, Stack, Text, Textfield, User, UserPicker } from "@forge/react";
+import ForgeReconciler, { Button, CodeBlock, DatePicker, Heading, Label, Link, Lozenge, SectionMessage, Select, Stack, Text, Textfield, User, UserPicker } from "@forge/react";
 import { invoke } from "@forge/bridge";
 import type { LeavingView } from "../decisions/leaving";
 import { AUDIT_TEXT } from "../audit";
+import { COMMITMENT_TEXT, LINK_NOTE } from "../decisions/reach";
 import { MANAGE_DENIED } from "../authz";
 import { plainError } from "../errors";
 import { count } from "../plural";
@@ -25,12 +26,13 @@ const RULES = [
   { label: "Must have the component", value: "componentRequired" },
   { label: "Must not have the component", value: "componentForbidden" },
   { label: "Must match a Jira filter (JQL)", value: "condition" },
+  { label: "A commitment (nothing to check on the work item)", value: "commitment" },
 ];
 const VALUE_LABEL: Record<string, string> = { dueNotAfter: "Latest date", condition: "Jira filter (JQL)" };
 const VALUE_HINT: Record<string, string> = { dueNotAfter: "Date, YYYY-MM-DD", condition: "For example: priority = Highest" };
 const valueLabel = (kind: string) => VALUE_LABEL[kind] ?? (kind.startsWith("label") ? "Label" : "Component");
 const valueHint = (kind: string) => VALUE_HINT[kind] ?? valueLabel(kind);
-const EMPTY_FORM = { title: "", scope: "project", scopeValue: "", constraint: "dueNotAfter", constraintValue: "" };
+const EMPTY_FORM = { title: "", scope: "project", scopeValue: "", constraint: "dueNotAfter", constraintValue: "", sourceUrl: "" };
 
 const App = () => {
   const [form, setForm] = useState(EMPTY_FORM);
@@ -204,10 +206,19 @@ const App = () => {
             <Lozenge appearance={d.status === "decided" ? "success" : "default"}>{d.status === "decided" ? "Decided" : "Superseded"}</Lozenge> {d.title}
           </Text>
           <Text>{d.reach}</Text>
+          {d.constraints.length === 0 && <Text>{COMMITMENT_TEXT}</Text>}
           {d.constraints.map((c, i) => (
             <Text key={i}>{c}</Text>
           ))}
           <Text>{`Source: ${d.source}`}</Text>
+          {d.link !== null && (
+            <Text>
+              <Link href={d.link} openNewTab>
+                Where it was decided
+              </Link>{" "}
+              {LINK_NOTE}
+            </Text>
+          )}
           {d.confirmedBy !== null && (
             <Text>
               Confirmed by <User accountId={d.confirmedBy} />
@@ -268,14 +279,29 @@ const App = () => {
           )}
           <Label labelFor="decision-rule">The decision says</Label>
           <Select inputId="decision-rule" name="decision-rule" options={RULES} defaultValue={RULES[0]} onChange={(o: { value: string }) => edit({ constraint: o.value, constraintValue: "" })} />
-          <Label labelFor="decision-rule-value">{valueLabel(form.constraint)}</Label>
+          {form.constraint === "commitment" ? (
+            <Text>{COMMITMENT_TEXT}</Text>
+          ) : (
+            <>
+              <Label labelFor="decision-rule-value">{valueLabel(form.constraint)}</Label>
+              <Textfield
+                id="decision-rule-value"
+                name="decision-rule-value"
+                placeholder={valueHint(form.constraint)}
+                value={form.constraintValue}
+                onChange={(e: { target: { value?: string } }) => edit({ constraintValue: e.target.value ?? "" })}
+              />
+            </>
+          )}
+          <Label labelFor="decision-source-url">Where it was decided (optional link)</Label>
           <Textfield
-            id="decision-rule-value"
-            name="decision-rule-value"
-            placeholder={valueHint(form.constraint)}
-            value={form.constraintValue}
-            onChange={(e: { target: { value?: string } }) => edit({ constraintValue: e.target.value ?? "" })}
+            id="decision-source-url"
+            name="decision-source-url"
+            placeholder="https://… a page, a ticket or a contract"
+            value={form.sourceUrl}
+            onChange={(e: { target: { value?: string } }) => edit({ sourceUrl: e.target.value ?? "" })}
           />
+          <Text>{`The link is shown beside the decision. ${LINK_NOTE}`}</Text>
           <Button onClick={() => void checkForm()}>Check this decision</Button>
           {formError !== null && <Text>{formError}</Text>}
           {preview !== null && (

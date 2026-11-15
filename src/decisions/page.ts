@@ -9,8 +9,11 @@ export type DecisionRow = {
   id: string;
   title: string;
   reach: string;
+  /** Empty for a commitment: nothing on the work item is checked. */
   constraints: string[];
   source: string;
+  /** A person's link to where the decision was made; shown, never opened by the app. */
+  link: string | null;
   status: Decision["status"];
   confirmedBy: string | null;
   confirmedAt: string | null;
@@ -74,6 +77,7 @@ export function buildDecisionsPage(
         reach: reachText(d.scope),
         constraints: d.constraints.map(constraintText),
         source: `${d.source.kind} ${d.source.ref}`,
+        link: d.source.link ?? null,
         status: d.status,
         confirmedBy: d.confirmedBy ?? null,
         confirmedAt: d.confirmedAt ?? null,

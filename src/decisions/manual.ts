@@ -10,15 +10,19 @@ export type ManualInput = {
   title: string;
   scope: "project" | "label" | "workItem";
   scopeValue: string;
-  constraint: Constraint["kind"];
+  /** "commitment": a decision with nothing to check on the work item; the receiver confirms it by name. */
+  constraint: Constraint["kind"] | "commitment";
   constraintValue: string;
+  /** Where the decision was made; optional, https only, never opened by the app. */
+  sourceUrl?: string;
   /** The person chose to retire the decisions in force that this one clashes with. */
   supersede: boolean;
 };
 
 export type ManualResult = { ok: true; decision: Decision; retire: string[] } | { ok: false; reason: string };
 
-const KINDS: Constraint["kind"][] = ["dueNotAfter", "labelRequired", "labelForbidden", "componentRequired", "componentForbidden", "condition"];
+const KINDS: ManualInput["constraint"][] = ["dueNotAfter", "labelRequired", "labelForbidden", "componentRequired", "componentForbidden", "condition", "commitment"];
+export const SOURCE_URL_MAX = 300;
 
 const text = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
@@ -28,8 +32,16 @@ export function readManualInput(raw: unknown): ManualInput | string {
   const scope = r.scope;
   const constraint = r.constraint;
   if (scope !== "project" && scope !== "label" && scope !== "workItem") return "Pick where the decision applies.";
-  if (typeof constraint !== "string" || !KINDS.includes(constraint as Constraint["kind"])) return "Pick what the decision requires.";
-  return { title: text(r.title), scope, scopeValue: text(r.scopeValue), constraint: constraint as Constraint["kind"], constraintValue: text(r.constraintValue), supersede: r.supersede === true };
+  if (typeof constraint !== "string" || !KINDS.includes(constraint as ManualInput["constraint"])) return "Pick what the decision requires.";
+  return {
+    title: text(r.title),
+    scope,
+    scopeValue: text(r.scopeValue),
+    constraint: constraint as ManualInput["constraint"],
+    constraintValue: text(r.constraintValue),
+    sourceUrl: text(r.sourceUrl),
+    supersede: r.supersede === true,
+  };
 }
 
 function scopeOf(input: ManualInput, projectKey: string): DecisionScope | string {
@@ -43,13 +55,25 @@ function scopeOf(input: ManualInput, projectKey: string): DecisionScope | string
     : `The work item key must belong to project ${projectKey}, for example ${projectKey}-12.`;
 }
 
-function constraintOf(input: ManualInput): Constraint | string {
-  const v = input.constraintValue;
-  if (input.constraint === "dueNotAfter") return isIsoDate(v) ? { kind: "dueNotAfter", date: v } : "The date must be a real calendar date written YYYY-MM-DD.";
-  if (input.constraint === "condition") return conditionOf(v);
+// A link is stored and shown, never fetched, so it only has to be a plain https address.
+function sourceLinkOf(url: string): string | null | { error: string } {
+  if (url === "") return null;
+  if (url.length > SOURCE_URL_MAX) return { error: `The source link is at most ${SOURCE_URL_MAX} characters.` };
+  try {
+    const u = new URL(url);
+    if (u.protocol === "https:" && !/\s/.test(url)) return u.toString();
+  } catch {
+    // Falls through to the refusal below.
+  }
+  return { error: "The source link must be a web address that starts with https://." };
+}
+
+function constraintOf(kind: Constraint["kind"], v: string): Constraint | string {
+  if (kind === "dueNotAfter") return isIsoDate(v) ? { kind: "dueNotAfter", date: v } : "The date must be a real calendar date written YYYY-MM-DD.";
+  if (kind === "condition") return conditionOf(v);
   if (v === "") return "Write the label or component the decision names.";
-  if (input.constraint === "labelRequired" || input.constraint === "labelForbidden") return { kind: input.constraint, label: v };
-  return { kind: input.constraint, component: v };
+  if (kind === "labelRequired" || kind === "labelForbidden") return { kind, label: v };
+  return { kind, component: v };
 }
 
 // Only the shape is checked here; whether Jira can run it is asked of Jira before saving.
@@ -69,24 +93,30 @@ export function buildManualDecision(input: ManualInput, projectKey: string, stor
   if (input.title === "" || input.title.length > MAX_TITLE) return { ok: false, reason: `Write a title of 1 to ${MAX_TITLE} characters.` };
   const scope = scopeOf(input, projectKey);
   if (typeof scope === "string") return { ok: false, reason: scope };
-  const constraint = constraintOf(input);
-  if (typeof constraint === "string") return { ok: false, reason: constraint };
-  if (relate(stored, scope, [constraint])?.kind === "already_decided") {
+  const link = sourceLinkOf(input.sourceUrl ?? "");
+  if (link !== null && typeof link === "object") return { ok: false, reason: link.error };
+  let constraints: Constraint[] = [];
+  if (input.constraint !== "commitment") {
+    const constraint = constraintOf(input.constraint, input.constraintValue);
+    if (typeof constraint === "string") return { ok: false, reason: constraint };
+    constraints = [constraint];
+  }
+  if (relate(stored, scope, constraints, input.title)?.kind === "already_decided") {
     return { ok: false, reason: "A decision in force already says this for the same work or wider. Nothing was added." };
   }
-  const clash = clashes(stored, scope, [constraint]);
+  const clash = clashes(stored, scope, constraints);
   const mayRetire = clash.every((d) => canSupersede(d, who));
   if (clash.length > 0 && (!input.supersede || !mayRetire)) return { ok: false, reason: clashText(clash.map((d) => d.title), mayRetire) };
   return {
     ok: true,
     retire: clash.map((d) => d.id),
     decision: {
-      id: "d-m-" + fnv1a([input.title, JSON.stringify(scope), JSON.stringify(constraint)].join("|")),
+      id: "d-m-" + fnv1a([input.title, JSON.stringify(scope), JSON.stringify(constraints[0] ?? "commitment")].join("|")),
       title: input.title,
       status: "decided",
-      source: { kind: "ledger", ref: `Added by hand in project ${projectKey}` },
+      source: { kind: "ledger", ref: `Added by hand in project ${projectKey}`, ...(link ? { link } : {}) },
       scope,
-      constraints: [constraint],
+      constraints,
       confirmedBy: who,
       confirmedAt: nowIso,
     },

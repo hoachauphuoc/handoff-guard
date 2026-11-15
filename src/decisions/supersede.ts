@@ -88,8 +88,14 @@ export type Relation = { kind: "already_decided"; by: Decision[] } | { kind: "su
  * same work, or moves a date limit for exactly the same reach; the person decides whether to retire them.
  * Superseded decisions are ignored.
  */
-export function relate(decisions: Decision[], scope: DecisionScope, constraints: Constraint[]): Relation {
+export function relate(decisions: Decision[], scope: DecisionScope, constraints: Constraint[], title?: string): Relation {
   const live = decisions.filter((d) => d.status === "decided");
+  // A commitment has nothing to compare, so only the same words for the same work say the same thing; without
+  // this, `every` on an empty list would call any commitment already decided.
+  if (constraints.length === 0) {
+    const by = title === undefined ? [] : live.filter((d) => d.constraints.length === 0 && reachKey(d.scope) === reachKey(scope) && norm(d.title) === norm(title));
+    return by.length > 0 ? { kind: "already_decided", by } : null;
+  }
   const same = live.filter((d) => reachKey(d.scope) === reachKey(scope));
   const wider = live.filter((d) => reachCovers(d.scope, scope) && reachKey(d.scope) !== reachKey(scope));
   const met = (c: Constraint, d: Decision, sameReach: boolean): boolean =>

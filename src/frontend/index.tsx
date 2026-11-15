@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, Heading, Label, Lozenge, SectionMessage, Textfield, Stack, Text, TextArea, User, UserPicker } from "@forge/react";
+import ForgeReconciler, { Button, Heading, Label, Link, Lozenge, SectionMessage, Textfield, Stack, Text, TextArea, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
 import { MANAGE_DENIED } from "../authz";
 import { PREPARE_DENIED } from "../handoff/prepare";
 import { plainError } from "../errors";
 import type { GatherOutput } from "../actions/schema";
 import type { MarkedState } from "../decisions/marked";
-import { constraintText, reachText } from "../decisions/reach";
+import { COMMITMENT_TEXT, constraintText, LINK_NOTE, reachText } from "../decisions/reach";
 import { count } from "../plural";
 import type { AcknowledgeAllReply, PanelState, PracticeReadBackReply } from "../handoff/types";
 import { GUIDE_SOURCE, PATH_NAMES, PRACTICE_NONE, PRACTICE_READBACK_ACCEPTED, PRACTICE_READBACK_BUTTON, PRACTICE_READBACK_HOW, PRACTICE_READBACK_REFUSED, PRACTICE_TITLE, guideView, type GuidePath, type StepNeed, type StepState } from "../guide/steps";
@@ -407,6 +407,15 @@ const App = () => {
               <Text>
                 {d.title} (source: {d.source.kind} {d.source.ref})
               </Text>
+              {d.constraints.length === 0 && <Text>{COMMITMENT_TEXT}</Text>}
+              {d.source.link && (
+                <Text>
+                  <Link href={d.source.link} openNewTab>
+                    Where it was decided
+                  </Link>{" "}
+                  {LINK_NOTE}
+                </Text>
+              )}
               {(state.drift[d.id] ?? []).length > 0 && (
                 <Text>{`${state.isReceiver ? "Changed since you acknowledged" : "Changed since the receiver acknowledged"}: ${(state.drift[d.id] ?? []).join("; ")}.`}</Text>
               )}

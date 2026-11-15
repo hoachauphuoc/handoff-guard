@@ -102,7 +102,7 @@ export type ActionError<S extends string> = {
   quote: string;
 };
 
-export type DecisionSource = { kind: "confluence" | "jira" | "ledger"; ref: string };
+export type DecisionSource = { kind: "confluence" | "jira" | "ledger"; ref: string; link?: string };
 
 export type CheckHandoffSuccess = {
   schema: typeof SCHEMA_VERSION.check;

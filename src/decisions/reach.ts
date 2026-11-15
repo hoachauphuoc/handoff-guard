@@ -13,6 +13,9 @@ export function reachText(scope: DecisionScope): string {
 }
 
 /** Plain words for one rule a decision sets. */
+export const COMMITMENT_TEXT = "A commitment: the receiver confirms it by name; nothing on the work item is checked.";
+export const LINK_NOTE = "Not read by Handoff Guard.";
+
 export function constraintText(c: Constraint): string {
   switch (c.kind) {
     case "dueNotAfter":
