@@ -2,6 +2,7 @@
   "name": "handoff-guard",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "Forge app: every handoff carries the decisions that bind it.",
   "scripts": {

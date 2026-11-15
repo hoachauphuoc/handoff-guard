@@ -125,6 +125,10 @@ The four rules-versus-people disagreements are all samples with no due date: the
 
 See `docs/PRIVACY.md` and `docs/SECURITY.md`.
 
+## License
+
+MIT, see `LICENSE`.
+
 ## Support
 
 Report a problem or ask a question in this repository's [GitHub issues](https://github.com/hoachauphuoc/handoff-guard/issues). In the panel, **Show help** shows the guided steps and one hint beside each finding; the hints are panel wording only and never change a finding or the verdict.
