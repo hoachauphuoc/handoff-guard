@@ -11,6 +11,7 @@ import { buildDecisionsPage, projectOfKey, touches, type DecisionsPageState } fr
 import { acknowledge, acknowledgeAll, checkReadBack } from "../handoff/acknowledge";
 import { mayPrepare, PREPARE_DENIED } from "../handoff/prepare";
 import { exampleReadBack } from "../handoff/example";
+import { acknowledgeWithReceipt, slotsFor, type Receipt } from "../handoff/receipt";
 import { withContingency } from "../handoff/contingency";
 import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass";
 import { handoffFrom, walkthroughHandoff } from "../handoff/build";
@@ -100,6 +101,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     viewerId,
     canManage,
     inForceCount: own.filter((d) => d.status === "decided").length,
+    slots: slotsFor(bindingDecisions(decisions, item)),
     hasSamples: hasSamples(decisions, item.projectKey),
     exampleReadBack: exampleReadBack(bindingDecisions(decisions, item)),
     canPrepare: mayPrepare(record, viewerId, item.assigneeId, canManage),
@@ -195,6 +197,28 @@ resolver.define("acknowledgeAll", async ({ context, payload }) => {
       reasons: out.problems,
       ...(out.contradictions.length > 0 ? { explanation: await explainRefusal(readBack, out.contradictions) } : {}),
     } satisfies AcknowledgeAllReply;
+  }
+  if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
+  await putRecord(issueId, out.record);
+  await log(item.projectKey, ctx.accountId, "handoff_acknowledged", ctx.extension.issue.key);
+  return { state: await panelState(ctx) } satisfies AcknowledgeAllReply;
+});
+
+// The typed way to acknowledge: one answer per slot, compared by plain code. A refused receipt comes back as
+// reasons and stores nothing. No action or agent reaches this; only the receiver, in the panel.
+resolver.define("acknowledgeReceipt", async ({ context, payload }) => {
+  const ctx = context as Ctx;
+  const raw = (payload as { receipt?: unknown } | null)?.receipt;
+  const receipt: Receipt = Object.fromEntries(
+    Object.entries(typeof raw === "object" && raw !== null ? raw : {}).flatMap(([k, v]) => (typeof v === "string" ? [[k, v.slice(0, 20)]] : [])),
+  );
+  const { item, issueId } = await readItem(ctx.extension.issue.key);
+  const [decisions, record] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId)]);
+  if (!record) throw new Error("No handoff has been prepared for this work item.");
+  const out = acknowledgeWithReceipt(record, ctx.accountId ?? null, bindingDecisions(decisions, item), receipt, new Date().toISOString(), fingerprintOf(item));
+  if (!out.ok && out.reason === "receipt") {
+    await log(item.projectKey, ctx.accountId, "readback_refused", ctx.extension.issue.key);
+    return { reasons: out.problems } satisfies AcknowledgeAllReply;
   }
   if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
   await putRecord(issueId, out.record);

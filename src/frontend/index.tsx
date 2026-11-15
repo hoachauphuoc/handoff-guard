@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, Heading, Label, Lozenge, SectionMessage, Stack, Text, TextArea, User, UserPicker } from "@forge/react";
+import ForgeReconciler, { Button, Heading, Label, Lozenge, SectionMessage, Textfield, Stack, Text, TextArea, User, UserPicker } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
 import { MANAGE_DENIED } from "../authz";
 import { PREPARE_DENIED } from "../handoff/prepare";
@@ -56,6 +56,7 @@ const App = () => {
   const [error, setError] = useState<string | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [confirmAgain, setConfirmAgain] = useState(false);
+  const [receipt, setReceipt] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [brief, setBrief] = useState<GatherOutput | null>(null);
   const [rovoNote, setRovoNote] = useState<string | null>(null);
@@ -126,6 +127,23 @@ const App = () => {
             setAckNotes(reply.reasons);
             setExplanation(reply.explanation ?? null);
           }
+        },
+        (e) => setAckNotes([plainError(e)]),
+      )
+      .finally(() => setBusy(false));
+  };
+
+  // The typed receipt: same reply shape as the read-back, so a refusal is shown in the same place.
+  const acknowledgeReceipt = () => {
+    setBusy(true);
+    setAckNotes([]);
+    setExplanation(null);
+    return invoke<AcknowledgeAllReply>("acknowledgeReceipt", { receipt })
+      .then(
+        (r) => {
+          const reply = r as AcknowledgeAllReply;
+          if (reply.state) setState(reply.state);
+          else setAckNotes(reply.reasons);
         },
         (e) => setAckNotes([plainError(e)]),
       )
@@ -375,6 +393,12 @@ const App = () => {
             </SectionMessage>
           )}
           {protocol && record.readBack && <Text>{`Read-back from the receiver: "${record.readBack}"`}</Text>}
+          {protocol && record.receipt && (
+            <Text>{`Answers from the receiver: ${state.slots
+              .filter((s) => record.receipt?.[s.key])
+              .map((s) => `${s.title}: ${s.kind === "date" ? record.receipt?.[s.key] : "confirmed"}`)
+              .join("; ")}.`}</Text>
+          )}
           {protocol && state.isReceiver && waiting.length > 0 && (
             <>
               <Text>{`Write a read-back (${READ_BACK_MIN} to ${READ_BACK_MAX} characters) that mentions each decision above by its title or by what it sets: a date, a label or a component.`}</Text>
@@ -386,6 +410,39 @@ const App = () => {
               />
               <Button appearance="primary" isDisabled={busy} onClick={() => void acknowledgeAll()}>
                 {state.stale.length > 0 ? "Acknowledge again with a new read-back" : "Acknowledge all with this read-back"}
+              </Button>
+              <Heading as="h3" size="small">
+                Or answer each decision
+              </Heading>
+              <Text>One typed answer per decision, checked by the same plain code: a date, or a confirmation. Nothing else is stored.</Text>
+              {state.slots.map((s) =>
+                s.kind === "date" ? (
+                  <Stack key={s.key} space="space.050">
+                    <Label labelFor={`slot-${s.key}`}>{`${s.title}: ${s.ask}`}</Label>
+                    <Textfield
+                      id={`slot-${s.key}`}
+                      name={`slot-${s.key}`}
+                      placeholder="YYYY-MM-DD"
+                      onChange={(e: { target: { value?: string } }) => {
+                        const v = e.target.value ?? "";
+                        setReceipt((r) => ({ ...r, [s.key]: v }));
+                      }}
+                    />
+                  </Stack>
+                ) : (
+                  <Stack key={s.key} space="space.050">
+                    <Text>
+                      <Lozenge appearance={receipt[s.key] === "yes" ? "success" : "default"}>{receipt[s.key] === "yes" ? "Confirmed" : "Not answered"}</Lozenge>{" "}
+                      {`${s.title}: ${s.ask}`}
+                    </Text>
+                    <Button isDisabled={busy} onClick={() => setReceipt((r) => ({ ...r, [s.key]: r[s.key] === "yes" ? "" : "yes" }))}>
+                      {receipt[s.key] === "yes" ? "Undo" : "Confirm"}
+                    </Button>
+                  </Stack>
+                ),
+              )}
+              <Button isDisabled={busy} onClick={() => void acknowledgeReceipt()}>
+                Acknowledge all with these answers
               </Button>
             </>
           )}

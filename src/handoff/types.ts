@@ -4,6 +4,7 @@ import type { Fingerprint } from "./drift";
 import type { Action } from "./ipass";
 import type { Proposal } from "../decisions/types";
 import type { Finding, HandoffResult } from "../rules/types";
+import type { Slot } from "./receipt";
 
 /** A prepared handoff, stored per work item. Sender and receiver are Atlassian account ids. */
 export type HandoffRecord = {
@@ -41,6 +42,8 @@ export type PanelState = {
   exampleReadBack: string;
   /** Stored decisions for this project that are in force. With none, and no samples, the panel offers the samples. */
   inForceCount: number;
+  /** The typed answers a receipt needs for this work item, one per constraint of each binding decision. */
+  slots: Slot[];
   /** Whether this project still holds the demo decisions that Load sample decisions adds. */
   hasSamples: boolean;
   /** Whether the viewer may prepare this handoff (again): the sender, the assignee or a project administrator once one exists. */

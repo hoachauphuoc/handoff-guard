@@ -105,3 +105,17 @@ describe("validator", () => {
     expect(validatorRaw).toMatch(/response\.result && heldByThirdPerson\(item, record\) \? \{ result: false, errorMessage: THIRD_PERSON \}/);
   });
 });
+
+describe("typed receipt", () => {
+  it("is acknowledged only through its resolver, which stores nothing when the receipt is refused", () => {
+    const start = resolvers.indexOf('resolver.define("acknowledgeReceipt"');
+    expect(start).toBeGreaterThan(-1);
+    const body = resolvers.slice(start, resolvers.indexOf("resolver.define(", start + 1));
+    expect(body.indexOf('out.reason === "receipt"')).toBeLessThan(body.indexOf("putRecord("));
+    expect(body).toContain("acknowledgeWithReceipt(record, ctx.accountId ?? null");
+  });
+  it("offers the typed answers beside the read-back, to the receiver only", () => {
+    expect(panel).toContain("Or answer each decision");
+    expect(panel).toContain("Acknowledge all with these answers");
+  });
+});
