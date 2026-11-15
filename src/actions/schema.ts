@@ -11,6 +11,7 @@ export const SCHEMA_VERSION = {
   source: "handoff-guard/decision-source@1",
   propose: "handoff-guard/propose-decisions@1",
   gather: "handoff-guard/handoff-context@1",
+  draft: "handoff-guard/draft-receipt@1",
 } as const;
 
 export const CheckHandoffInputSchema = {
@@ -49,6 +50,40 @@ export const ProposeInputSchema = {
   required: ["candidates"],
   additionalProperties: false,
 } as const;
+
+export const DraftReceiptInputSchema = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  type: "object",
+  properties: {
+    issueKey: { type: "string", description: "The work item key the user gave. Leave empty when none was given; the work item the chat was opened from is then used. Never invent a key." },
+    answers: {
+      type: "string",
+      description:
+        'A JSON object, as a string, from slot key to answer, using the slots that list-binding-decisions returns: a date written YYYY-MM-DD for a date slot, "yes" for a confirmation slot. Only values the user gave.',
+    },
+  },
+  required: ["answers"],
+  additionalProperties: false,
+} as const;
+
+export type DraftReceiptInput = { issueKey?: string; answers: string };
+
+/** One typed answer the receiver owes; `kind` says whether it takes a date or a confirmation. */
+export type SlotView = { key: string; decision: string; kind: "date" | "confirm"; ask: string };
+
+export type DraftReceiptSuccess = {
+  schema: typeof SCHEMA_VERSION.draft;
+  ok: true;
+  source: "rules";
+  issueKey: string;
+  /** False when the rule check refused the answers; nothing is stored then. */
+  saved: boolean;
+  problems: string[];
+  slots: SlotView[];
+  quote: string;
+};
+
+export type DraftReceiptOutput = DraftReceiptSuccess | ActionError<typeof SCHEMA_VERSION.draft>;
 
 export type CheckHandoffInput = { issueKey?: string; receiverAccountId?: string };
 export type ListBindingInput = { issueKey?: string };
@@ -98,6 +133,8 @@ export type ListBindingSuccess = {
   issueKey: string;
   storedDecisionCount: number;
   decisions: { id: string; title: string; source: DecisionSource; constraints: unknown[] }[];
+  /** The typed answers a receipt needs, for draft-receipt. */
+  slots: SlotView[];
   quote: string;
 };
 

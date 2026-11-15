@@ -2,6 +2,7 @@ import {
   callerAccountId,
   callerCloudId,
   runCheckHandoff,
+  runDraftReceipt,
   runGatherHandoffContext,
   runListBindingDecisions,
   runProposeDecisions,
@@ -30,6 +31,10 @@ export async function readDecisionSourceAction(payload: unknown) {
 
 export async function proposeDecisionsAction(payload: unknown) {
   return runProposeDecisions(payload, plain);
+}
+
+export async function draftReceiptAction(payload: unknown) {
+  return runDraftReceipt(payload, plain);
 }
 
 export async function gatherHandoffContextAction(payload: unknown, context: Ctx) {

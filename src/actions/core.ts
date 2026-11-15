@@ -4,6 +4,7 @@ import { projectOfKey } from "../decisions/page";
 import { MAX_CANDIDATES, REASON_TEXT, validateCandidates } from "../decisions/validate";
 import { handoffFrom, previewHandoff } from "../handoff/build";
 import { actionList, contingencyAdvisory, severityText } from "../handoff/ipass";
+import { checkReceipt, slotsFor, type Receipt, type Slot } from "../handoff/receipt";
 import type { HandoffRecord } from "../handoff/types";
 import { JiraReadError } from "../jira-error";
 import { count } from "../plural";
@@ -16,6 +17,8 @@ import {
   type ActionError,
   type CheckHandoffOutput,
   type CheckHandoffSuccess,
+  type DraftReceiptOutput,
+  type SlotView,
   type ErrorCode,
   type GatherOutput,
   type ListBindingOutput,
@@ -32,6 +35,8 @@ export type Deps = {
   getRecord: (issueId: string) => Promise<HandoffRecord | null>;
   /** The project's optional rules; absent in a caller that has none, which means no optional rule. */
   getRules?: (projectKey: string) => Promise<ProjectRules>;
+  /** Stores typed answers as an unsigned draft for the receiver to sign in the panel. Absent in a caller that cannot store one. */
+  putDraft?: (issueId: string, draft: Receipt) => Promise<void>;
   readSource: (key: string) => Promise<DecisionSource>;
   getProposals: (issueId: string) => Promise<Proposal[]>;
   putProposals: (issueId: string, proposals: Proposal[]) => Promise<void>;
@@ -190,6 +195,57 @@ export async function runCheckHandoff(payload: unknown, accountId: string | null
   }
 }
 
+const slotViews = (slots: Slot[]): SlotView[] => slots.map((s) => ({ key: s.key, decision: s.title, kind: s.kind, ask: s.ask }));
+
+const MAX_ANSWERS_CHARS = 4000;
+const ANSWERS_SHAPE = 'answers must be a JSON object, as a string, from slot key to a date written YYYY-MM-DD or "yes".';
+
+// GET for the same reason as propose-decisions. The only write is a draft of typed values in app storage. A
+// draft acknowledges nothing: the receiver has to sign it in the panel, where the same check runs again.
+export async function runDraftReceipt(payload: unknown, deps: Deps): Promise<DraftReceiptOutput> {
+  const schema = SCHEMA_VERSION.draft;
+  const parsed = parse(payload, false);
+  if (!parsed.ok) return failure(schema, null, null, parsed.message);
+  const { key } = parsed;
+  const raw = (payload as { answers?: unknown }).answers;
+  if (typeof raw !== "string" || raw.length > MAX_ANSWERS_CHARS) return failure(schema, key, null, ANSWERS_SHAPE);
+  let answers: unknown;
+  try {
+    answers = JSON.parse(raw);
+  } catch {
+    return failure(schema, key, null, ANSWERS_SHAPE);
+  }
+  if (typeof answers !== "object" || answers === null || Array.isArray(answers)) return failure(schema, key, null, ANSWERS_SHAPE);
+  try {
+    const { item, issueId } = await deps.readItem(key);
+    const binding = bindingDecisions(await deps.getDecisions(item.projectKey), item);
+    const slots = slotsFor(binding);
+    // Typed values only, and only for slots that exist: nothing else an agent sends is kept.
+    const draft: Receipt = Object.fromEntries(
+      slots.flatMap((s) => {
+        const v = (answers as Record<string, unknown>)[s.key];
+        return typeof v === "string" && v.trim() !== "" ? [[s.key, v.trim().slice(0, 20)]] : [];
+      }),
+    );
+    const base = { schema, ok: true as const, source: "rules" as const, issueKey: key, slots: slotViews(slots) };
+    if (binding.length === 0) return { ...base, saved: false, problems: [], quote: `No recorded decision binds ${key}, so there is nothing to answer.` };
+    const problems = checkReceipt(draft, binding);
+    if (problems.length > 0) {
+      return { ...base, saved: false, problems, quote: `Handoff Guard refused the draft for ${key} and saved nothing: ${problems.join(" ")}` };
+    }
+    if (!deps.putDraft) return failure(schema, key, null, "A draft cannot be saved from here.");
+    await deps.putDraft(issueId, draft);
+    return {
+      ...base,
+      saved: true,
+      problems: [],
+      quote: `Handoff Guard saved a draft of ${count(slots.length, "answer")} for ${key}. It acknowledges nothing: the receiver has to check it and sign it in the Handoff Guard panel.`,
+    };
+  } catch (e) {
+    return failure(schema, key, e);
+  }
+}
+
 export async function runListBindingDecisions(payload: unknown, deps: Deps): Promise<ListBindingOutput> {
   const schema = SCHEMA_VERSION.list;
   const parsed = parse(payload, false);
@@ -210,6 +266,7 @@ export async function runListBindingDecisions(payload: unknown, deps: Deps): Pro
       issueKey: key,
       storedDecisionCount: all.length,
       decisions: bound.map((d) => ({ id: d.id, title: d.title, source: d.source, constraints: d.constraints })),
+      slots: slotViews(slotsFor(bound)),
       quote,
     };
   } catch (e) {

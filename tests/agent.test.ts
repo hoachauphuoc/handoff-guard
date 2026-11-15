@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from "vitest";
 import manifest from "../manifest.yml?raw";
-import { CheckHandoffInputSchema, GatherInputSchema, ListBindingInputSchema, ProposeInputSchema, ReadSourceInputSchema } from "../src/actions/schema";
+import { CheckHandoffInputSchema, DraftReceiptInputSchema, GatherInputSchema, ListBindingInputSchema, ProposeInputSchema, ReadSourceInputSchema } from "../src/actions/schema";
 
 // The manifest is read as text on purpose: no YAML dependency, and the prompt wording is what is pinned.
 describe("agent manifest", () => {
@@ -61,6 +61,7 @@ describe("agent manifest", () => {
     expect(inputNames("read-decision-source").sort()).toEqual(Object.keys(ReadSourceInputSchema.properties).sort());
     expect(inputNames("propose-decisions").sort()).toEqual(Object.keys(ProposeInputSchema.properties).sort());
     expect(inputNames("gather-handoff-context").sort()).toEqual(Object.keys(GatherInputSchema.properties).sort());
+    expect(inputNames("draft-receipt").sort()).toEqual(Object.keys(DraftReceiptInputSchema.properties).sort());
   });
 });
 
@@ -73,7 +74,7 @@ describe("Rovo MCP module", () => {
     const mcp = section("  rovo:mcp:", "\n  action:\n");
     expect(keys(mcp, /^ {8}- (\S+)/gm)).toEqual(actionKeys);
     expect(keys(section("      actions:", "\n  rovo:mcp:"), /^ {8}- (\S+)/gm)).toEqual(actionKeys);
-    expect(actionKeys).toHaveLength(5);
+    expect(actionKeys).toHaveLength(6);
   });
 
   it("is one module with the agreed key and name", () => {

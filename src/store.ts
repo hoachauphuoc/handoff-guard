@@ -90,7 +90,7 @@ export async function addAudit(projectKey: string, event: AuditEvent): Promise<v
 // Used only by "Delete this project's app data". The decisions key is emptied, not removed: a removed key
 // would make the next read fall back to the old site-wide key and bring the decisions back.
 export async function deleteItemData(issueId: string): Promise<void> {
-  await Promise.all([kvs.delete(recordKey(issueId)), kvs.delete(proposalsKey(issueId))]);
+  await Promise.all([kvs.delete(recordKey(issueId)), kvs.delete(proposalsKey(issueId)), kvs.delete(draftKey(issueId))]);
 }
 
 // Delete is the one place that writes the old site-wide key: it takes this project's decisions out of it, so
@@ -123,4 +123,19 @@ export async function getRules(projectKey: string): Promise<ProjectRules> {
 
 export async function putRules(projectKey: string, rules: ProjectRules): Promise<void> {
   await kvs.set(rulesKey(projectKey), rules);
+}
+
+const draftKey = (issueId: string) => `receipt-draft:${issueId}`;
+
+/** Typed answers an agent drafted for the receiver. Unsigned: it acknowledges nothing until the receiver signs it. */
+export async function getDraft(issueId: string): Promise<Record<string, string> | null> {
+  return (await kvs.get<Record<string, string>>(draftKey(issueId))) ?? null;
+}
+
+export async function putDraft(issueId: string, draft: Record<string, string>): Promise<void> {
+  await kvs.set(draftKey(issueId), draft);
+}
+
+export async function deleteDraft(issueId: string): Promise<void> {
+  await kvs.delete(draftKey(issueId));
 }

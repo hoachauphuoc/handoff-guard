@@ -415,6 +415,17 @@ const App = () => {
                 Or answer each decision
               </Heading>
               <Text>One typed answer per decision, checked by the same plain code: a date, or a confirmation. Nothing else is stored.</Text>
+              {state.draftReceipt !== null && (
+                <SectionMessage appearance="information" title="Drafted by Rovo, not signed">
+                  <Text>{`Rovo drafted these answers from a chat: ${state.slots
+                    .filter((s) => state.draftReceipt?.[s.key])
+                    .map((s) => `${s.title}: ${s.kind === "date" ? state.draftReceipt?.[s.key] : "confirmed"}`)
+                    .join("; ")}. They acknowledge nothing until you send them yourself.`}</Text>
+                  <Button isDisabled={busy} onClick={() => setReceipt({ ...(state.draftReceipt ?? {}) })}>
+                    Fill in the draft
+                  </Button>
+                </SectionMessage>
+              )}
               {state.slots.map((s) =>
                 s.kind === "date" ? (
                   <Stack key={s.key} space="space.050">
@@ -423,6 +434,7 @@ const App = () => {
                       id={`slot-${s.key}`}
                       name={`slot-${s.key}`}
                       placeholder="YYYY-MM-DD"
+                      value={receipt[s.key] ?? ""}
                       onChange={(e: { target: { value?: string } }) => {
                         const v = e.target.value ?? "";
                         setReceipt((r) => ({ ...r, [s.key]: v }));

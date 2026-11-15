@@ -44,6 +44,8 @@ export type PanelState = {
   inForceCount: number;
   /** The typed answers a receipt needs for this work item, one per constraint of each binding decision. */
   slots: Slot[];
+  /** Typed answers Rovo drafted for the receiver, not signed; null when there is none. Shown to the receiver only. */
+  draftReceipt: Record<string, string> | null;
   /** Whether this project still holds the demo decisions that Load sample decisions adds. */
   hasSamples: boolean;
   /** Whether the viewer may prepare this handoff (again): the sender, the assignee or a project administrator once one exists. */

@@ -104,12 +104,15 @@ modules:
         17. When asked to work on, take, start or pick up a work item, or when you are started on a work item with no message, treat it as a request to start it and do nothing else first: call check-handoff, then gather-handoff-context, for that item. Do not use the brief format for this. Answer in this order: the quote field of check-handoff copied exactly; on the next line the startLine field of check-handoff copied exactly; then every binding decision with its constraints; then each finding word for word with one plain next step. Proceed with the work only when startLine says you may start; otherwise do not start, and say a person must resolve the findings in Jira. Never write a start or decline sentence of your own, and never call a verdict Clear that the action did not return.
 
         18. When a gather-handoff-context result has ipass.actions, list each action word for word with its owner (sender, receiver or decision owner) under the heading "Action list", in a brief inside "What the receiver must do" for the receiver's actions. Say the I-PASS name from ipass.severity next to the verdict, as a label for it and never as a second verdict. If ipass.contingency is set, quote it word for word under "Contingency from the sender"; if ipass.contingencyAdvisory is set, repeat it and say it is advisory; if there is no contingency, say the sender has not written one. Never write an action, a contingency or a read-back yourself and never offer to save one: the sender and the receiver write them in the panel. A read-back checks that each decision is addressed, not that it was understood.
+
+        19. Only when the user asks you to fill in or draft their answers to the binding decisions: call list-binding-decisions, read its slots, then call draft-receipt with one answer per slot taken from what the user said (a date written YYYY-MM-DD, or "yes"). Never choose an answer yourself; ask the user for any that is missing. Begin with the quote field of draft-receipt, copied exactly. A saved draft acknowledges nothing: say that the receiver has to check it and sign it in the Handoff Guard panel. If the draft is refused, give the reasons word for word and save nothing else.
       actions:
         - check-handoff
         - list-binding-decisions
         - read-decision-source
         - propose-decisions
         - gather-handoff-context
+        - draft-receipt
   rovo:mcp:
     - key: handoff-guard-mcp
       name: Handoff Guard
@@ -119,6 +122,7 @@ modules:
         - read-decision-source
         - propose-decisions
         - gather-handoff-context
+        - draft-receipt
   action:
     - key: check-handoff
       name: Check handoff
@@ -185,6 +189,22 @@ modules:
           type: string
           required: false
           description: The work item key the user gave. Leave empty when none was given; the work item the chat was opened from is then used. Never invent a key.
+    - key: draft-receipt
+      name: Draft receipt
+      function: draft-receipt-fn
+      actionVerb: GET
+      description: Checks typed answers to the decisions that bind a work item and, if the rule check accepts them, saves them as an unsigned draft for the receiver to sign in the panel. Acknowledges nothing and changes no Jira data.
+      inputs:
+        issueKey:
+          title: Work item key
+          type: string
+          required: false
+          description: The work item key the user gave. Leave empty when none was given; the work item the chat was opened from is then used. Never invent a key.
+        answers:
+          title: Answers
+          type: string
+          required: true
+          description: 'A JSON object, as a string, from slot key to answer, using the slots that list-binding-decisions returns: a date written YYYY-MM-DD for a date slot, "yes" for a confirmation slot. Only values the user gave.'
   function:
     - key: resolver
       handler: index.handler
@@ -204,6 +224,8 @@ modules:
       handler: index.proposeDecisionsAction
     - key: gather-fn
       handler: index.gatherHandoffContextAction
+    - key: draft-receipt-fn
+      handler: index.draftReceiptAction
     - key: context-props
       handler: index.contextProperties
   # Forge LLMs writes the sentence beside a teach-back refusal; the refusal itself is plain code.

@@ -32,7 +32,7 @@ import type { Proposal } from "../decisions/types";
 import type { Decision, Finding, ProjectRules } from "../rules/types";
 import { hasSamples, mergeDecisions, sampleDecisions, withoutSamples } from "../samples/decisions";
 import { readSourceAsUser } from "../source";
-import { addAudit, deleteItemData, getAudit, getDecisions, getProposals, getRecord, putProposals, getRules, purgeLegacyDecisions, putRecord, putRules, replaceRecord, resetAudit, updateDecisions } from "../store";
+import { addAudit, deleteDraft, deleteItemData, getAudit, getDecisions, getDraft, getProposals, getRecord, putProposals, getRules, purgeLegacyDecisions, putRecord, putRules, replaceRecord, resetAudit, updateDecisions } from "../store";
 
 const resolver = new Resolver();
 
@@ -84,6 +84,9 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
   const { item, issueId } = await readItem(ctx.extension.issue.key);
   const [decisions, record, stored, canManage] = await Promise.all([getDecisions(item.projectKey), getRecord(issueId), getProposals(issueId), isProjectAdminAsUser(item.projectKey)]);
   const rules = await getRules(item.projectKey);
+  const viewerIsReceiver = record !== null && ctx.accountId !== undefined && ctx.accountId === record.toId;
+  // A draft is the receiver's to sign; nobody else is shown it.
+  const draftReceipt = viewerIsReceiver ? await getDraft(issueId) : null;
   const proposals = inProject(stored, item.projectKey);
   const viewerId = ctx.accountId ?? null;
   // Decisions that name this project. Samples are loaded per project, so a site-wide count, or an old label
@@ -102,6 +105,7 @@ async function panelState(ctx: Ctx): Promise<PanelState> {
     canManage,
     inForceCount: own.filter((d) => d.status === "decided").length,
     slots: slotsFor(bindingDecisions(decisions, item)),
+    draftReceipt,
     hasSamples: hasSamples(decisions, item.projectKey),
     exampleReadBack: exampleReadBack(bindingDecisions(decisions, item)),
     canPrepare: mayPrepare(record, viewerId, item.assigneeId, canManage),
@@ -222,6 +226,8 @@ resolver.define("acknowledgeReceipt", async ({ context, payload }) => {
   }
   if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
   await putRecord(issueId, out.record);
+  // The signed receipt is the record now; a draft left behind would be offered again.
+  await deleteDraft(issueId);
   await log(item.projectKey, ctx.accountId, "handoff_acknowledged", ctx.extension.issue.key);
   return { state: await panelState(ctx) } satisfies AcknowledgeAllReply;
 });
