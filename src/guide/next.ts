@@ -17,7 +17,10 @@ export function waitingFor(s: PanelState): string[] {
 
 export function nextStep(s: PanelState): NextStep {
   if (s.inForceCount === 0) {
-    return s.canManage
+    // Demo rules that were all superseded still count as loaded, so the way back is to remove them first.
+    return s.canManage && s.hasSamples
+      ? { kind: "load_samples", title: "Load the demo rules again", how: "The demo rules in this project are no longer in force. Click Remove sample decisions, then Load sample decisions (demo); nothing is written to Jira." }
+      : s.canManage
       ? { kind: "load_samples", title: "Load the demo rules", how: "A decision is a rule your team agreed, such as a latest date. This project has none yet. Click Load sample decisions (demo) to add three demo rules; nothing is written to Jira." }
       : { kind: "ask_admin", title: "Ask a project administrator", how: "This project has no decisions yet (a decision is a rule your team agreed). Only a project administrator can add them." };
   }

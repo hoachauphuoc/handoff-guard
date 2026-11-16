@@ -224,10 +224,16 @@ const App = () => {
       {state.inForceCount === 0 && (
         <Stack space="space.100">
           {state.decisionCount === 0 && <Text>{NO_DECISIONS_TEXT}</Text>}
-          {!state.hasSamples && !state.canManage && <Text>{MANAGE_DENIED}</Text>}
+          {!state.canManage && <Text>{MANAGE_DENIED}</Text>}
           {!state.hasSamples && state.canManage && (
             <Button appearance="primary" isDisabled={busy} onClick={() => call("loadSampleDecisions")}>
               Load sample decisions (demo)
+            </Button>
+          )}
+          {/* Demo rules that were all superseded: loading again would change nothing until they are removed. */}
+          {state.hasSamples && state.canManage && (
+            <Button appearance="primary" isDisabled={busy} onClick={() => call("removeSampleDecisions")}>
+              Remove sample decisions
             </Button>
           )}
         </Stack>
@@ -605,7 +611,7 @@ const App = () => {
           </Stack>
         </SectionMessage>
       )}
-      {everything && state.hasSamples && state.canManage && (
+      {everything && state.hasSamples && state.canManage && state.inForceCount > 0 && (
         <Button isDisabled={busy} onClick={() => call("removeSampleDecisions")}>
           Remove sample decisions
         </Button>

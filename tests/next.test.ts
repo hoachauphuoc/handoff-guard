@@ -19,6 +19,12 @@ describe("the viewer's next step", () => {
     expect(nextStep(state({ inForceCount: 0, canManage: false })).kind).toBe("ask_admin");
   });
 
+  it("names the remove button when the demo rules are loaded but none is in force, and the panel shows it", () => {
+    expect(nextStep(state({ inForceCount: 0, hasSamples: true })).how).toContain("Click Remove sample decisions, then Load sample decisions (demo)");
+    // The empty state offers that button itself, not only behind "Show everything".
+    expect(panel).toContain('{state.hasSamples && state.canManage && (\n            <Button appearance="primary" isDisabled={busy} onClick={() => call("removeSampleDecisions")}>');
+  });
+
   it("is handing over for who may prepare, and practising for anyone else", () => {
     expect(nextStep(state()).kind).toBe("prepare");
     expect(nextStep(state({ canPrepare: false })).kind).toBe("practice");
