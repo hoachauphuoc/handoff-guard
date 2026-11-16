@@ -460,7 +460,7 @@ Observed on the demo site, 2026-11-15, production app only (the development vali
 
 ## 2026-11-15: three tiers, Tier 1 (JQL conditions) and the start page
 
-Plan: `keen-tinkering-marshmallow.md` (owner's "làm toàn diện"; work runs continuously, not split by day).
+Plan: `keen-tinkering-marshmallow.md` (owner's order to do all three tiers; work runs continuously, not split by day).
 
 - Rule core (827338f): a decision can carry `{ kind: "condition", jql }`; the work item carries Jira's answer per JQL. False is a contradiction ("does not match the Jira filter ..."); no answer is `invalid_constraint` ("could not be checked by Jira just now"), never Clear. Exhaustive switches replace the old label-or-component fall-through in receipt, read-back, supersede and feasibility. Muse Code wrote it in a worktree and timed out at 40 minutes after the work was done; Claude read the whole diff; one Gemini critique, whose plain-words points were taken (the user sees "Jira filter", not "condition").
 - Evaluation (2a4421b): one `jql/parse` for all conditions of the project, then one search per condition over the work items read (`key in (...) AND (<jql>)`), at most 5 conditions per project. Filled in `readItemAsUser` and the project lists, so the panel, the context row, Replay, impact counts and the Rovo actions all see it; the validator asks as the app. Nothing is asked when no decision has a condition.

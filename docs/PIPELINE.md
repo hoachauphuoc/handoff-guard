@@ -22,9 +22,9 @@ From 2026-12-15 only the `release`, `filming` and `submission` stages are used, 
 
 ## Prompts for the plugin steps
 
-A session can paste these as they are. Each review is read-only and each reviewer is told not to touch `C:\Users\phuochoa\.bjt\`.
+A session can paste these as they are. Each review is read-only and each reviewer is told not to touch the owner's key folder outside the repo.
 
-- **Release gate:** "Giao hội đồng giám khảo kiểm tra như một production chuẩn bị release": four agents (Operator, Skeptic, Guardian, Craftsman), `model: sonnet`, each returns GO or NO-GO, findings with file:line and the exact fix.
+- **Release gate:** the owner's order to review the build as a production release: four agents (Operator, Skeptic, Guardian, Craftsman), `model: sonnet`, each returns GO or NO-GO, findings with file:line and the exact fix.
 - **Deploy checklist:** `engineering:deploy-checklist` for the development deploy, then the production deploy and `forge install --upgrade -e production`.
 - **Panel check:** open the Decisions page and the MOBL-58 panel in the built-in browser and read what is on screen against the README.
 - **Judge panel:** "Judge Handoff Guard as a Codegeist 2026 panel" with Strategist, Advocate and Skeptic; score each criterion and list fixes that need no new feature.

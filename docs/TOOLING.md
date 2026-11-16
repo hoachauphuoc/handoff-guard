@@ -23,8 +23,8 @@ All the plugins installed in Claude desktop are listed. A plugin that adds skill
 
 ## Rules that stay in force
 
-- Plugin agents are Claude subagents: CLAUDE.md forbids them unless the owner asks in that message ("giao hội đồng giám khảo" counts). Use `sonnet` for reviews, `opus` only for a decision.
-- A review is read-only: no edits, deploys or commits by the reviewer, and no reading of `C:\Users\phuochoa\.bjt\`.
+- Plugin agents are Claude subagents: CLAUDE.md forbids them unless the owner asks in that message (an order to call the judges' council counts). Use `sonnet` for reviews, `opus` only for a decision.
+- A review is read-only: no edits, deploys or commits by the reviewer, and no reading of the owner's key folder outside the repo.
 - Executors (Muse Code, Gemini) and their scripts are listed in `CLAUDE.md`; plugins do not replace them for file-writing work.
 - Plugin output is advice. Claude reads the diff, runs `scripts/check.ps1`, and commits.
 - Nothing from a plugin is shipped: no plugin text goes into the README or the video unless it was checked against a source.
