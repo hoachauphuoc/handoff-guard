@@ -169,6 +169,17 @@ describe("condition between decisions", () => {
     expect(buildManualDecision({ ...input, constraint: "labelRequired", constraintValue: "x" }, "OPS", five, "u-ana", at).ok).toBe(true);
   });
 
+  it("lets a new decision reuse a filter only when that filter is among the ones checked", () => {
+    const six = [1, 2, 3, 4, 5, 6].map((n) =>
+      condDecision({ id: `D-${n}`, title: `t${n}`, scope: { kind: "workItem", key: `OPS-${n}` }, constraints: [{ kind: "condition", jql: `labels = l${n}` }] }),
+    );
+    const reuse = (jql: string) =>
+      buildManualDecision({ title: "Same filter, other item", scope: "workItem", scopeValue: "OPS-99", constraint: "condition", constraintValue: jql, supersede: false }, "OPS", six, "u-ana", "2026-11-16T00:00:00.000Z");
+    expect(reuse("labels = l2").ok).toBe(true);
+    // Only the first five are asked of Jira, so the sixth filter would read as not checked.
+    expect(reuse("labels = l6").ok).toBe(false);
+  });
+
   it("is typed in by hand: refused when empty, sorted or too long, kept as typed otherwise", () => {
     const base: ManualInput = { title: "Only the highest priority ships", scope: "project", scopeValue: "", constraint: "condition", constraintValue: JQL, supersede: false };
     const made = buildManualDecision(base, "OPS", [], "u-ana", "2026-11-15T00:00:00.000Z");

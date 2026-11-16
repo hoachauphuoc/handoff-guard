@@ -112,7 +112,10 @@ export function buildManualDecision(input: ManualInput, projectKey: string, stor
   // refuse every transition it binds. So the save is refused instead, while the way out is still clear.
   const jql = constraints[0]?.kind === "condition" ? constraints[0].jql : null;
   const kept = conditionJqls(stored.filter((d) => d.id !== replaces && !clash.some((c) => c.id === d.id)));
-  if (jql !== null && !kept.includes(jql) && kept.length >= CONDITION_CAP) {
+  // A filter already in force counts only if it is among the first CONDITION_CAP: a project that had more
+  // before this guard existed would otherwise let a new decision reuse one that is never asked.
+  const at = jql === null ? -1 : kept.indexOf(jql);
+  if (jql !== null && (at >= CONDITION_CAP || (at < 0 && kept.length >= CONDITION_CAP))) {
     return { ok: false, reason: `${kept.length} Jira filters are already in force in this project; Handoff Guard checks at most ${CONDITION_CAP}. Supersede one before adding another. Nothing was added.` };
   }
   return {
