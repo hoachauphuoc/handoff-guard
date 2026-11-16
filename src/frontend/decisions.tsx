@@ -67,8 +67,11 @@ const App = () => {
 
   const load = () =>
     invoke<DecisionsPageView>("getDecisionsPage").then(
-      (s) => setState(s as DecisionsPageView),
-      (e) => setError(String(e)),
+      (s) => {
+        setState(s as DecisionsPageView);
+        setError(null);
+      },
+      (e) => setError(plainError(e)),
     );
   // No accountId means the viewer; picking a person reloads for them.
   const loadLeaving = (accountId?: string) => {
@@ -91,7 +94,7 @@ const App = () => {
   const retire = (decisionId: string) =>
     invoke("supersedeDecision", { decisionId }).then(
       () => load(),
-      (e) => setError(String(e)),
+      (e) => setError(plainError(e)),
     );
 
   // Confirming runs the same checks as the form on the server; a refusal stays beside the drafts.
@@ -194,21 +197,22 @@ const App = () => {
       (e) => setDataNote(plainError(e)),
     );
 
-  if (error) {
-    return (
-      <SectionMessage appearance="error" title="Handoff Guard could not read this project">
-        <Text>
-          {error.includes("Allow access")
-            ? "Allow access: Handoff Guard needs your permission to read work items as you. Click Allow access when Jira asks, then reload the page."
-            : error}
-        </Text>
-      </SectionMessage>
-    );
-  }
-  if (!state) return <Text>Reading the decisions…</Text>;
+  const failed = error && (
+    <SectionMessage appearance="error" title={state ? "That action did not go through" : "Handoff Guard could not read this project"}>
+      <Text>
+        {error.includes("Allow access")
+          ? "Allow access: Handoff Guard needs your permission to read work items as you. Click Allow access when Jira asks, then reload the page."
+          : error}
+      </Text>
+      <Button onClick={() => void load()}>Read the page again</Button>
+    </SectionMessage>
+  );
+  // A failed retire leaves the page as it was, with the reason on top.
+  if (!state) return failed || <Text>Reading the decisions…</Text>;
 
   return (
     <Stack space="space.200">
+      {failed}
       <Text>
         {`Counts cover ${count(state.scanned, "open work item")} of project ${state.projectKey} that you can see${
           state.capped ? "; the list was cut at 100, so the counts are at least these numbers" : ""

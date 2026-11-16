@@ -4,6 +4,7 @@ import { invoke } from "@forge/bridge";
 import { LOOK } from "../handoff/context";
 import type { PanelState } from "../handoff/types";
 import { count } from "../plural";
+import { plainError } from "../errors";
 
 // Same resolver as the issue panel, so this summary cannot disagree with it.
 const App = () => {
@@ -13,7 +14,7 @@ const App = () => {
   useEffect(() => {
     invoke<PanelState>("getPanel").then(
       (s) => setState(s as PanelState),
-      (e) => setError(String(e)),
+      (e) => setError(plainError(e)),
     );
   }, []);
 

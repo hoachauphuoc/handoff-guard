@@ -89,7 +89,7 @@ const App = () => {
       }
       await rovo.open({ type: "forge", agentKey: "handoff-guard-agent", agentName: "Handoff Guard", prompt });
     } catch (e) {
-      setRovoNote(`Rovo could not be opened: ${String(e)}. The verdict above comes from the rule check.`);
+      setRovoNote(`Rovo could not be opened: ${plainError(e)}. The verdict above comes from the rule check.`);
     }
   };
 
@@ -100,7 +100,7 @@ const App = () => {
     return invoke<PanelState>(name, payload)
       .then(
         (s) => setState(s as PanelState),
-        (e) => setError(String(e)),
+        (e) => setError(plainError(e)),
       )
       .finally(() => setBusy(false));
   };
@@ -174,7 +174,7 @@ const App = () => {
     return invoke<GatherOutput>("gatherContext")
       .then(
         (b) => setBrief(b as GatherOutput),
-        (e) => setError(String(e)),
+        (e) => setError(plainError(e)),
       )
       .finally(() => setBusy(false));
   };
@@ -186,7 +186,7 @@ const App = () => {
         setMarked(m as MarkedState);
         setMarkedError(null);
       },
-      (e) => setMarkedError(String(e)),
+      (e) => setMarkedError(plainError(e)),
     );
 
   useEffect(() => {
@@ -195,17 +195,16 @@ const App = () => {
     });
   }, []);
 
-  if (error) {
-    const consent = error.includes("Allow access");
-    return (
-      <SectionMessage appearance="error" title="Handoff Guard could not check this work item">
-        <Text>{consent
-            ? CONSENT_TEXT
-            : error}</Text>
-      </SectionMessage>
-    );
-  }
-  if (!state) return <Text>{LOADING_TEXT}</Text>;
+  const failed = error && (
+    <SectionMessage appearance="error" title={state ? "That action did not go through" : "Handoff Guard could not check this work item"}>
+      <Text>{error.includes("Allow access") ? CONSENT_TEXT : error}</Text>
+      <Button isDisabled={busy} onClick={() => void call("getPanel")}>
+        Reload the check
+      </Button>
+    </SectionMessage>
+  );
+  // Before the first check there is nothing to keep; after it, a failed action leaves the panel as it was.
+  if (!state) return failed || <Text>{LOADING_TEXT}</Text>;
 
   const { record, result } = state;
   const guide = guideView(state, path);
@@ -219,6 +218,8 @@ const App = () => {
   const show = (...kinds: (typeof next.kind)[]) => everything || kinds.includes(next.kind);
   return (
     <Stack space="space.100">
+      {failed}
+      {busy && <Text>Working…</Text>}
       {/* A project with no decision in force has one next step, so it comes first and is the only primary button. */}
       {state.inForceCount === 0 && (
         <Stack space="space.100">

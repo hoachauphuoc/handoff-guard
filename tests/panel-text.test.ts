@@ -21,6 +21,15 @@ describe("panel first-use text", () => {
   });
 });
 
+describe("a failed action", () => {
+  it("keeps the panel, names the reason without the Forge wrapper and offers a reload", () => {
+    expect(panel).not.toContain("String(e)");
+    expect(panel).toContain("if (!state) return failed || <Text>{LOADING_TEXT}</Text>;");
+    expect(panel).toMatch(/<Stack space="space\.100">\s*\{failed\}\s*\{busy && <Text>Working…<\/Text>\}/);
+    expect(panel).toContain("Reload the check");
+  });
+});
+
 describe("help toggle", () => {
   it("shows a hint beside each finding only while help is on, after the finding's own message", () => {
     expect(panel).toContain('{open ? "Hide help" : "Show help"}');
