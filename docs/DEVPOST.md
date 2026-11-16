@@ -114,12 +114,17 @@ Teamwork Graph: **Gather handoff context** in the Rovo agent returns people conn
 
 ## What was seen working, and what was not
 
-Seen on a live Jira Cloud site (development and production builds of this app): the refused read-back, the typed receipt refusing a date after the limit, acknowledgement by a second account, a stale acknowledgement after the due date changed, a Clear verdict, the validator refusing on a transition and on a board drag and letting a Clear handoff through on production (2026-11-15), and the Teamwork Graph "people connected" query returning one row (a person the work item was shared with). Not seen: a real bounced handoff, and the Rovo agent on a site other than ours. A site without Rovo or Teamwork Graph access gets a panel that says so, and nothing in the main path depends on them.
+Seen on a live Jira Cloud site (development and production builds of this app): the refused read-back, the typed receipt refusing a date after the limit, acknowledgement by a second account, a stale acknowledgement after the due date changed, a Clear verdict, the validator refusing on a transition and on a board drag and letting a Clear handoff through on production (2026-11-15), and the Teamwork Graph "people connected" query returning one row (a person the work item was shared with). Not seen: a real bounced handoff; the Rovo agent on a site other than ours; a call from an external MCP client (the tools are declared and their code is the same as the agent's actions, but we have not logged a live MCP call); the validator with a Jira filter decision on a real transition (covered by unit tests with Jira mocked). A site without Rovo or Teamwork Graph access gets a panel that says so, and nothing in the main path depends on them.
+
+Not covered, by design or for now:
+- Two saves of the decisions within milliseconds can still lose one: a version check narrows the race, but Forge storage here has no atomic compare-and-set. The three project rule switches have no version check at all.
+- The workflow validator reads the work item and the decisions as the app, because a validator has no user session, so it can check an item the person moving it cannot open.
+- Delete and export cover the whole project's decisions, drafts, rules and activity, but per-work-item records (handoffs, proposals, receipt drafts) only on the first 100 open work items the administrator can see; records on closed items stay until the app is uninstalled.
 
 ## Bonus prizes
 
 - **Best Agents.** `rovo:agent` "Handoff Guard" with eight `action` modules, including `check-condition` (counts which open work items a Jira filter would match, before anything is stored) and `draft-condition` (stores a rule as a draft that binds nothing until an administrator confirms it on the Decisions page), and a `rovo:skill` ("Handoff check") that other agents can use. The agent explains and proposes; the rule check decides.
-- **Best app with MCP.** One `rovo:mcp` module exposes the same eight actions as tools to external MCP clients, run with the calling user's permissions.
+- **Best app with MCP.** One `rovo:mcp` module exposes the same eight actions as tools to external MCP clients, run with the calling user's permissions. A live call from an MCP client is not logged yet (see "Not seen").
 - **Best apps with Teamwork Graph integration.** The app consumes the Teamwork Graph API: two saved Cypher queries, called as the current user, return people the work item was shared with or who are mentioned on it.
 
 ## Links
