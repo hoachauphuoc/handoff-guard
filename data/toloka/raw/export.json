@@ -50,10 +50,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-22da37bffbac",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-9b847bb72b6e"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -70,11 +67,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 981561,
-      "avgLlmQaMs": 79295,
-      "annotatorIds": [
-        "81db986d1c9f515b9d20877bcbb129f5",
-        "f7201912963053c3f07abcc429d0b9dc"
-      ]
+      "avgLlmQaMs": 79295
     }
   ]
 },
@@ -125,10 +118,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-2767a5a027c1",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-9d957e1e8959"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -145,11 +135,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 13125745,
-      "avgLlmQaMs": 111201,
-      "annotatorIds": [
-        "0224168d8918ba748d6a95d97c23f776",
-        "85e55dec0d48c931d1280888b9c8b782"
-      ]
+      "avgLlmQaMs": 111201
     }
   ]
 },
@@ -220,10 +206,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-29452dcdb0ef",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-a14ef1870071"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -240,11 +223,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 1145206,
-      "avgLlmQaMs": 73616,
-      "annotatorIds": [
-        "81db986d1c9f515b9d20877bcbb129f5",
-        "32c2b56013de33f5a5463ab570e7b9d7"
-      ]
+      "avgLlmQaMs": 73616
     }
   ]
 },
@@ -296,10 +275,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-2c1ecdcd8e30",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-a61c7b6e4d50"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -316,11 +292,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 10889946,
-      "avgLlmQaMs": 81997,
-      "annotatorIds": [
-        "b4659413f45588bfa891c9b3474de955",
-        "d32f18498a3dc11a0a0e092242abd758"
-      ]
+      "avgLlmQaMs": 81997
     }
   ]
 },
@@ -371,10 +343,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-31368859dcad",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-aa9669f632b4"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -391,11 +360,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 993315,
-      "avgLlmQaMs": 74102,
-      "annotatorIds": [
-        "b8a8be09df3b66bb1bde545bbabbcdac",
-        "61795c03cacab6c3b4d56350c619a4cc"
-      ]
+      "avgLlmQaMs": 74102
     }
   ]
 },
@@ -446,10 +411,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-37f880768452",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-ac0600fa0224"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -466,11 +428,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 617700,
-      "avgLlmQaMs": 75291,
-      "annotatorIds": [
-        "aebd5120b2aa9ae745038faed308614a",
-        "2591463a302455c9b44bcec78e282256"
-      ]
+      "avgLlmQaMs": 75291
     }
   ]
 },
@@ -519,10 +477,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-3b066907628a",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-b111650e00d3"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -539,11 +494,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 1728997,
-      "avgLlmQaMs": 84573,
-      "annotatorIds": [
-        "2591463a302455c9b44bcec78e282256",
-        "b6946894606ad01284920eb714aad324"
-      ]
+      "avgLlmQaMs": 84573
     }
   ]
 },
@@ -598,10 +549,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-3e83f9c3fbb0",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-b5455df3d7c9"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -618,11 +566,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 11561242,
-      "avgLlmQaMs": 86535,
-      "annotatorIds": [
-        "32c2b56013de33f5a5463ab570e7b9d7",
-        "2930dc595c40913c1c3f0938543f38d6"
-      ]
+      "avgLlmQaMs": 86535
     }
   ]
 },
@@ -678,10 +622,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-418f626ee556",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-ba2c5a5f84fe"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -698,11 +639,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 5845322,
-      "avgLlmQaMs": 71816,
-      "annotatorIds": [
-        "b4659413f45588bfa891c9b3474de955",
-        "efb97a92087aea465f9f350479975084"
-      ]
+      "avgLlmQaMs": 71816
     }
   ]
 },
@@ -753,10 +690,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-47965831630e",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-be6ac809b9f2"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -773,11 +707,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 705065,
-      "avgLlmQaMs": 76828,
-      "annotatorIds": [
-        "5bf1f26b10d26ed23b4307fc7f40d318",
-        "2591463a302455c9b44bcec78e282256"
-      ]
+      "avgLlmQaMs": 76828
     }
   ]
 },
@@ -828,10 +758,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-498e5394e5ab",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-c2f34fde1cfa"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -852,13 +779,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 1589313,
-      "avgLlmQaMs": 86049,
-      "annotatorIds": [
-        "61795c03cacab6c3b4d56350c619a4cc",
-        "85e55dec0d48c931d1280888b9c8b782",
-        "c96e223698e9fef77bfe7a80697e919c",
-        "dfe95c188ac8749d8793561115c73ad7"
-      ]
+      "avgLlmQaMs": 86049
     }
   ]
 },
@@ -915,10 +836,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-4e059f4037dc",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-c6da34fb5874"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -935,11 +853,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 986197,
-      "avgLlmQaMs": 72891,
-      "annotatorIds": [
-        "2930dc595c40913c1c3f0938543f38d6",
-        "32c2b56013de33f5a5463ab570e7b9d7"
-      ]
+      "avgLlmQaMs": 72891
     }
   ]
 },
@@ -990,10 +904,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-53b3eb730266",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-ca6379f6c295"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -1010,11 +921,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 589743,
-      "avgLlmQaMs": 74745,
-      "annotatorIds": [
-        "5bf1f26b10d26ed23b4307fc7f40d318",
-        "32c2b56013de33f5a5463ab570e7b9d7"
-      ]
+      "avgLlmQaMs": 74745
     }
   ]
 },
@@ -1085,10 +992,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-56dcd38ac56f",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-ccbde2ab577e"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -1105,11 +1009,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 951368,
-      "avgLlmQaMs": 78919,
-      "annotatorIds": [
-        "81db986d1c9f515b9d20877bcbb129f5",
-        "1fa5a4d6b6015c8d7cfeea474ed36363"
-      ]
+      "avgLlmQaMs": 78919
     }
   ]
 },
@@ -1156,10 +1056,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-58be4bbb8e72",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-d1642a1ff463"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -1176,11 +1073,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 972726,
-      "avgLlmQaMs": 75367,
-      "annotatorIds": [
-        "32c2b56013de33f5a5463ab570e7b9d7",
-        "61795c03cacab6c3b4d56350c619a4cc"
-      ]
+      "avgLlmQaMs": 75367
     }
   ]
 },
@@ -1231,10 +1124,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-5eab732338b0",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-d5996de2129e"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -1251,11 +1141,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 1404219,
-      "avgLlmQaMs": 75979,
-      "annotatorIds": [
-        "85e55dec0d48c931d1280888b9c8b782",
-        "32c2b56013de33f5a5463ab570e7b9d7"
-      ]
+      "avgLlmQaMs": 75979
     }
   ]
 },
@@ -1310,10 +1196,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-63c32bf9efcb",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-d99af22c6467"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -1330,11 +1213,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 1266025,
-      "avgLlmQaMs": 74811,
-      "annotatorIds": [
-        "85e55dec0d48c931d1280888b9c8b782",
-        "81db986d1c9f515b9d20877bcbb129f5"
-      ]
+      "avgLlmQaMs": 74811
     }
   ]
 },
@@ -1390,10 +1269,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-65560d1793cc",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-df666d229c10"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -1410,11 +1286,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 1986297,
-      "avgLlmQaMs": 81988,
-      "annotatorIds": [
-        "81db986d1c9f515b9d20877bcbb129f5",
-        "85e55dec0d48c931d1280888b9c8b782"
-      ]
+      "avgLlmQaMs": 81988
     }
   ]
 },
@@ -1470,10 +1342,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-6a4d2867e622",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-e05b01cef3b1"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -1490,11 +1359,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 1697923,
-      "avgLlmQaMs": 80882,
-      "annotatorIds": [
-        "c96e223698e9fef77bfe7a80697e919c",
-        "f82a91d6a718d89b754e6f4a050d0085"
-      ]
+      "avgLlmQaMs": 80882
     }
   ]
 },
@@ -1545,10 +1410,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-6e226728580b",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-e689aad38b21"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -1565,11 +1427,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 451978,
-      "avgLlmQaMs": 74014,
-      "annotatorIds": [
-        "94881c9993fc5408a058cb0f8936e5bb",
-        "81db986d1c9f515b9d20877bcbb129f5"
-      ]
+      "avgLlmQaMs": 74014
     }
   ]
 },
@@ -1620,10 +1478,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-7355a7fe4828",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-e88cf4b6c253"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -1640,11 +1495,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 318481,
-      "avgLlmQaMs": 74540,
-      "annotatorIds": [
-        "2930dc595c40913c1c3f0938543f38d6",
-        "aebd5120b2aa9ae745038faed308614a"
-      ]
+      "avgLlmQaMs": 74540
     }
   ]
 },
@@ -1693,10 +1544,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-77ddc045888d",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-ed62ad415dc5"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -1713,11 +1561,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 8071519,
-      "avgLlmQaMs": 81940,
-      "annotatorIds": [
-        "58265afea92ba319da3786fb0875a24f",
-        "0224168d8918ba748d6a95d97c23f776"
-      ]
+      "avgLlmQaMs": 81940
     }
   ]
 },
@@ -1768,10 +1612,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-7bf3a2a5d085",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-f05d5d4d6f01"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -1788,11 +1629,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 673420,
-      "avgLlmQaMs": 74797,
-      "annotatorIds": [
-        "81db986d1c9f515b9d20877bcbb129f5",
-        "dfe95c188ac8749d8793561115c73ad7"
-      ]
+      "avgLlmQaMs": 74797
     }
   ]
 },
@@ -1843,10 +1680,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-7d9ea3e5ee84",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-f49a09c4cf59"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -1863,11 +1697,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 582448,
-      "avgLlmQaMs": 75470,
-      "annotatorIds": [
-        "32c2b56013de33f5a5463ab570e7b9d7",
-        "5bf1f26b10d26ed23b4307fc7f40d318"
-      ]
+      "avgLlmQaMs": 75470
     }
   ]
 },
@@ -1918,10 +1748,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-835ae437ae9e",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-f9de2e880de5"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -1938,11 +1765,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 15229726,
-      "avgLlmQaMs": 105680,
-      "annotatorIds": [
-        "d32f18498a3dc11a0a0e092242abd758",
-        "1eef4e2f94daa67b7b2cfd4633d98e2e"
-      ]
+      "avgLlmQaMs": 105680
     }
   ]
 },
@@ -1997,10 +1820,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-848c1dca9b53",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0e9-fc909a2cc178"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -2017,11 +1837,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 1070257,
-      "avgLlmQaMs": 80916,
-      "annotatorIds": [
-        "df4555ee8dc50ea60f4aeee42ba56eca",
-        "923eee29b98c8352d338706d33fd8bf9"
-      ]
+      "avgLlmQaMs": 80916
     }
   ]
 },
@@ -2089,10 +1905,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-8b95a176b209",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-02d97e303db9"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -2109,11 +1922,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 734806,
-      "avgLlmQaMs": 74710,
-      "annotatorIds": [
-        "81db986d1c9f515b9d20877bcbb129f5",
-        "85e55dec0d48c931d1280888b9c8b782"
-      ]
+      "avgLlmQaMs": 74710
     }
   ]
 },
@@ -2168,10 +1977,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-8fab0ea57164",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-063c302c4a47"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -2188,11 +1994,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 887179,
-      "avgLlmQaMs": 76973,
-      "annotatorIds": [
-        "81db986d1c9f515b9d20877bcbb129f5",
-        "2591463a302455c9b44bcec78e282256"
-      ]
+      "avgLlmQaMs": 76973
     }
   ]
 },
@@ -2243,10 +2045,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-90766f65ba05",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-0b2c0059c813"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -2263,11 +2062,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 551221,
-      "avgLlmQaMs": 71923,
-      "annotatorIds": [
-        "b8a8be09df3b66bb1bde545bbabbcdac",
-        "81db986d1c9f515b9d20877bcbb129f5"
-      ]
+      "avgLlmQaMs": 71923
     }
   ]
 },
@@ -2318,10 +2113,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-97dd1f91bbf8",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-0fb054d4a50c"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -2338,11 +2130,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 760513,
-      "avgLlmQaMs": 77620,
-      "annotatorIds": [
-        "85e55dec0d48c931d1280888b9c8b782",
-        "dfe95c188ac8749d8793561115c73ad7"
-      ]
+      "avgLlmQaMs": 77620
     }
   ]
 },
@@ -2393,10 +2181,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-9a01ea5a7673",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-1273a8f41751"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -2413,11 +2198,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 445513,
-      "avgLlmQaMs": 75820,
-      "annotatorIds": [
-        "dfe95c188ac8749d8793561115c73ad7",
-        "f7201912963053c3f07abcc429d0b9dc"
-      ]
+      "avgLlmQaMs": 75820
     }
   ]
 },
@@ -2470,10 +2251,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-9e4dc4775130",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-15f9950e3d4c"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -2490,11 +2268,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 2335918,
-      "avgLlmQaMs": 91925,
-      "annotatorIds": [
-        "81db986d1c9f515b9d20877bcbb129f5",
-        "70cf49646ba62bd60203f3ce0e5547d5"
-      ]
+      "avgLlmQaMs": 91925
     }
   ]
 },
@@ -2549,10 +2323,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-a2b15a26ba3e",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-1bf30cd7d7ba"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -2569,11 +2340,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 325253,
-      "avgLlmQaMs": 75032,
-      "annotatorIds": [
-        "32c2b56013de33f5a5463ab570e7b9d7",
-        "2591463a302455c9b44bcec78e282256"
-      ]
+      "avgLlmQaMs": 75032
     }
   ]
 },
@@ -2647,10 +2414,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-a581af262ebc",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-1ded0ded7092"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -2667,11 +2431,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 1118506,
-      "avgLlmQaMs": 80159,
-      "annotatorIds": [
-        "3f4edfe68bdf17f4d6a48b0f88841247",
-        "61ad033dea740605c99a9b615f70addd"
-      ]
+      "avgLlmQaMs": 80159
     }
   ]
 },
@@ -2722,10 +2482,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-a8ba4dfc996c",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-2028c238e33c"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -2742,11 +2499,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 1147431,
-      "avgLlmQaMs": 73108,
-      "annotatorIds": [
-        "32c2b56013de33f5a5463ab570e7b9d7",
-        "85e55dec0d48c931d1280888b9c8b782"
-      ]
+      "avgLlmQaMs": 73108
     }
   ]
 },
@@ -2797,10 +2550,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-af270bd407c5",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-241e2dd3744a"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -2817,11 +2567,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 1024657,
-      "avgLlmQaMs": 77562,
-      "annotatorIds": [
-        "32c2b56013de33f5a5463ab570e7b9d7",
-        "85e55dec0d48c931d1280888b9c8b782"
-      ]
+      "avgLlmQaMs": 77562
     }
   ]
 },
@@ -2872,10 +2618,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-b029feb7d2c7",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-2ae32cf570f2"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -2892,11 +2635,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 497477,
-      "avgLlmQaMs": 76209,
-      "annotatorIds": [
-        "85e55dec0d48c931d1280888b9c8b782",
-        "81db986d1c9f515b9d20877bcbb129f5"
-      ]
+      "avgLlmQaMs": 76209
     }
   ]
 },
@@ -2953,10 +2692,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-b6e10701bc74",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-2d093db1fa8a"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -2973,11 +2709,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 927910,
-      "avgLlmQaMs": 79879,
-      "annotatorIds": [
-        "dfe95c188ac8749d8793561115c73ad7",
-        "3f4edfe68bdf17f4d6a48b0f88841247"
-      ]
+      "avgLlmQaMs": 79879
     }
   ]
 },
@@ -3006,10 +2738,7 @@
       "acknowledged": []
     },
     "decisions": [],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-b994a7cab1b9",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-33e07076f409"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -3026,11 +2755,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 361534,
-      "avgLlmQaMs": 74555,
-      "annotatorIds": [
-        "d32f18498a3dc11a0a0e092242abd758",
-        "61795c03cacab6c3b4d56350c619a4cc"
-      ]
+      "avgLlmQaMs": 74555
     }
   ]
 },
@@ -3057,10 +2782,7 @@
       "acknowledged": []
     },
     "decisions": [],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-bee15938646c",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-350220560d42"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -3077,11 +2799,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 869668,
-      "avgLlmQaMs": 76184,
-      "annotatorIds": [
-        "81db986d1c9f515b9d20877bcbb129f5",
-        "2930dc595c40913c1c3f0938543f38d6"
-      ]
+      "avgLlmQaMs": 76184
     }
   ]
 },
@@ -3132,10 +2850,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-c0e08cb3ffc6",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-3918e6b20d32"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -3154,12 +2869,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 1527239,
-      "avgLlmQaMs": 80261,
-      "annotatorIds": [
-        "85e55dec0d48c931d1280888b9c8b782",
-        "61795c03cacab6c3b4d56350c619a4cc",
-        "5bf1f26b10d26ed23b4307fc7f40d318"
-      ]
+      "avgLlmQaMs": 80261
     }
   ]
 },
@@ -3210,10 +2920,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-c59ce7717846",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-3ebeb227031d"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -3230,11 +2937,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 2118016,
-      "avgLlmQaMs": 84982,
-      "annotatorIds": [
-        "2591463a302455c9b44bcec78e282256",
-        "b6946894606ad01284920eb714aad324"
-      ]
+      "avgLlmQaMs": 84982
     }
   ]
 },
@@ -3306,10 +3009,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-ca066520d8d5",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-43cb699ba8fc"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -3326,11 +3026,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 13331665,
-      "avgLlmQaMs": 104180,
-      "annotatorIds": [
-        "81db986d1c9f515b9d20877bcbb129f5",
-        "2930dc595c40913c1c3f0938543f38d6"
-      ]
+      "avgLlmQaMs": 104180
     }
   ]
 },
@@ -3404,10 +3100,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-cfc020ed1cb3",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-458025c3e556"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -3424,11 +3117,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 470447,
-      "avgLlmQaMs": 73930,
-      "annotatorIds": [
-        "5bf1f26b10d26ed23b4307fc7f40d318",
-        "f7201912963053c3f07abcc429d0b9dc"
-      ]
+      "avgLlmQaMs": 73930
     }
   ]
 },
@@ -3531,10 +3220,7 @@
         "constraints": []
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-d106d5a62f36",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-49e2d3a8f763"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -3551,11 +3237,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 3199122,
-      "avgLlmQaMs": 92158,
-      "annotatorIds": [
-        "f7201912963053c3f07abcc429d0b9dc",
-        "231d258be3185933d41890a16ee36e0e"
-      ]
+      "avgLlmQaMs": 92158
     }
   ]
 },
@@ -3584,10 +3266,7 @@
       "acknowledged": []
     },
     "decisions": [],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-d4a178d0715f",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-4c6bf5ae232e"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -3604,11 +3283,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 272027,
-      "avgLlmQaMs": 73543,
-      "annotatorIds": [
-        "81db986d1c9f515b9d20877bcbb129f5",
-        "61795c03cacab6c3b4d56350c619a4cc"
-      ]
+      "avgLlmQaMs": 73543
     }
   ]
 },
@@ -3637,10 +3312,7 @@
       "acknowledged": []
     },
     "decisions": [],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-dbaced9a6f65",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-50474698c43b"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -3657,11 +3329,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 3144005,
-      "avgLlmQaMs": 77485,
-      "annotatorIds": [
-        "2591463a302455c9b44bcec78e282256",
-        "dfe95c188ac8749d8793561115c73ad7"
-      ]
+      "avgLlmQaMs": 77485
     }
   ]
 },
@@ -3756,10 +3424,7 @@
         ]
       }
     ],
-    "pipeline_execution": {
-      "dataset_item_id": "di.01a1d45c-bba4-75ed-96ab-dc3035c6366d",
-      "pipeline_run_item_id": "plri.01a1d549-7265-70e9-b0ea-5429a11ddc4b"
-    }
+    "pipeline_execution": {}
   },
   "output": {
     "answer": [
@@ -3776,11 +3441,7 @@
       "nodeName": "judge_handoff",
       "nodeType": "quorum_sft",
       "ahtMs": 1075661,
-      "avgLlmQaMs": 84154,
-      "annotatorIds": [
-        "81db986d1c9f515b9d20877bcbb129f5",
-        "2930dc595c40913c1c3f0938543f38d6"
-      ]
+      "avgLlmQaMs": 84154
     }
   ]
 }
