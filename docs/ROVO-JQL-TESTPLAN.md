@@ -276,3 +276,12 @@ Open: F13 (prompt: when the rule is about anything other than the one work item'
 Sweep part 3 ran on the production agent: of the two agents named Handoff Guard in the picker, the first is development and the second is production. N1 and D14 read the same on both.
 
 Not run: D2, C4, F16, D12, S3 to S6, R8 (second account, second project, bigger project or MCP client needed); E2 (validator on a transition); E4; proposals left from ROVO-TESTS row 7 on MOBL-53.
+
+### After the council fixes (development 10.60.0, 2026-11-16, development agent)
+
+| Case | Result |
+|---|---|
+| F11 asked about `priority = Highest`, saying it is already in force | Pass as far as the site allows: the counts sentence came from code (2 match, 49 do not, 0 unanswered, nothing saved), and the agent said no condition is in force. No condition is in force on development, so the "equal condition is already in force" sentence was not seen on the site; a unit test covers it. |
+| A filter Jira cannot run (`reviewer_signoff = Done`) | Pass: Jira's message word for word, then "No work items were counted."; no counts. |
+| draft-receipt on MOBL-58 by someone who is not its receiver | Pass: "Only the receiver of the handoff prepared on MOBL-58 can save a draft of its answers. Nothing was saved." Flaw: the agent then said "Handoff Guard could not check the work item", which is wrong (the check ran, the save was refused). |
+| Sixth Jira filter refused at save | Not run on the site: it needs five filters in force on development. Unit tests cover it, including the superseded and replaced cases. |
