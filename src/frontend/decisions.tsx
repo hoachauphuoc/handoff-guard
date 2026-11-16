@@ -220,7 +220,7 @@ const App = () => {
           state.capped ? "; the list was cut at 100, so the counts are at least these numbers" : ""
         }. Nothing here changes Jira.`}
       </Text>
-      <Heading size="small">Decisions</Heading>
+      <Heading size="small">Decisions: the rules your team agreed</Heading>
       {state.rows.length === 0 && <Text>No decision applies to this project yet. Add one below, or confirm one from the Handoff Guard panel on a work item.</Text>}
       {state.rows.map((d) => (
         <Stack key={d.id} space="space.050">

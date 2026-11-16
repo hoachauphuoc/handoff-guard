@@ -9,7 +9,7 @@ import type { MarkedState } from "../decisions/marked";
 import { COMMITMENT_TEXT, constraintText, LINK_NOTE, reachText } from "../decisions/reach";
 import { count } from "../plural";
 import type { AcknowledgeAllReply, PanelState, PracticeReadBackReply } from "../handoff/types";
-import { GUIDE_SOURCE, PATH_NAMES, PRACTICE_NONE, PRACTICE_READBACK_ACCEPTED, PRACTICE_READBACK_BUTTON, PRACTICE_READBACK_HOW, PRACTICE_READBACK_REFUSED, PRACTICE_REAL, PRACTICE_TITLE, PRACTICE_WOULD_BE, guideView, type GuidePath, type StepNeed, type StepState } from "../guide/steps";
+import { GUIDE_SOURCE, HOW_IT_WORKS, HOW_IT_WORKS_TITLE, PATH_NAMES, PRACTICE_NONE, PRACTICE_READBACK_ACCEPTED, PRACTICE_READBACK_BUTTON, PRACTICE_READBACK_HOW, PRACTICE_READBACK_REFUSED, PRACTICE_REAL, PRACTICE_TITLE, PRACTICE_WOULD_BE, guideView, type GuidePath, type StepNeed, type StepState } from "../guide/steps";
 import { HINTS } from "../guide/hints";
 import { nextStep, SHOW_EVERYTHING, SHOW_LESS } from "../guide/next";
 import { BEFORE_READ_BACK, CONTINGENCY_MAX, READ_BACK_MAX, READ_BACK_MIN, READ_BACK_NOTE } from "../handoff/ipass";
@@ -311,6 +311,14 @@ const App = () => {
           )}
         </>
       )}
+      {/* Before the first handoff a reader has met none of the app's words; after it, the example is under Show everything. */}
+      {(!record || everything) && (
+        <SectionMessage appearance="information" title={HOW_IT_WORKS_TITLE}>
+          {HOW_IT_WORKS.map((line, i) => (
+            <Text key={i}>{line}</Text>
+          ))}
+        </SectionMessage>
+      )}
       <SectionMessage appearance="discovery" title={`Your next step: ${next.title}`}>
         <Text>{next.how}</Text>
       </SectionMessage>
@@ -357,7 +365,7 @@ const App = () => {
       {show("practice", "prepare") && state.exampleReadBack !== "" && !state.isReceiver && (
         <Stack space="space.100">
           <Heading as="h3" size="small">
-            Practice read-back
+            Practice: say what you would do (read-back)
           </Heading>
           <Text>{PRACTICE_READBACK_HOW}</Text>
           <Text>{READ_BACK_LIMITS}</Text>
@@ -514,6 +522,9 @@ const App = () => {
           )}
           {show("read_back") && protocol && state.isReceiver && waiting.length > 0 && (
             <>
+              <Heading as="h3" size="small">
+                Say what you will do (read-back)
+              </Heading>
               <Text>{`Write a read-back (${READ_BACK_MIN} to ${READ_BACK_MAX} characters) that mentions each decision above by its title or by what it sets: a date, a label or a component.`}</Text>
               <Label labelFor="readBack">Your read-back</Label>
               <TextArea

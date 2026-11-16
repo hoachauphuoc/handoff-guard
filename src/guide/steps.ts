@@ -34,6 +34,14 @@ export type GuideStep = {
 };
 
 export const GUIDE_SOURCE = "Source: built-in guide";
+// The three app words in one story, with the first sample rule's real date, so what a newcomer then tries matches
+// what they just read. A definition per word was not enough: a reader met each word alone.
+export const HOW_IT_WORKS_TITLE = "How it works, in one example";
+export const HOW_IT_WORKS = [
+  "1. Your team agreed a rule: work ships by 31 December 2026. That rule is a decision.",
+  "2. When the work moves to a new owner (a handoff), that person writes in their own words what they will do. That is a read-back.",
+  '3. The rule check refuses "I\'ll ship on 15 January 2027", which is after the agreed date, and accepts "I\'ll ship by 15 December 2026". When every rule is read back and the work item has a description and a due date, the handoff is Clear.',
+];
 export const PRACTICE_TITLE = "Practice check (not a verdict, nothing is saved)";
 export const PRACTICE_NONE =
   "No problems found in the work item itself. A real handoff still needs a receiver, and the receiver must acknowledge each binding decision.";

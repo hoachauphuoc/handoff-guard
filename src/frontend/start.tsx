@@ -3,6 +3,7 @@ import ForgeReconciler, { Button, Heading, Inline, Label, Lozenge, ProgressTrack
 import { invoke, router } from "@forge/bridge";
 import { GLOSSARY, NO_PROJECT_TEXT, START_INTRO, type StartGo } from "../guide/start";
 import { plainError } from "../errors";
+import { HOW_IT_WORKS, HOW_IT_WORKS_TITLE } from "../guide/steps";
 import type { StartState } from "../resolvers";
 
 const STATE_LOOK = { done: { text: "Done", appearance: "success" }, next: { text: "Next", appearance: "inprogress" }, open: { text: "Then", appearance: "default" } } as const;
@@ -34,6 +35,11 @@ const App = () => {
   return (
     <Stack space="space.200">
       <Text>{START_INTRO}</Text>
+      <SectionMessage appearance="information" title={HOW_IT_WORKS_TITLE}>
+        {HOW_IT_WORKS.map((line, i) => (
+          <Text key={i}>{line}</Text>
+        ))}
+      </SectionMessage>
       {error && <SectionMessage appearance="error" title="The start page could not be read">{<Text>{error}</Text>}</SectionMessage>}
       {!state && !error && <Text>Reading your projects…</Text>}
       {state && state.projects.length === 0 && <Text>{NO_PROJECT_TEXT}</Text>}

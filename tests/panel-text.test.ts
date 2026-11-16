@@ -85,6 +85,18 @@ describe("practice read-back", () => {
     for (const name of ["PRACTICE_READBACK_BUTTON", "PRACTICE_READBACK_ACCEPTED", "PRACTICE_READBACK_REFUSED", "PRACTICE_WOULD_BE", "PRACTICE_REAL"]) expect(names).toContain(name);
   });
 
+  it("explains the four words in one example that uses the first sample rule's date", async () => {
+    const { HOW_IT_WORKS } = await import("../src/guide/steps");
+    const { sampleDecisions } = await import("../src/samples/decisions");
+    expect(HOW_IT_WORKS).toHaveLength(3);
+    const text = HOW_IT_WORKS.join(" ");
+    for (const word of ["decision", "handoff", "read-back", "Clear"]) expect(text).toContain(word);
+    expect(sampleDecisions("OPS")[0]!.constraints).toEqual([{ kind: "dueNotAfter", date: "2026-12-31" }]);
+    expect(text).toContain("31 December 2026");
+    // Shown before the first handoff, and behind Show everything after it.
+    expect(panel).toContain("{(!record || everything) && (");
+  });
+
   it("labels the practice verdict as practice that saves nothing, and says a real handoff needs a second person", async () => {
     const { PRACTICE_WOULD_BE, PRACTICE_REAL } = await import("../src/guide/steps");
     expect(PRACTICE_WOULD_BE).toMatch(/^Practice verdict, nothing saved/);
