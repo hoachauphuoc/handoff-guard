@@ -90,5 +90,9 @@ export type AcknowledgeAllReply =
   | { state: PanelState; reasons?: never; explanation?: never }
   | { state?: never; reasons: string[]; explanation?: Explanation };
 
-/** Whether a practice read-back would be refused or accepted. Nothing is stored and there is no verdict. */
-export type PracticeReadBackReply = { accepted: boolean; reasons: string[]; explanation?: Explanation };
+/**
+ * Whether a practice read-back would be refused or accepted. Nothing is stored. When it is accepted, `wouldBe` is
+ * the rule check of the same work item handed to a stand-in second person who sent that read-back: one account
+ * cannot be its own receiver, so this is the only way it sees what a Clear handoff looks like.
+ */
+export type PracticeReadBackReply = { accepted: boolean; reasons: string[]; explanation?: Explanation; wouldBe?: HandoffResult };

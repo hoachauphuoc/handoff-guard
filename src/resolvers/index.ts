@@ -223,13 +223,17 @@ resolver.define("practiceReadBack", async ({ context, payload }) => {
   const ctx = context as Ctx;
   const readBack = String((payload as { readBack?: string }).readBack ?? "");
   const { item } = await readItem(ctx.extension.issue.key);
-  const binding = bindingDecisions(await getDecisions(item.projectKey), item);
+  const [decisions, rules] = await Promise.all([getDecisions(item.projectKey), getRules(item.projectKey)]);
+  const binding = bindingDecisions(decisions, item);
   if (binding.length === 0) throw new Error("No decision binds this work item yet. A project administrator can load sample decisions here or add one on the Decisions page.");
   const { problems, contradictions } = checkReadBack(readBack, binding, new Date().toISOString());
+  const accepted = problems.length === 0;
   return {
-    accepted: problems.length === 0,
+    accepted,
     reasons: problems,
     ...(contradictions.length > 0 ? { explanation: await explainRefusal(readBack, contradictions) } : {}),
+    // The same rule check a real handoff gets, with every binding decision read back by a stand-in receiver.
+    ...(accepted ? { wouldBe: checkHandoff({ ...walkthroughHandoff(item, ctx.accountId ?? null, binding.map((d) => d.id)), rules }, decisions) } : {}),
   } satisfies PracticeReadBackReply;
 });
 

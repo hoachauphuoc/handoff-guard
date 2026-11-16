@@ -9,7 +9,7 @@ import type { MarkedState } from "../decisions/marked";
 import { COMMITMENT_TEXT, constraintText, LINK_NOTE, reachText } from "../decisions/reach";
 import { count } from "../plural";
 import type { AcknowledgeAllReply, PanelState, PracticeReadBackReply } from "../handoff/types";
-import { GUIDE_SOURCE, PATH_NAMES, PRACTICE_NONE, PRACTICE_READBACK_ACCEPTED, PRACTICE_READBACK_BUTTON, PRACTICE_READBACK_HOW, PRACTICE_READBACK_REFUSED, PRACTICE_TITLE, guideView, type GuidePath, type StepNeed, type StepState } from "../guide/steps";
+import { GUIDE_SOURCE, PATH_NAMES, PRACTICE_NONE, PRACTICE_READBACK_ACCEPTED, PRACTICE_READBACK_BUTTON, PRACTICE_READBACK_HOW, PRACTICE_READBACK_REFUSED, PRACTICE_REAL, PRACTICE_TITLE, PRACTICE_WOULD_BE, guideView, type GuidePath, type StepNeed, type StepState } from "../guide/steps";
 import { HINTS } from "../guide/hints";
 import { nextStep, SHOW_EVERYTHING, SHOW_LESS } from "../guide/next";
 import { BEFORE_READ_BACK, CONTINGENCY_MAX, READ_BACK_MAX, READ_BACK_MIN, READ_BACK_NOTE } from "../handoff/ipass";
@@ -327,6 +327,19 @@ const App = () => {
             <SectionMessage appearance="success" title="Would be accepted">
               <Text>{PRACTICE_READBACK_ACCEPTED}</Text>
             </SectionMessage>
+          )}
+          {practice?.wouldBe && (
+            <Stack space="space.050">
+              <Text>
+                {PRACTICE_WOULD_BE}: <Lozenge appearance={LOOK[practice.wouldBe.verdict].appearance}>{LOOK[practice.wouldBe.verdict].text}</Lozenge>
+              </Text>
+              {practice.wouldBe.findings.map((f, i) => (
+                <Text key={i}>
+                  • {f.message} {HINTS[f.rule]}
+                </Text>
+              ))}
+              <Text>{PRACTICE_REAL}</Text>
+            </Stack>
           )}
           {practice && !practice.accepted && (
             <SectionMessage appearance="error" title={PRACTICE_READBACK_REFUSED}>

@@ -61,7 +61,7 @@ describe("practice read-back", () => {
   it("defines the practice read-back strings in the guide", () => {
     expect(stepsRaw).toContain('PRACTICE_READBACK_BUTTON = "Try a read-back (practice, nothing is saved)"');
     expect(stepsRaw).toContain(
-      `"No contradiction found in the dates, labels and components the code reads. Practice only: nothing is saved and there is no verdict. In a real handoff the receiver's read-back gets this same check."`,
+      `"No contradiction found in the dates, labels and components the code reads. Practice only: nothing is saved. In a real handoff the receiver's read-back gets this same check."`,
     );
     expect(stepsRaw).toContain('PRACTICE_READBACK_REFUSED = "This read-back would be refused:"');
   });
@@ -82,7 +82,13 @@ describe("practice read-back", () => {
 
   it("imports the practice strings in the panel", () => {
     const names = panel.match(/import \{([^}]*)\} from "\.\.\/guide\/steps"/)?.[1] ?? "";
-    for (const name of ["PRACTICE_READBACK_BUTTON", "PRACTICE_READBACK_ACCEPTED", "PRACTICE_READBACK_REFUSED"]) expect(names).toContain(name);
+    for (const name of ["PRACTICE_READBACK_BUTTON", "PRACTICE_READBACK_ACCEPTED", "PRACTICE_READBACK_REFUSED", "PRACTICE_WOULD_BE", "PRACTICE_REAL"]) expect(names).toContain(name);
+  });
+
+  it("labels the practice verdict as practice that saves nothing, and says a real handoff needs a second person", async () => {
+    const { PRACTICE_WOULD_BE, PRACTICE_REAL } = await import("../src/guide/steps");
+    expect(PRACTICE_WOULD_BE).toMatch(/^Practice verdict, nothing saved/);
+    expect(PRACTICE_REAL).toContain("second person");
   });
 
   it("stores nothing in the practiceReadBack resolver", () => {

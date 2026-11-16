@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MANAGE_DENIED } from "../src/authz";
 import { PREPARE_DENIED } from "../src/handoff/prepare";
 import { sampleDecisions } from "../src/samples/decisions";
-import type { HandoffRecord } from "../src/handoff/types";
+import type { HandoffRecord, PracticeReadBackReply } from "../src/handoff/types";
 import type { Decision, WorkItem } from "../src/rules/types";
 
 // The resolvers join the admin check, Forge storage and Jira; until now only their source text was tested.
@@ -193,6 +193,24 @@ describe("acknowledge all", () => {
     const out = (await call("acknowledgeAll", { readBack: "I will ship on 15 January 2027" }, "u-receiver")) as { reasons?: string[] };
     expect(Array.isArray(out.reasons) && out.reasons.length > 0).toBe(true);
     expect(store.putRecord).not.toHaveBeenCalled();
+  });
+
+  it("practice: an accepted read-back carries the stand-in handoff's verdict, a refused one none, and nothing is written", async () => {
+    vi.mocked(store.getDecisions).mockResolvedValue(binding);
+    readAs(workItem);
+    const good = (await call("practiceReadBack", { readBack: "Work ships by the end of 2026: I will deliver by 2026-12-31." })) as PracticeReadBackReply;
+    expect(good.accepted).toBe(true);
+    expect(good.wouldBe).toMatchObject({ verdict: "clear", findings: [] });
+
+    readAs({ ...workItem, description: "" });
+    const thin = (await call("practiceReadBack", { readBack: "Work ships by the end of 2026: I will deliver by 2026-12-31." })) as PracticeReadBackReply;
+    expect(thin.wouldBe?.verdict).toBe("needs_info");
+    expect(thin.wouldBe?.findings.map((f) => f.rule)).toEqual(["empty_description"]);
+
+    const late = (await call("practiceReadBack", { readBack: "I will ship on 15 January 2027" })) as PracticeReadBackReply;
+    expect(late.accepted).toBe(false);
+    expect(late.wouldBe).toBeUndefined();
+    noRecordWrites();
   });
 
   it("by the receiver with a good read-back acknowledges every binding decision", async () => {

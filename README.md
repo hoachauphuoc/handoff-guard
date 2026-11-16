@@ -8,18 +8,18 @@ For software teams whose Jira work items change owner while the work is still op
 
 A Forge app for Jira. When a work item is handed to someone else, the receiver restates each recorded decision that binds it, and plain code refuses a restatement that contradicts one in ways it can detect, for example a date after a recorded limit or a required label described as skipped. It does not catch every contradiction or prove understanding. Rules also check what is missing from the work item. The verdict (Clear, Needs info, Blocked) always comes from plain code (`checkHandoff()`); Rovo only explains it and proposes decisions that a person must confirm.
 
-## Try it in 3 minutes (one account: the refusal; Clear needs a second account)
+## Try it in 3 minutes (one account: the refusal and a practice verdict; a real Clear needs a second account)
 
-What you will see: the Handoff Guard panel on a work item refuses a read-back that contradicts a team decision, says why, and accepts a corrected one. Four steps, one account, nothing written to Jira.
+What you will see: the Handoff Guard panel on a work item refuses a read-back that contradicts a team decision, says why, accepts a corrected one, and shows the verdict the rule check would give if a second person had sent it. Four steps, one account, nothing written to Jira.
 
 Use an account that is a project administrator of the Jira project. Load sample decisions, confirming, adding and superseding a decision need Jira's "Administer projects" permission.
 
 1. Install from the installation link in the Devpost submission and open any work item. Click the apps icon under the summary ("View app actions"), then **Handoff Guard**. The panel opens on one card, "Your next step: Load the demo rules". If you cannot find the panel, open **Apps** in Jira's top bar and choose **Handoff Guard: start here**: it names the three steps and has a button for each.
 2. Click **Load sample decisions (demo)**. You should see "4 stored decisions for this project". Nothing is written to Jira.
 3. Under "Practice read-back" (beside your next step; if the work item already has a handoff, click **Show everything** to see it), type `Work ships by the end of 2026: I will ship on 15 January 2027. Stop using the legacy billing component: understood.` and click **Try a read-back (practice, nothing is saved)**. You should see "This read-back would be refused:", the code's reason about the 2026-12-31 limit, and one sentence labelled as written by a model.
-4. Change the date to `15 December 2026` and click again. You should see "Would be accepted" and "No contradiction found in the dates, labels and components the code reads."
+4. Change the date to `15 December 2026` and click again. You should see "Would be accepted", "No contradiction found in the dates, labels and components the code reads." and a practice verdict: **Clear**, or **Needs info** naming what the work item still lacks (for example "No due date is set."; add it and try again).
 
-That refusal is the point of the app: the receiver restates each decision, and plain code refuses a restatement that contradicts one in ways it can detect. It does not catch every contradiction or prove understanding. The practice check stores nothing and gives no verdict. A real handoff, with a second user as receiver, reaches Clear through the same check; the 10-minute path is in `docs/DEVPOST.md`.
+That refusal is the point of the app: the receiver restates each decision, and plain code refuses a restatement that contradicts one in ways it can detect. It does not catch every contradiction or prove understanding. The practice verdict is the same `checkHandoff()` run on a stand-in second person who sent your read-back; it stores nothing. A real handoff needs a second user as receiver, because you cannot be your own receiver; the 10-minute path is in `docs/DEVPOST.md`.
 
 ## Install (for judges)
 
@@ -145,7 +145,7 @@ The four rules-versus-people disagreements are all samples with no due date: the
 The four that matter most; the full list follows.
 
 - The read-back checks that each decision is addressed and catches a fixed list of contradictions; it does not prove the receiver understood.
-- Reaching Clear needs a second person as receiver; one account shows a refused and an accepted read-back.
+- Reaching a real Clear needs a second person as receiver; one account shows a refused and an accepted read-back, and a practice verdict that is not stored.
 - Decisions, rules and the activity list are stored per project in Forge storage with a version check that narrows, but does not close, a race between two saves.
 - The app is Jira-only, and the Rovo, MCP and Teamwork Graph paths name their source when they are unavailable.
 
