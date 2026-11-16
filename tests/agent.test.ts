@@ -100,7 +100,7 @@ describe("condition assistant rule", () => {
       "what it also includes, for example work that is already overdue",
       "Never say whether the rule is a good idea and never call the counts a verdict",
       "Only when the administrator asks you to save it, call draft-condition",
-      "Never say a condition is in force",
+      "Never say a draft is in force",
       "only the first 100 open work items were counted",
     ]) {
       expect(manifest).toContain(phrase);

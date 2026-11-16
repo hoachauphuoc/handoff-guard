@@ -33,7 +33,7 @@ function projectOf(p: Fields): string | { message: string } {
   const given = text(p.projectKey).toUpperCase();
   const raw = given !== "" ? given : typeof ctxKey === "string" && ctxKey.includes("-") ? projectOfKey(ctxKey.trim().toUpperCase()) : "";
   if (raw === "") return { message: "No project key was given and the chat was not opened from a work item. Ask which project." };
-  return PROJECT.test(raw) ? raw : { message: `"${raw}" is not a project key. A project key is letters and digits, such as MOBL.` };
+  return PROJECT.test(raw) ? raw : { message: `"${raw}" is not a project key. A project key is letters and digits, such as ABC.` };
 }
 
 function refusal<S extends typeof SCHEMA_VERSION.checkCondition | typeof SCHEMA_VERSION.draftCondition>(
@@ -91,8 +91,8 @@ export async function runCheckCondition(payload: unknown, deps: ConditionDeps): 
       checked === null
         ? `${inForce.length} condition${inForce.length === 1 ? "" : "s"} in force, counted over ${scope}.`
         : checked.counts === null
-          ? `Jira cannot run this filter: ${errors.join(" ")}`
-          : `Of ${scope}: ${checked.counts.matching} match ${jql}, ${checked.counts.notMatching} do not, ${checked.counts.unanswered} Jira did not answer for. Nothing was saved.`;
+          ? `Jira cannot run this filter: ${errors.join(" ")} No work items were counted.`
+          : `Of ${scope}: ${checked.counts.matching} match ${jql}, ${checked.counts.notMatching} do not, ${checked.counts.unanswered} Jira did not answer for.${checked.alreadyInForce ? ` An equal condition is already in force: "${checked.alreadyInForce}".` : ""} Nothing was saved.`;
     return { schema, ok: true, source: "rules", projectKey, scanned: n, capped: open.capped, inForce, checked, quote };
   } catch (e) {
     return crash(schema, e);

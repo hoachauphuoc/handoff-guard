@@ -77,6 +77,7 @@ describe("check-condition", () => {
     expect(r.quote).toContain("Nothing was saved.");
     const same = await runCheckCondition({ projectKey: "OPS", jql: "priority = Highest" }, fake().deps);
     expect(same.ok && same.checked?.alreadyInForce).toBe(inForce.title);
+    expect(same.ok && same.quote).toContain(`An equal condition is already in force: "${inForce.title}".`);
   });
 
   it("gives Jira's parse errors word for word and asks Jira to count nothing for that filter", async () => {
@@ -86,6 +87,7 @@ describe("check-condition", () => {
     expect(r.checked?.counts).toBeNull();
     expect(r.checked?.errors[0]).toContain("prioritee");
     expect(r.quote).toContain("Jira cannot run this filter");
+    expect(r.quote).toContain("No work items were counted.");
     expect(f.calls.openItems).toEqual([[]]);
   });
 

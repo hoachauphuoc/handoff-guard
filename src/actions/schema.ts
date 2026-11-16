@@ -72,7 +72,7 @@ export type DraftReceiptInput = { issueKey?: string; answers: string };
 
 const PROJECT_KEY = {
   type: "string",
-  description: "The project key the administrator gave, such as MOBL. Leave empty when none was given; the project of the work item the chat was opened from is then used.",
+  description: "The project key the administrator gave, such as ABC. Leave empty when none was given; the project of the work item the chat was opened from is then used.",
 } as const;
 
 export const CheckConditionInputSchema = {
