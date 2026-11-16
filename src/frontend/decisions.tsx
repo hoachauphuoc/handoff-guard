@@ -54,6 +54,8 @@ const App = () => {
   const [leavingError, setLeavingError] = useState<string | null>(null);
   const [draftError, setDraftError] = useState<string | null>(null);
   const [draftBusy, setDraftBusy] = useState(false);
+  // The page reads top-down as "what binds, what waits"; history and reports are one click away so a first reader is not lost.
+  const [reports, setReports] = useState(false);
 
   // A bad date or a failed read stays beside the control; it does not replace the page.
   const replayOn = (date: string) =>
@@ -368,6 +370,60 @@ const App = () => {
           )}
         </Stack>
       )}
+      <Heading size="small">Handoffs in flight</Heading>
+      {state.inFlight.length === 0 && <Text>No prepared handoff in this project is waiting on anything.</Text>}
+      {state.inFlight.map((h) => (
+        <Stack key={h.key} space="space.050">
+          <Text>
+            <Lozenge appearance={VERDICT[h.verdict].appearance}>{VERDICT[h.verdict].text}</Lozenge> {h.key} {h.summary}
+          </Text>
+          <Text>
+            <User accountId={h.fromId} /> to <User accountId={h.toId} />, prepared {count(h.ageDays, "day")} ago.
+          </Text>
+          {h.blockedBy.length > 0 && <Text>{`Contradicts: ${h.blockedBy.join("; ")}.`}</Text>}
+          {h.unacknowledged > 0 && <Text>{`${count(h.unacknowledged, "decision")} not acknowledged by the receiver.`}</Text>}
+        </Stack>
+      ))}
+      <Heading size="small">Governance: rules this project can release</Heading><Text>A rule is a draft until a project administrator releases it.</Text>
+      {ruleError !== null && <Text>{ruleError}</Text>}
+      {(
+        [
+          ["requireContingency", "Require a contingency from the sender", "no_contingency"],
+          ["requireIfThen", 'Require the contingency to be written as "if … then …"', "contingency_not_if_then"],
+          ["requireReceiverAssigned", "Require the work item to be assigned to the receiver", "receiver_not_assignee"],
+        ] as const
+      ).map(([rule, label, cause]) => {
+        const seen = autopsy?.causes.find((c) => c.id === cause);
+        const released = state.rules[rule];
+        return (
+          <Stack key={rule} space="space.050">
+            <Text>
+              <Lozenge appearance={released ? "success" : "default"}>{released ? "Released" : "Draft"}</Lozenge> {label}
+              {seen && autopsy && autopsy.bounced.length > 0 ? ` (${seen.bouncedWith} of ${autopsy.bounced.length} bounced handoffs lacked this)` : ""}
+            </Text>
+            {state.canManage && released && <Button isDisabled={ruleBusy} onClick={() => void setRule(rule, false)}>Retire this rule</Button>}
+            {state.canManage && !released && <Button isDisabled={ruleBusy} onClick={() => void previewRule(rule)}>See what releasing it would change</Button>}
+            {pending?.rule === rule && (
+              <Stack space="space.050">
+                <Text>
+                  {pending.impact.wouldTurn === 0
+                    ? `Of ${count(pending.impact.checked, "prepared handoff")} read, none that is Clear now would need information.`
+                    : `Of ${count(pending.impact.checked, "prepared handoff")} read, ${pending.impact.wouldTurn} that ${pending.impact.wouldTurn === 1 ? "is" : "are"} Clear now would need information: ${pending.impact.keys.join(", ")}.`}
+                </Text>
+                <Button appearance="primary" isDisabled={ruleBusy} onClick={() => void setRule(rule, true)}>Release this rule</Button>
+                <Button onClick={() => setPending(null)}>Keep it a draft</Button>
+              </Stack>
+            )}
+          </Stack>
+        );
+      })}
+      <Text>
+        A released rule is checked by the same rule check as everything else: a handoff that lacks it is Needs info in the panel and is
+        refused by the workflow validator. Rules come from this fixed list; code decides, and every release or retirement is written to Activity.
+      </Text>
+      <Button onClick={() => setReports(!reports)}>{reports ? "Hide reports and history" : "Show reports and history: replay, bounced handoffs, a person leaving, activity, counts"}</Button>
+      {reports && (
+        <>
       <Heading size="small">Replay on a date</Heading>
       <Text>
         Pick a date to see which prepared handoffs would have had a different verdict then. Only decisions and acknowledgements are replayed;
@@ -430,57 +486,6 @@ const App = () => {
           )}
         </Stack>
       )}
-      <Heading size="small">Governance: rules this project can release</Heading><Text>A rule is a draft until a project administrator releases it.</Text>
-      {ruleError !== null && <Text>{ruleError}</Text>}
-      {(
-        [
-          ["requireContingency", "Require a contingency from the sender", "no_contingency"],
-          ["requireIfThen", 'Require the contingency to be written as "if … then …"', "contingency_not_if_then"],
-          ["requireReceiverAssigned", "Require the work item to be assigned to the receiver", "receiver_not_assignee"],
-        ] as const
-      ).map(([rule, label, cause]) => {
-        const seen = autopsy?.causes.find((c) => c.id === cause);
-        const released = state.rules[rule];
-        return (
-          <Stack key={rule} space="space.050">
-            <Text>
-              <Lozenge appearance={released ? "success" : "default"}>{released ? "Released" : "Draft"}</Lozenge> {label}
-              {seen && autopsy && autopsy.bounced.length > 0 ? ` (${seen.bouncedWith} of ${autopsy.bounced.length} bounced handoffs lacked this)` : ""}
-            </Text>
-            {state.canManage && released && <Button isDisabled={ruleBusy} onClick={() => void setRule(rule, false)}>Retire this rule</Button>}
-            {state.canManage && !released && <Button isDisabled={ruleBusy} onClick={() => void previewRule(rule)}>See what releasing it would change</Button>}
-            {pending?.rule === rule && (
-              <Stack space="space.050">
-                <Text>
-                  {pending.impact.wouldTurn === 0
-                    ? `Of ${count(pending.impact.checked, "prepared handoff")} read, none that is Clear now would need information.`
-                    : `Of ${count(pending.impact.checked, "prepared handoff")} read, ${pending.impact.wouldTurn} that ${pending.impact.wouldTurn === 1 ? "is" : "are"} Clear now would need information: ${pending.impact.keys.join(", ")}.`}
-                </Text>
-                <Button appearance="primary" isDisabled={ruleBusy} onClick={() => void setRule(rule, true)}>Release this rule</Button>
-                <Button onClick={() => setPending(null)}>Keep it a draft</Button>
-              </Stack>
-            )}
-          </Stack>
-        );
-      })}
-      <Text>
-        A released rule is checked by the same rule check as everything else: a handoff that lacks it is Needs info in the panel and is
-        refused by the workflow validator. Rules come from this fixed list; code decides, and every release or retirement is written to Activity.
-      </Text>
-      <Heading size="small">Handoffs in flight</Heading>
-      {state.inFlight.length === 0 && <Text>No prepared handoff in this project is waiting on anything.</Text>}
-      {state.inFlight.map((h) => (
-        <Stack key={h.key} space="space.050">
-          <Text>
-            <Lozenge appearance={VERDICT[h.verdict].appearance}>{VERDICT[h.verdict].text}</Lozenge> {h.key} {h.summary}
-          </Text>
-          <Text>
-            <User accountId={h.fromId} /> to <User accountId={h.toId} />, prepared {count(h.ageDays, "day")} ago.
-          </Text>
-          {h.blockedBy.length > 0 && <Text>{`Contradicts: ${h.blockedBy.join("; ")}.`}</Text>}
-          {h.unacknowledged > 0 && <Text>{`${count(h.unacknowledged, "decision")} not acknowledged by the receiver.`}</Text>}
-        </Stack>
-      ))}
       <Heading size="small">Leaving the project</Heading>
       <Text>
         Everything a person still holds in this project: their open work items, handoffs they have not acknowledged, and decisions only they can
@@ -549,6 +554,8 @@ const App = () => {
         </Text>
       ))}
       <Text>Counts come from the activity list above, which keeps the latest 300 entries; older months can be incomplete.</Text>
+        </>
+      )}
       {state.canManage && (
         <Stack space="space.100">
           <Heading size="small">Export and delete (project administrators)</Heading>
