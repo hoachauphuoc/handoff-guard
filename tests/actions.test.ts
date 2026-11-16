@@ -203,6 +203,38 @@ describe("read-decision-source", () => {
   });
 });
 
+describe("a moved work item keeps its old key", () => {
+  // Jira says OPS-1 now lives in project NEW; the decisions read must be NEW's, not those of the key's prefix.
+  const read = () => {
+    const asked: string[] = [];
+    const getDecisions = async (p: string) => {
+      asked.push(p);
+      return [];
+    };
+    return { asked, getDecisions };
+  };
+
+  it("propose-decisions reads the decisions of the project Jira reports, once when the key matches", async () => {
+    const moved = read();
+    const { d } = proposeDeps();
+    await runProposeDecisions({ issueKey: "OPS-1", candidates: JSON.stringify([good]) }, { ...d, getDecisions: moved.getDecisions, readSource: async () => ({ ...SOURCE, projectKey: "NEW" }) });
+    expect(moved.asked.at(-1)).toBe("NEW");
+    const same = read();
+    await runProposeDecisions({ issueKey: "OPS-1", candidates: JSON.stringify([good]) }, { ...d, getDecisions: same.getDecisions, readSource: async () => ({ ...SOURCE, projectKey: "OPS" }) });
+    expect(same.asked).toEqual(["OPS"]);
+  });
+
+  it("gather-handoff-context reads the decisions of the project Jira reports", async () => {
+    const moved = read();
+    await runGatherHandoffContext(
+      { issueKey: "OPS-1" },
+      null,
+      deps({ getDecisions: moved.getDecisions, readItem: async () => ({ item: { ...item, projectKey: "NEW" }, issueId: "10001" }), readSource: async () => SOURCE }),
+    );
+    expect(moved.asked.at(-1)).toBe("NEW");
+  });
+});
+
 describe("propose-decisions", () => {
   it("saves proposals only through putProposals and reports both lists", async () => {
     const { d, writes } = proposeDeps();

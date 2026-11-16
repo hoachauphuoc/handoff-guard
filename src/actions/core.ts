@@ -340,7 +340,11 @@ export async function runProposeDecisions(payload: unknown, deps: Deps): Promise
   try {
     // The source is read again here, as the caller: quotes are checked against Jira, never against what
     // the model says it read.
-    const [src, stored] = await Promise.all([deps.readSource(key), deps.getDecisions(projectOfKey(key))]);
+    // The key's prefix is only a guess at the project: a moved work item keeps its old key. So the decisions are
+    // read again for the project Jira reports when the two differ.
+    const guessed = projectOfKey(key);
+    const [src, first] = await Promise.all([deps.readSource(key), deps.getDecisions(guessed)]);
+    const stored = src.projectKey === guessed ? first : await deps.getDecisions(src.projectKey);
     const { kept, rejected: raw } = validateCandidates(
       fillScopes(candidates, { issueKey: key, projectKey: src.projectKey }),
       src.parts,
@@ -424,7 +428,10 @@ export async function runGatherHandoffContext(payload: unknown, accountId: strin
   const check = await runCheckHandoff({ issueKey: key }, accountId, deps);
   if (!check.ok) return { schema, ok: false, source: "rules", issueKey: key, error: check.error, quote: check.quote };
   try {
-    const [{ item, issueId }, src, decisions] = await Promise.all([deps.readItem(key), deps.readSource(key), deps.getDecisions(projectOfKey(key))]);
+    const guessed = projectOfKey(key);
+    const [{ item, issueId }, src, first] = await Promise.all([deps.readItem(key), deps.readSource(key), deps.getDecisions(guessed)]);
+    // A moved work item keeps its old key; its decisions are those of the project Jira reports.
+    const decisions = item.projectKey === guessed ? first : await deps.getDecisions(item.projectKey);
     const record = await deps.getRecord(issueId);
     const people = await readPeople(issueId, deps);
     // Only for a stored handoff: a preview has no record, so no sender's contingency and no owners to name.

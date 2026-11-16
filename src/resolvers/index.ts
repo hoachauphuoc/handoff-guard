@@ -366,7 +366,10 @@ resolver.define("gatherContext", ({ context }) => {
 // returned here is stored, and it is not an input to the rule check.
 resolver.define("getMarked", async ({ context }): Promise<MarkedState> => {
   const ctx = context as Ctx;
-  const [src, decisions] = await Promise.all([readSourceAsUser(ctx.extension.issue.key), getDecisions(projectOfKey(ctx.extension.issue.key))]);
+  const guessed = projectOfKey(ctx.extension.issue.key);
+  const [src, first] = await Promise.all([readSourceAsUser(ctx.extension.issue.key), getDecisions(guessed)]);
+  // A moved work item keeps its old key; its decisions are those of the project Jira reports.
+  const decisions = src.projectKey === guessed ? first : await getDecisions(src.projectKey);
   return {
     notInLedger: unrecordedMarked(src.parts, decisions),
     truncated: src.truncated,
