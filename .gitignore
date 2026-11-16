@@ -14,3 +14,6 @@ research/
 
 # Owner's working rules for Claude and the dev runners (local only)
 CLAUDE.md
+
+# Local settings of the Command Code runner (owner's machine only)
+.commandcode/
