@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MANAGE_DENIED } from "../src/authz";
+import { PREPARE_DENIED } from "../src/handoff/prepare";
+import { sampleDecisions } from "../src/samples/decisions";
+import type { HandoffRecord } from "../src/handoff/types";
+import type { Decision, WorkItem } from "../src/rules/types";
 
 // The resolvers join the admin check, Forge storage and Jira; until now only their source text was tested.
 // Every store function is a mock, so a test can say exactly what was written.
@@ -7,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   defined: new Map<string, (req: { context: unknown; payload?: unknown }) => Promise<unknown>>(),
   isAdmin: vi.fn(),
   openItems: vi.fn(),
+  readItem: vi.fn(),
 }));
 
 vi.mock("@forge/resolver", () => ({
@@ -30,16 +35,18 @@ vi.mock("../src/jira", async () => ({
   ...(await vi.importActual<typeof import("../src/jira")>("../src/jira")),
   isProjectAdminAsUser: mocks.isAdmin,
   openItemsAsUser: mocks.openItems,
+  readItemAsUser: mocks.readItem,
 }));
 
 import * as store from "../src/store";
 import "../src/resolvers/index";
 
-const context = { accountId: "u-admin", extension: { project: { key: "OPS" } } };
-const call = (name: string, payload: unknown = {}) => {
+const context = { accountId: "u-admin", extension: { project: { key: "OPS" }, issue: { key: "OPS-1", id: "10001" } } };
+// Same helper, with an optional caller override so a test can act as the assignee or the receiver.
+const call = (name: string, payload: unknown = {}, accountId: string = context.accountId) => {
   const fn = mocks.defined.get(name);
   if (!fn) throw new Error(`no resolver ${name}`);
-  return fn({ context, payload });
+  return fn({ context: { ...context, accountId, extension: { ...context.extension } }, payload });
 };
 const writes = () =>
   [store.updateDecisions, store.putConditionDrafts, store.deleteItemData, store.deleteConditionDrafts, store.deleteRules, store.resetAudit, store.addAudit, store.purgeLegacyDecisions].filter(
@@ -55,6 +62,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.isAdmin.mockResolvedValue(true);
   mocks.openItems.mockResolvedValue({ items, capped: false });
+  mocks.readItem.mockResolvedValue({ item: { key: "OPS-1", projectKey: "OPS" }, issueId: "10001" });
   vi.mocked(store.getDecisions).mockResolvedValue([]);
   vi.mocked(store.getConditionDrafts).mockResolvedValue([]);
   vi.mocked(store.getAudit).mockResolvedValue([]);
@@ -105,5 +113,96 @@ describe("export project data", () => {
     expect(out.handoffs.map((h: { key: string }) => h.key)).toEqual(["OPS-1"]);
     expect(out.readBackDrafts.map((h: { key: string }) => h.key)).toEqual(["OPS-2"]);
     expect(writes()).toBe(0);
+  });
+});
+
+// A synthetic item shaped like tests/actions.test.ts, so panelState has real fields to read.
+const workItem: WorkItem = {
+  key: "OPS-1",
+  projectKey: "OPS",
+  summary: "Launch",
+  description: "Body",
+  labels: [],
+  components: [],
+  dueDate: "2026-12-10",
+  assigneeId: "u-assignee",
+};
+const readAs = (item: WorkItem) => mocks.readItem.mockResolvedValue({ item, issueId: "10001" });
+const noRecordWrites = () => {
+  expect(store.replaceRecord).not.toHaveBeenCalled();
+  expect(store.putRecord).not.toHaveBeenCalled();
+  expect(store.addAudit).not.toHaveBeenCalled();
+};
+
+describe("prepare handoff", () => {
+  it("refuses an empty or malformed toId and writes nothing", async () => {
+    readAs(workItem);
+    // Empty never reaches the id pattern; "bad id!" fails it because of the space and bang.
+    for (const toId of ["", "bad id!"]) {
+      await expect(call("prepareHandoff", { toId })).rejects.toThrow();
+      noRecordWrites();
+    }
+  });
+
+  it("refuses with PREPARE_DENIED when the caller is neither the assignee nor an administrator, and writes nothing", async () => {
+    // An existing record closes the open first-prepare path, so mayPrepare must say no.
+    const record = { fromId: "u-sender", toId: "u-old", acknowledged: [], preparedAt: "t", acknowledgedAt: {} } as unknown as HandoffRecord;
+    readAs(workItem);
+    vi.mocked(store.getRecord).mockResolvedValue(record);
+    mocks.isAdmin.mockResolvedValue(false);
+    await expect(call("prepareHandoff", { toId: "u-new" }, "u-stranger")).rejects.toThrow(PREPARE_DENIED);
+    noRecordWrites();
+  });
+
+  it("by the assignee replaces the record with an empty protocol-1 acknowledgement and leaves one activity line", async () => {
+    const old = { fromId: "u-sender", toId: "u-old", acknowledged: ["d1"], preparedAt: "t", acknowledgedAt: {} } as unknown as HandoffRecord;
+    readAs(workItem);
+    vi.mocked(store.getRecord).mockResolvedValue(old);
+    mocks.isAdmin.mockResolvedValue(false);
+    await call("prepareHandoff", { toId: "u-new" }, "u-assignee");
+    expect(vi.mocked(store.replaceRecord).mock.calls.length).toBe(1);
+    const [issueId, record] = vi.mocked(store.replaceRecord).mock.calls[0] as unknown as [string, HandoffRecord];
+    expect(issueId).toBe("10001");
+    // fromId is the caller so a later prepare can tell sender from assignee; acks never carry over.
+    expect(record).toMatchObject({ fromId: "u-assignee", toId: "u-new", acknowledged: [], protocol: 1 });
+    expect(vi.mocked(store.addAudit).mock.calls.length).toBe(1);
+    expect(vi.mocked(store.addAudit).mock.calls[0]?.[0]).toBe("OPS");
+    expect(vi.mocked(store.addAudit).mock.calls[0]?.[1]).toMatchObject({ action: "handoff_prepared", who: "u-assignee" });
+  });
+});
+
+describe("acknowledge all", () => {
+  // One binding decision: the first sample binds every OPS item through its project scope.
+  const binding = [sampleDecisions("OPS")[0] as Decision];
+  const protocolRecord = (toId: string) =>
+    ({ fromId: "u-sender", toId, acknowledged: [], preparedAt: "t", acknowledgedAt: {}, protocol: 1 }) as unknown as HandoffRecord;
+
+  it("by someone who is not the receiver writes no record", async () => {
+    readAs({ ...workItem, assigneeId: "u-receiver" });
+    vi.mocked(store.getDecisions).mockResolvedValue(binding);
+    vi.mocked(store.getRecord).mockResolvedValue(protocolRecord("u-receiver"));
+    await expect(call("acknowledgeAll", { readBack: "Work ships by the end of 2026: I will deliver by 2026-12-31." }, "u-stranger")).rejects.toThrow();
+    expect(store.putRecord).not.toHaveBeenCalled();
+  });
+
+  it("by the receiver with a contradicting read-back returns reasons and writes no record", async () => {
+    readAs({ ...workItem, assigneeId: "u-receiver" });
+    vi.mocked(store.getDecisions).mockResolvedValue(binding);
+    vi.mocked(store.getRecord).mockResolvedValue(protocolRecord("u-receiver"));
+    // 2027-01-15 is after the 2026-12-31 limit, so teach-back refuses it even though it names a date.
+    const out = (await call("acknowledgeAll", { readBack: "I will ship on 15 January 2027" }, "u-receiver")) as { reasons?: string[] };
+    expect(Array.isArray(out.reasons) && out.reasons.length > 0).toBe(true);
+    expect(store.putRecord).not.toHaveBeenCalled();
+  });
+
+  it("by the receiver with a good read-back acknowledges every binding decision", async () => {
+    readAs({ ...workItem, assigneeId: "u-receiver" });
+    vi.mocked(store.getDecisions).mockResolvedValue(binding);
+    vi.mocked(store.getRecord).mockResolvedValue(protocolRecord("u-receiver"));
+    // Names the title and answers with the limit date itself, so coverage passes and no date is late.
+    await call("acknowledgeAll", { readBack: "Work ships by the end of 2026: I will deliver by 2026-12-31." }, "u-receiver");
+    expect(vi.mocked(store.putRecord).mock.calls.length).toBe(1);
+    const [, saved] = vi.mocked(store.putRecord).mock.calls[0] as unknown as [string, HandoffRecord];
+    expect(saved.acknowledged).toEqual(expect.arrayContaining(binding.map((d) => d.id)));
   });
 });
