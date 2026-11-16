@@ -156,6 +156,19 @@ describe("condition between decisions", () => {
     expect(constraintText({ kind: "condition", jql: "priority = Highest" })).toBe("Must match the Jira filter: priority = Highest");
   });
 
+  it("refuses a sixth filter, which would read as not checked, unless one is replaced in the same save", () => {
+    const five = [1, 2, 3, 4, 5].map((n) => condDecision({ id: `D-${n}`, title: `t${n}`, constraints: [{ kind: "condition", jql: `labels = l${n}` }] }));
+    const input: ManualInput = { title: "One more", scope: "project", scopeValue: "", constraint: "condition", constraintValue: "labels = l6", supersede: false };
+    const at = "2026-11-16T00:00:00.000Z";
+    const sixth = buildManualDecision(input, "OPS", five, "u-ana", at);
+    expect(!sixth.ok && sixth.reason).toContain("Supersede one before adding another");
+    expect(buildManualDecision(input, "OPS", five, "u-ana", at, "D-3").ok).toBe(true);
+    // A retired filter frees its place, and a non-filter decision is never held back by the cap.
+    const retired: Decision = { ...five[0]!, status: "superseded" };
+    expect(buildManualDecision(input, "OPS", [...five.slice(1), retired], "u-ana", at).ok).toBe(true);
+    expect(buildManualDecision({ ...input, constraint: "labelRequired", constraintValue: "x" }, "OPS", five, "u-ana", at).ok).toBe(true);
+  });
+
   it("is typed in by hand: refused when empty, sorted or too long, kept as typed otherwise", () => {
     const base: ManualInput = { title: "Only the highest priority ships", scope: "project", scopeValue: "", constraint: "condition", constraintValue: JQL, supersede: false };
     const made = buildManualDecision(base, "OPS", [], "u-ana", "2026-11-15T00:00:00.000Z");

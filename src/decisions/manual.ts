@@ -1,6 +1,6 @@
 import { isIsoDate } from "../rules/checkHandoff";
 import type { Constraint, Decision, DecisionScope } from "../rules/types";
-import { CONDITION_MAX_LENGTH } from "./conditions";
+import { CONDITION_CAP, CONDITION_MAX_LENGTH, conditionJqls } from "./conditions";
 import { fnv1a } from "./hash";
 import { clashText } from "./confirm";
 import { canSupersede, clashes, relate } from "./supersede";
@@ -87,9 +87,10 @@ function conditionOf(jql: string): Constraint | string {
 /**
  * Builds a decision a person typed in. The title is the person's own words and so is the source: there is
  * no quote to check, so nothing here pretends a document says it. The id comes from the content, so
- * typing the same decision twice cannot store it twice.
+ * typing the same decision twice cannot store it twice. `replaces` is a decision the caller retires in the
+ * same save (a Rovo draft that supersedes one), so its filter does not count against the cap.
  */
-export function buildManualDecision(input: ManualInput, projectKey: string, stored: Decision[], who: string, nowIso: string): ManualResult {
+export function buildManualDecision(input: ManualInput, projectKey: string, stored: Decision[], who: string, nowIso: string, replaces: string | null = null): ManualResult {
   if (input.title === "" || input.title.length > MAX_TITLE) return { ok: false, reason: `Write a title of 1 to ${MAX_TITLE} characters.` };
   const scope = scopeOf(input, projectKey);
   if (typeof scope === "string") return { ok: false, reason: scope };
@@ -107,6 +108,13 @@ export function buildManualDecision(input: ManualInput, projectKey: string, stor
   const clash = clashes(stored, scope, constraints);
   const mayRetire = clash.every((d) => canSupersede(d, who));
   if (clash.length > 0 && (!input.supersede || !mayRetire)) return { ok: false, reason: clashText(clash.map((d) => d.title), mayRetire) };
+  // Only CONDITION_CAP filters are asked of Jira; one more would read as not checked and the validator would
+  // refuse every transition it binds. So the save is refused instead, while the way out is still clear.
+  const jql = constraints[0]?.kind === "condition" ? constraints[0].jql : null;
+  const kept = conditionJqls(stored.filter((d) => d.id !== replaces && !clash.some((c) => c.id === d.id)));
+  if (jql !== null && !kept.includes(jql) && kept.length >= CONDITION_CAP) {
+    return { ok: false, reason: `${kept.length} Jira filters are already in force in this project; Handoff Guard checks at most ${CONDITION_CAP}. Supersede one before adding another. Nothing was added.` };
+  }
   return {
     ok: true,
     retire: clash.map((d) => d.id),

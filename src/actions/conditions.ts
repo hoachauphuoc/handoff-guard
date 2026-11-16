@@ -121,6 +121,7 @@ export async function runDraftCondition(payload: unknown, accountId: string | nu
       stored,
       accountId,
       deps.now(),
+      supersedes,
     );
     if (!built.ok) return refusal(schema, "bad_input", `${built.reason} Nothing was stored.`);
     const errors = await deps.jqlErrors(jql);

@@ -469,14 +469,14 @@ resolver.define("supersedeDecision", async ({ context, payload }) => {
 
 // Adding a decision by hand: the preview counts the open work items it would contradict, the add stores it.
 // Both run the same build, so the number shown is the number of the decision that gets saved.
-async function manualDecision(ctx: { accountId?: string; extension: { project: { key: string } } }, payload: unknown) {
+async function manualDecision(ctx: { accountId?: string; extension: { project: { key: string } } }, payload: unknown, replaces: string | null = null) {
   if (!ctx.accountId) throw new Error("Adding a decision needs a signed-in person.");
   const input = readManualInput(payload);
   if (typeof input === "string") throw new Error(input);
   const projectKey = String(ctx.extension.project.key);
   await requireAdmin(projectKey);
   const stored = await getDecisions(projectKey);
-  const built = buildManualDecision(input, projectKey, stored, ctx.accountId, new Date().toISOString());
+  const built = buildManualDecision(input, projectKey, stored, ctx.accountId, new Date().toISOString(), replaces);
   if (!built.ok) throw new Error(built.reason);
   for (const c of built.decision.constraints) {
     if (c.kind !== "condition") continue;
@@ -522,7 +522,7 @@ resolver.define("confirmConditionDraft", async ({ context, payload }) => {
   const draft = (await getConditionDrafts(projectKey)).find((d) => d.id === id);
   if (!draft) throw new Error("That draft is no longer waiting. Reload the page.");
   const input = { title: draft.title, scope: "project", constraint: "condition", constraintValue: draft.jql, supersede: draft.supersedes !== null };
-  const { decision, retire, stored } = await manualDecision(ctx, input);
+  const { decision, retire, stored } = await manualDecision(ctx, input, draft.supersedes);
   const ids = [...retire];
   if (draft.supersedes !== null) {
     const target = stored.find((d) => d.id === draft.supersedes && d.status === "decided");
