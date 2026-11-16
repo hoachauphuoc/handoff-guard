@@ -14,6 +14,6 @@ jobs:
           python-version: "3.13"
       - run: npm ci
       - run: npm run typecheck
-      - run: npm test
+      - run: npm run coverage
       - run: node scripts/measure.ts --check-readme
       - run: python -m unittest discover -s scripts -p "test_*.py"
