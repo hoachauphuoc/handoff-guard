@@ -91,7 +91,9 @@ describe("guide steps", () => {
     );
     expect(all.nextId).toBeNull();
     expect(all.doneCount).toBe(5);
-    expect(all.total).toBe(7);
+    // Rovo and the validator are not needed for a handoff, so the count is out of the other five.
+    expect(all.total).toBe(5);
+    expect(all.optional).toBe(2);
   });
 
   it("describes acknowledging as one read-back, not a button under each decision", () => {

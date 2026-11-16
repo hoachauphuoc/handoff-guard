@@ -350,7 +350,7 @@ const App = () => {
       )}
       {everything && (
         <Text>
-          {PATH_NAMES[path]}: {guide.doneCount} of {guide.total} steps done.
+          {PATH_NAMES[path]}: {guide.doneCount} of {guide.total} steps done{guide.optional > 0 ? `, plus ${guide.optional} optional` : ""}.
         </Text>
       )}
       {everything && <ProgressTracker label={PATH_NAMES[path]} items={trackerItems(guide.steps)} />}

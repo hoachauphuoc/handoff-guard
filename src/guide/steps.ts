@@ -29,6 +29,8 @@ export type GuideStep = {
   title: string;
   how: string;
   needs?: StepNeed;
+  /** Not needed for the handoff itself, so it is left out of the "x of y steps done" count. */
+  optional?: true;
   /** null: the app cannot tell from its own state, so the step is shown but never ticked. */
   done: (s: PanelState) => boolean | null;
 };
@@ -93,6 +95,7 @@ export const STEPS: GuideStep[] = [
     title: "Optional: ask Rovo to explain",
     how: "Click Explain with Rovo. Click Find decisions with Rovo to have it propose decisions from this work item's description and comments. On a site without Rovo the buttons say so, and the verdict still comes from the rule check.",
     needs: "rovo",
+    optional: true,
     done: () => null,
   },
   {
@@ -100,6 +103,7 @@ export const STEPS: GuideStep[] = [
     title: "Optional: hold a status change until Clear",
     how: "Jira admin: Project settings > Workflows > edit a transition (a move between two statuses) > Validators > add Handoff Guard. Jira then refuses that move until the handoff is Clear.",
     needs: "admin",
+    optional: true,
     done: () => null,
   },
 ];
@@ -163,7 +167,9 @@ export type StepState = "done" | "next" | "todo" | "manual";
 export type GuideView = {
   steps: { id: GuideStepId; title: string; how: string; needs?: StepNeed; state: StepState }[];
   doneCount: number;
+  /** Steps the count is out of; optional steps are counted apart. */
   total: number;
+  optional: number;
   nextId: GuideStepId | null;
 };
 
@@ -179,7 +185,8 @@ export function guideView(s: PanelState, path: GuidePath = "handover"): GuideVie
   return {
     steps,
     doneCount: steps.filter((x) => x.state === "done").length,
-    total: steps.length,
+    total: list.filter((step) => !step.optional).length,
+    optional: list.filter((step) => step.optional).length,
     nextId: nextIndex === -1 ? null : (list[nextIndex]?.id ?? null),
   };
 }
