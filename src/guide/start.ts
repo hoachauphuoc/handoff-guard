@@ -11,7 +11,7 @@ export type StartView = {
 };
 
 export const START_INTRO =
-  "Handoff Guard checks a Jira work item when it moves from one person to another: is anything missing, and does it break a rule your team agreed? Three steps, each with a button that takes you there.";
+  "Handoff Guard checks a Jira work item when it changes hands: is anything missing, and does it break a rule your team agreed? Three steps, each with a button.";
 export const NO_PROJECT_TEXT = "You cannot see any Jira project yet. Ask a Jira administrator to add you to one, or create a project from Projects at the top of Jira.";
 // The one sentence for finding the panel, as seen on the site; README and DEVPOST say the same.
 export const OPEN_PANEL =
@@ -63,7 +63,7 @@ export function startView(input: {
         n: 2,
         title: "Open a work item and find Handoff Guard",
         how: itemKey
-          ? `This opens ${itemKey}. ${OPEN_PANEL} There, try a read-back: say in your own words what you will do about each decision; one that breaks a decision is refused.`
+          ? `This opens ${itemKey}. ${OPEN_PANEL} Then try a read-back: say what you will do about each decision.`
           : NO_ITEM_TEXT,
         button: itemKey ? `Open ${itemKey}` : "Open a work item",
         go: item,

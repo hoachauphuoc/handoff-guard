@@ -24,7 +24,7 @@ export function nextStep(s: PanelState): NextStep {
   const { record, result } = s;
   if (record && result) {
     if (s.isReceiver && waitingFor(s).length > 0) {
-      return { kind: "read_back", title: "Say what you will do", how: "This work was handed to you. Below are the rules that apply to it. Write in your own words what you will do about each one, then click Acknowledge all with this read-back. One that breaks a rule, such as a later date, is refused." };
+      return { kind: "read_back", title: "Say what you will do", how: "This work was handed to you. Say in your own words what you will do about each rule below, then click Acknowledge all with this read-back; one that breaks a rule is refused." };
     }
     if (result.verdict === "clear") return { kind: "done", title: "Nothing to do", how: "The handoff is Clear: nothing is missing and the receiver has confirmed every rule." };
     if (!s.isReceiver && s.fixes.length > 0) {
