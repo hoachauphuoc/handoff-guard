@@ -169,8 +169,9 @@ export type StartState = StartView & { projects: StartProject[] };
 resolver.define("getStart", async ({ payload }): Promise<StartState> => {
   const projects = await projectsAsUser();
   const stored = await Promise.all(projects.map((p) => getDecisions(p.key)));
+  // Counted as the Decisions page lists them, so the number here matches the In force rows the link opens.
   const inForce = Object.fromEntries(
-    projects.map((p, i) => [p.key, (stored[i] ?? []).filter((d) => d.status === "decided" && touches(d, p.key) && !(d.scope.kind === "label" && d.scope.projectKey === undefined)).length]),
+    projects.map((p, i) => [p.key, (stored[i] ?? []).filter((d) => d.status === "decided" && touches(d, p.key)).length]),
   );
   const asked = typeof payload?.projectKey === "string" ? payload.projectKey : null;
   const project = projects.find((p) => p.key === asked) ?? firstProject(projects, inForce);

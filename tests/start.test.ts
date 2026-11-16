@@ -66,4 +66,11 @@ describe("start page", () => {
     for (const write of ["put", "addAudit(", "setRule(", "update"]) expect(body).not.toContain(write);
     expect(page).toContain('invoke<StartState>("getStart"');
   });
+
+  it("counts decisions in force as the Decisions page lists them", () => {
+    const start = resolvers.indexOf('resolver.define("getStart"');
+    const body = resolvers.slice(start, resolvers.indexOf("resolver.define(", start + 1));
+    expect(body).toContain('d.status === "decided" && touches(d, p.key)).length');
+    expect(body).not.toContain("projectKey === undefined");
+  });
 });
