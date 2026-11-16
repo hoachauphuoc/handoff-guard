@@ -258,6 +258,7 @@ const App = () => {
   const waiting = record && result ? result.binding.filter((d) => !record.acknowledged.includes(d.id) || state.stale.includes(d.id)) : [];
   const next = nextStep(state);
   const show = (...kinds: (typeof next.kind)[]) => everything || kinds.includes(next.kind);
+  const practiceShown = show("practice", "prepare") && state.exampleReadBack !== "" && (!state.isReceiver || record?.fromId === record?.toId);
   return (
     <Stack space="space.100">
       {failed}
@@ -388,7 +389,7 @@ const App = () => {
       {/* A receiver already has the real read-back form; a second box on the same screen invites answering in the wrong one. */}
       {/* A sender can try the check before choosing a receiver; its buttons stay secondary to Prepare handoff. */}
       {/* A handoff to oneself never becomes Clear, so practice is the one way left for a single account to see the check. */}
-      {show("practice", "prepare") && state.exampleReadBack !== "" && (!state.isReceiver || record?.fromId === record?.toId) && (
+      {practiceShown && (
         <Stack space="space.100">
           <Heading as="h3" size="small">
             Practice: say what you would do (read-back)
@@ -583,7 +584,8 @@ const App = () => {
               </Button>
             </>
           )}
-          {show("read_back") && protocol && <Text>{`${READ_BACK_NOTE} ${TEACH_BACK_NOTE} ${READ_BACK_LIMITS}`}</Text>}
+          {/* The practice block already says what the code reads; the same paragraph twice on one screen is noise. */}
+          {show("read_back") && protocol && <Text>{`${READ_BACK_NOTE} ${TEACH_BACK_NOTE}${practiceShown ? "" : ` ${READ_BACK_LIMITS}`}`}</Text>}
         </>
       ) : (
         <Text>

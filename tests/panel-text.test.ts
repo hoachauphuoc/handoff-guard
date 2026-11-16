@@ -71,7 +71,8 @@ describe("practice read-back", () => {
     // Hidden from a receiver, who has the real form, except after a handoff to oneself, which can never be Clear.
     expect(panel).toContain('(!state.isReceiver || record?.fromId === record?.toId)');
     expect(panel).toContain("<Text>{READ_BACK_LIMITS}</Text>");
-    expect(panel).toContain("${TEACH_BACK_NOTE} ${READ_BACK_LIMITS}");
+    // Said once: beside the real read-back only when the practice block, which says it, is not on screen.
+    expect(panel).toContain('${TEACH_BACK_NOTE}${practiceShown ? "" : ` ${READ_BACK_LIMITS}`}');
   });
 
   it("states read-back limits that match what the date reader does", async () => {
