@@ -43,8 +43,8 @@ Every write goes through `src/store.ts`. One row per kind of key; `<project>` is
 | `receipt-draft:<item>` | Typed answers Rovo drafted for the receiver | Yes, first 100 open items | Yes, first 100 open items |
 | `condition-drafts:<project>` | Conditions drafted with Rovo | Yes | Yes |
 | `settings:<project>` | The three optional rule switches | Yes | Yes |
-| `audit:<project>` | The activity list | Yes | Replaced by one entry saying the data was deleted |
+| `audit:<project>` | The activity list | Yes | Cleared; one new entry records the deletion |
 
 ## Deletion
 
-Uninstalling the app removes its Forge storage. A project administrator can also export what the app holds for a project as JSON from the Decisions page, and delete it there; the administrator types the project key to confirm. The table above says what each covers. Records on closed work items, or on open ones past the first 100 that administrator can see, stay until the app is uninstalled. Account IDs are kept in handoff records and in the activity list (the latest 300 events), and deleting one person's data on request is not supported; contact us through GitHub issues. Dismissing a proposal deletes it; it may be proposed again.
+Uninstalling the app removes its Forge storage. A project administrator can also export what the app holds for a project as JSON from the Decisions page, and delete it there; the administrator types the project key to confirm. The table above says what each covers. Records on closed work items, or on open ones past the first 100 that administrator can see, stay until the app is uninstalled. Account IDs are kept in handoff records and in the activity list (the latest 300 events), and deleting one person's data on request is not supported; ask through the repository's GitHub issues, and do not post personal data there (issues are public). Dismissing a proposal deletes it; it may be proposed again.
