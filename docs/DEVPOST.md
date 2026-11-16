@@ -1,6 +1,6 @@
 # Devpost submission draft
 
-Owner submits. Category: Apps for Software Teams. Bonus prizes: Best Agents (rovo:agent and six actions), Best app with MCP (rovo:mcp), Best apps with Teamwork Graph integration.
+Owner submits. Category: Apps for Software Teams. Bonus prizes: Best Agents (rovo:agent and eight actions), Best app with MCP (rovo:mcp), Best apps with Teamwork Graph integration.
 
 ## Tagline
 
@@ -65,11 +65,11 @@ Also (one line each; the README has the detail):
 
 ## How we built it
 
-Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Forge imports, `rovo:agent` with six actions, a `rovo:skill` ("Handoff check") that runs the rule check for other agents, `rovo:mcp`, `jira:workflowValidator`, and two saved Teamwork Graph Cypher queries called with `asUser()`. Unit tests cover every rule and principle and run with one command. Only decisions, handoff records and proposals are stored; no chat is stored.
+Forge (UI Kit, resolvers, Forge storage), a pure TypeScript rule core with no Forge imports, `rovo:agent` with eight actions, a `rovo:skill` ("Handoff check") that runs the rule check for other agents, `rovo:mcp`, `jira:workflowValidator`, and two saved Teamwork Graph Cypher queries called with `asUser()`. Unit tests cover every rule and principle and run with one command. Only decisions, handoff records and proposals are stored; no chat is stored.
 
 ## Measurement
 
-48 synthetic handoffs, labeled by a model (Muse). Agreement with Muse labels: 47 of 48 with recorded decisions, 34 of 48 with the rules alone, 12 of 48 with no check. With human-decided labels: 36 of 40 where two human experts agreed, with recorded decisions. Both figures are agreement with labels, not accuracy on real handoffs. The samples and labels are synthetic and model-written from our own specification, the same model family wrote the samples and labelled them, so the figures show that the code matches the specification, not that the specification is right.
+48 synthetic handoffs, labeled by a model (Muse). Agreement with Muse labels: 47 of 48 with recorded decisions, 34 of 48 with the rules alone, 12 of 48 with no check. With human-decided labels: 36 of 40 where two human experts agreed, with recorded decisions. Both figures are agreement with labels, not accuracy on real handoffs. The samples and labels are synthetic and model-written from our own specification, Muse wrote 38 of the 48 samples and labelled all of them (the other 10 are adversarial cases written by Claude Sonnet), so the figures show that the code matches the specification, not that the specification is right.
 
 ## Challenges
 
@@ -118,8 +118,8 @@ Seen on a live Jira Cloud site (development and production builds of this app): 
 
 ## Bonus prizes
 
-- **Best Agents.** `rovo:agent` "Handoff Guard" with six `action` modules, and a `rovo:skill` ("Handoff check") that other agents can use. The agent explains and proposes; the rule check decides.
-- **Best app with MCP.** One `rovo:mcp` module exposes the same six actions as tools to external MCP clients, run with the calling user's permissions.
+- **Best Agents.** `rovo:agent` "Handoff Guard" with eight `action` modules, including `check-condition` (counts which open work items a Jira filter would match, before anything is stored) and `draft-condition` (stores a rule as a draft that binds nothing until an administrator confirms it on the Decisions page), and a `rovo:skill` ("Handoff check") that other agents can use. The agent explains and proposes; the rule check decides.
+- **Best app with MCP.** One `rovo:mcp` module exposes the same eight actions as tools to external MCP clients, run with the calling user's permissions.
 - **Best apps with Teamwork Graph integration.** The app consumes the Teamwork Graph API: two saved Cypher queries, called as the current user, return people the work item was shared with or who are mentioned on it.
 
 ## Links
