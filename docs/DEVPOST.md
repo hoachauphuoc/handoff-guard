@@ -90,7 +90,7 @@ Then decide from the pilot whether to watch more sources for decisions or share 
 
 Use an account that is a project administrator of the Jira project. Load sample decisions, confirming, adding and superseding a decision need Jira's "Administer projects" permission. About 10 minutes on a Jira site where you are a site admin. With one account you see a refused read-back and an accepted one. Reaching Clear needs a second user as receiver: if you pick yourself, the handoff stays Blocked with "Sender and receiver are the same person", which is the rule working.
 
-**Three minutes, one account.** After steps 1 to 3 below, click **Show everything** in the panel (it otherwise shows only your next step), then type the read-back of step 5 into the box under "Practice read-back" and click **Try a read-back (practice, nothing is saved)**: it is refused, with the code's reason. Type the read-back of step 6: it "would be accepted". The practice check stores nothing and gives no verdict; steps 4 to 7 are the real handoff.
+**Three minutes, one account.** After steps 1 to 3 below, type the read-back of step 5 into the box under "Practice read-back" (it shows beside your next step; on a work item that already has a handoff, click **Show everything** first) and click **Try a read-back (practice, nothing is saved)**: it is refused, with the code's reason. Type the read-back of step 6: "Would be accepted", with no contradiction found in the dates, labels and components the code reads. The practice check stores nothing and gives no verdict; steps 4 to 7 are the real handoff.
 
 The panel can take several seconds to load the first time.
 
@@ -106,7 +106,7 @@ The panel can take several seconds to load the first time.
 Steps 9 to 11 need Rovo enabled on the site. Without Rovo the panel says so.
 
 9. Optional, Rovo: click **Explain with Rovo** in the panel, or open the Handoff Guard agent in Rovo Chat and ask "Is this work item ready to hand off?".
-10. Optional, MCP: a site admin turns the tools on in Atlassian Administration (Apps, Sites, your site, Connected apps, Handoff Guard, Tools). An MCP client then connects to `https://mcp.atlassian.com/forge/<app UUID>` and calls `check-handoff` with `issueKey`.
+10. Optional, MCP: a site admin turns the tools on in Atlassian Administration (Apps, Sites, your site, Connected apps, Handoff Guard, Tools). An MCP client then connects to `https://mcp.atlassian.com/forge/8d2f4029-5c7f-49b4-a2b7-701a0ca1c1d2` (the app id from `manifest.yml`) and calls `check-handoff` with `issueKey`.
 
 11. Optional, Rovo for a project administrator: ask the agent "Would the filter prioritee = Highest work as a rule in <your project key>?". It gives Jira's error word for word and offers `priority = Highest`; ask it to check that and draft it. The draft appears on the project's Decisions page under "Drafted with Rovo (not in force)" and binds nothing until you click **Confirm**.
 
