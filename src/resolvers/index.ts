@@ -39,6 +39,7 @@ import {
   deleteConditionDrafts,
   deleteDraft,
   deleteItemData,
+  deleteRules,
   getAudit,
   getConditionDrafts,
   getDecisions,
@@ -609,15 +610,30 @@ resolver.define("bounceAutopsy", async ({ context }): Promise<AutopsyState> => {
   return { ...autopsy(handoffs), withHandoff: held.length, capped: open.capped || held.length > AUTOPSY_CAP, notClear, days: RECENT_DAYS };
 });
 
-// Everything the app holds for one project, for a project administrator: decisions, the handoffs of the open
-// work items the administrator can see, and the activity list. Read only.
+// What the app holds for one project, for a project administrator: decisions, Rovo's condition drafts, the
+// project rules switched on, the activity list, and for each open work item the administrator can see its
+// handoff, proposals and unsigned read-back draft. Read only.
 resolver.define("exportProject", async ({ context }) => {
   const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
   await requireAdmin(projectKey);
-  const [open, decisions, activity, drafts] = await Promise.all([openItemsAsUser(projectKey), getDecisions(projectKey), getAudit(projectKey), getConditionDrafts(projectKey)]);
-  const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
-  const handoffs = open.items.flatMap((i, n) => (records[n] ? [{ key: i.item.key, record: records[n] }] : []));
-  return JSON.stringify({ project: projectKey, exportedAt: new Date().toISOString(), openItemsCapped: open.capped, decisions, drafts, handoffs, activity }, null, 2);
+  const [open, decisions, activity, drafts, rules] = await Promise.all([
+    openItemsAsUser(projectKey),
+    getDecisions(projectKey),
+    getAudit(projectKey),
+    getConditionDrafts(projectKey),
+    getRules(projectKey),
+  ]);
+  const held = await Promise.all(
+    open.items.map(async (i) => ({ key: i.item.key, record: await getRecord(i.issueId), proposals: await getProposals(i.issueId), draft: await getDraft(i.issueId) })),
+  );
+  const handoffs = held.flatMap((h) => (h.record ? [{ key: h.key, record: h.record }] : []));
+  const proposals = held.flatMap((h) => (h.proposals.length > 0 ? [{ key: h.key, proposals: h.proposals }] : []));
+  const readBackDrafts = held.flatMap((h) => (h.draft ? [{ key: h.key, draft: h.draft }] : []));
+  return JSON.stringify(
+    { project: projectKey, exportedAt: new Date().toISOString(), openItemsCapped: open.capped, rules, decisions, drafts, handoffs, proposals, readBackDrafts, activity },
+    null,
+    2,
+  );
 });
 
 // Deletes what the export above lists. The administrator types the project key, checked here on the server, so
@@ -634,6 +650,7 @@ resolver.define("deleteProjectData", async ({ context, payload }) => {
   await updateDecisions(projectKey, () => []);
   await purgeLegacyDecisions(projectKey);
   await deleteConditionDrafts(projectKey);
+  await deleteRules(projectKey);
   await resetAudit(projectKey, { at: new Date().toISOString(), who: ctx.accountId ?? "unknown", action: "data_deleted", ref: projectKey });
   return { items: open.items.length, capped: open.capped };
 });

@@ -136,7 +136,12 @@ export async function setRule(projectKey: string, rule: keyof ProjectRules, on: 
   return next;
 }
 
-const conditionDraftsKey = (projectKey: string) => `condition-drafts:${projectKey.toLowerCase()}`;
+// Used only by "Delete this project's app data": no stored rules means none are switched on.
+export async function deleteRules(projectKey: string): Promise<void> {
+  await kvs.delete(rulesKey(projectKey));
+}
+
+const conditionDraftsKey =(projectKey: string) => `condition-drafts:${projectKey.toLowerCase()}`;
 
 /** Conditions Rovo drafted for an administrator. A draft binds nothing until a person confirms it. */
 export async function getConditionDrafts(projectKey: string): Promise<ConditionDraft[]> {

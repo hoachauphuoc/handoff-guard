@@ -116,6 +116,14 @@ describe("delete project data", () => {
     expect(body.indexOf("Nothing was deleted")).toBeLessThan(body.indexOf("deleteItemData("));
     expect(body.indexOf("requireAdmin(")).toBeLessThan(body.indexOf("deleteItemData("));
   });
+
+  it("reaches every per-project key family the export lists", () => {
+    const start = resolvers.indexOf('resolver.define("deleteProjectData"');
+    const body = resolvers.slice(start, resolvers.indexOf("export const handler", start));
+    for (const call of ["deleteItemData(", "updateDecisions(", "purgeLegacyDecisions(", "deleteConditionDrafts(", "deleteRules(", "resetAudit("]) expect(body).toContain(call);
+    const exp = resolvers.slice(resolvers.indexOf('resolver.define("exportProject"'), start);
+    for (const read of ["getRules(", "getDecisions(", "getConditionDrafts(", "getAudit(", "getRecord(", "getProposals(", "getDraft("]) expect(exp).toContain(read);
+  });
 });
 
 describe("validator", () => {
