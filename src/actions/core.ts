@@ -71,7 +71,7 @@ function parse(payload: unknown, wantReceiver: boolean): Parsed {
   const p = (payload && typeof payload === "object" ? payload : {}) as Record<string, unknown>;
   const ctxKey = (p.context as { jira?: { issueKey?: unknown } } | undefined)?.jira?.issueKey;
   const raw = [p.issueKey, ctxKey].find((v) => typeof v === "string" && v.trim() !== "");
-  if (typeof raw !== "string") return { ok: false, message: "No work item key was given and the chat was not opened from a work item. Ask the user which work item." };
+  if (typeof raw !== "string") return { ok: false, message: "No work item key was given and the chat was not opened from a work item. Which work item should Handoff Guard check?" };
   const key = raw.trim().toUpperCase();
   if (!KEY.test(key)) return { ok: false, message: `"${raw.trim()}" is not a work item key.` };
   let receiver: string | null = null;
