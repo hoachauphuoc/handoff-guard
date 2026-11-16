@@ -36,6 +36,7 @@ const EMPTY_FORM = { title: "", scope: "project", scopeValue: "", constraint: "d
 
 const App = () => {
   const [form, setForm] = useState(EMPTY_FORM);
+  const [confirmRetire, setConfirmRetire] = useState<string | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [autopsy, setAutopsy] = useState<AutopsyState | null>(null);
@@ -225,7 +226,7 @@ const App = () => {
       {state.rows.map((d) => (
         <Stack key={d.id} space="space.050">
           <Text>
-            <Lozenge appearance={d.status === "decided" ? "success" : "default"}>{d.status === "decided" ? "Decided" : "Superseded"}</Lozenge> {d.title}
+            <Lozenge appearance={d.status === "decided" ? "success" : "default"}>{d.status === "decided" ? "In force" : "Replaced or retired"}</Lozenge> {d.title}
           </Text>
           <Text>{d.reach}</Text>
           {d.constraints.length === 0 && <Text>{COMMITMENT_TEXT}</Text>}
@@ -248,9 +249,14 @@ const App = () => {
             </Text>
           )}
           {d.supersededAt !== null && (
-            <Text>{`Superseded on ${d.supersededAt.slice(0, 10)}${d.supersededBy ? ` by "${d.supersededBy}"` : " by a person"}. It binds nothing.`}</Text>
+            <Text>{`${d.supersededBy ? `Replaced on ${d.supersededAt.slice(0, 10)} by "${d.supersededBy}"` : `Retired on ${d.supersededAt.slice(0, 10)} by a person`}. It binds nothing.`}</Text>
           )}
-          {d.canSupersede && <Button onClick={() => void retire(d.id)}>Supersede</Button>}
+          {d.canSupersede && (
+            // One click would end a rule for the whole project, so the first click only asks.
+            <Button onClick={() => (confirmRetire === d.id ? (setConfirmRetire(null), void retire(d.id)) : setConfirmRetire(d.id))}>
+              {confirmRetire === d.id ? "Yes, retire it: it stops binding work items" : "Retire this decision"}
+            </Button>
+          )}
           {d.impact !== null && (
             <Text>
               {d.impact.count === 0
@@ -384,7 +390,7 @@ const App = () => {
           {h.unacknowledged > 0 && <Text>{`${count(h.unacknowledged, "decision")} not acknowledged by the receiver.`}</Text>}
         </Stack>
       ))}
-      <Heading size="small">Extra checks for every handoff (optional)</Heading><Text>Each check here is off until a project administrator switches it on (releases it).</Text>
+      <Heading size="small">Extra checks for every handoff (optional)</Heading><Text>Each check here is off until a project administrator switches it on.</Text>
       {ruleError !== null && <Text>{ruleError}</Text>}
       {(
         [
@@ -398,11 +404,11 @@ const App = () => {
         return (
           <Stack key={rule} space="space.050">
             <Text>
-              <Lozenge appearance={released ? "success" : "default"}>{released ? "Released" : "Draft"}</Lozenge> {label}
+              <Lozenge appearance={released ? "success" : "default"}>{released ? "On" : "Off"}</Lozenge> {label}
               {seen && autopsy && autopsy.bounced.length > 0 ? ` (${seen.bouncedWith} of ${autopsy.bounced.length} bounced handoffs lacked this)` : ""}
             </Text>
-            {state.canManage && released && <Button isDisabled={ruleBusy} onClick={() => void setRule(rule, false)}>Retire this rule</Button>}
-            {state.canManage && !released && <Button isDisabled={ruleBusy} onClick={() => void previewRule(rule)}>See what releasing it would change</Button>}
+            {state.canManage && released && <Button isDisabled={ruleBusy} onClick={() => void setRule(rule, false)}>Switch it off</Button>}
+            {state.canManage && !released && <Button isDisabled={ruleBusy} onClick={() => void previewRule(rule)}>See what switching it on would change</Button>}
             {pending?.rule === rule && (
               <Stack space="space.050">
                 <Text>
@@ -410,16 +416,16 @@ const App = () => {
                     ? `Of ${count(pending.impact.checked, "prepared handoff")} read, none that is Clear now would need information.`
                     : `Of ${count(pending.impact.checked, "prepared handoff")} read, ${pending.impact.wouldTurn} that ${pending.impact.wouldTurn === 1 ? "is" : "are"} Clear now would need information: ${pending.impact.keys.join(", ")}.`}
                 </Text>
-                <Button appearance="primary" isDisabled={ruleBusy} onClick={() => void setRule(rule, true)}>Release this rule</Button>
-                <Button onClick={() => setPending(null)}>Keep it a draft</Button>
+                <Button appearance="primary" isDisabled={ruleBusy} onClick={() => void setRule(rule, true)}>Switch it on</Button>
+                <Button onClick={() => setPending(null)}>Keep it off</Button>
               </Stack>
             )}
           </Stack>
         );
       })}
       <Text>
-        A released rule is checked by the same rule check as everything else: a handoff that lacks it is Needs info in the panel and is
-        refused by the workflow validator. Rules come from this fixed list; code decides, and every release or retirement is written to Activity.
+        A check that is on is run by the same rule check as everything else: a handoff that lacks it is Needs info in the panel and is
+        refused by the workflow validator. Rules come from this fixed list; code decides, and every switch on or off is written to Activity.
       </Text>
       <Button onClick={() => setReports(!reports)}>{reports ? "Hide reports and history" : "Show reports and history: replay, bounced handoffs, a person leaving, activity, counts"}</Button>
       {reports && (

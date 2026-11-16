@@ -75,3 +75,11 @@ describe("tier 3: a source link", () => {
     expect(page).toContain("<Link href={d.link} openNewTab>");
   });
 });
+
+describe("decisions page words", () => {
+  it("uses plain words for switching checks and retiring a decision, and asks before retiring", () => {
+    for (const old of ['"Released" : "Draft"', ">Release this rule<", ">Supersede</Button>"]) expect(page).not.toContain(old);
+    expect(page).toContain('{released ? "On" : "Off"}');
+    expect(page).toContain('confirmRetire === d.id ? (setConfirmRetire(null), void retire(d.id)) : setConfirmRetire(d.id)');
+  });
+});
