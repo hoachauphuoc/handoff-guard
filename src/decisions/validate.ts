@@ -62,9 +62,15 @@ const bare = (s: string): string => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "
 // confirming the proposal sees the constraint's source in the quote beside it.
 function namedIn(quote: string, c: Constraint): boolean {
   const q = bare(quote);
-  if (c.kind === "dueNotAfter") return q.includes(c.date.slice(0, 4));
-  if (c.kind === "labelRequired" || c.kind === "labelForbidden") return q.includes(bare(c.label));
-  if (c.kind === "componentRequired" || c.kind === "componentForbidden") return q.includes(bare(c.component));
+  // A value that is empty once punctuation is dropped would match every quote; a single character, any word.
+  const has = (v: string): boolean => bare(v).length >= 2 && q.includes(bare(v));
+  if (c.kind === "dueNotAfter") {
+    // A date written out in the quote must be this date; a quote that gives only the year is accepted on the year.
+    const written = quote.match(/\d{4}-\d{2}-\d{2}/g);
+    return written !== null ? written.includes(c.date) : q.includes(c.date.slice(0, 4));
+  }
+  if (c.kind === "labelRequired" || c.kind === "labelForbidden") return has(c.label);
+  if (c.kind === "componentRequired" || c.kind === "componentForbidden") return has(c.component);
   return true;
 }
 

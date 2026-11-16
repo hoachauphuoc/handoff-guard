@@ -149,4 +149,12 @@ describe("constraint named in the quote", () => {
       expect(with_([c]).rejected.map((r) => r.reason)).toEqual(["constraint_not_in_quote"]);
     }
   });
+
+  it("rejects a date that differs from the ISO date written in the quote, and a value with no letters or digits", () => {
+    const iso = [{ from: "c1", text: "Launch work must ship by 2026-01-31, no later." }];
+    const run2 = (constraints: unknown[]) => validateCandidates([cand("Launch work must ship by 2026-01-31", { constraints })], iso, ctx, NOW);
+    expect(run2([{ kind: "dueNotAfter", date: "2026-01-31" }]).kept).toHaveLength(1);
+    expect(run2([{ kind: "dueNotAfter", date: "2026-12-31" }]).rejected.map((r) => r.reason)).toEqual(["constraint_not_in_quote"]);
+    expect(run2([{ kind: "componentRequired", component: "---" }]).rejected.map((r) => r.reason)).toEqual(["constraint_not_in_quote"]);
+  });
 });
