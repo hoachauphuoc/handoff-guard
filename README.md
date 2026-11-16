@@ -10,6 +10,8 @@ A Forge app for Jira. When a work item is handed to someone else, the receiver r
 
 ## Try it in 3 minutes (one account)
 
+What you will see: the Handoff Guard panel on a work item refuses a read-back that contradicts a team decision, says why, and accepts a corrected one. Four steps, one account, nothing written to Jira.
+
 Use an account that is a project administrator of the Jira project. Load sample decisions, confirming, adding and superseding a decision need Jira's "Administer projects" permission.
 
 1. Install from the installation link in the Devpost submission and open any work item. Click the apps icon under the summary ("View app actions"), then **Handoff Guard**. The panel opens on one card, "Your next step: Load the demo rules". If you cannot find the panel, open **Apps** in Jira's top bar and choose **Handoff Guard: start here**: it names the three steps and has a button for each.
@@ -18,6 +20,12 @@ Use an account that is a project administrator of the Jira project. Load sample 
 4. Change the date to `15 December 2026` and click again. You should see "Would be accepted" and "No contradiction found in the dates, labels and components the code reads."
 
 That refusal is the point of the app: the receiver restates each decision, and plain code refuses a restatement that contradicts one in ways it can detect. It does not catch every contradiction or prove understanding. The practice check stores nothing and gives no verdict. A real handoff, with a second user as receiver, reaches Clear through the same check; the 10-minute path is in `docs/DEVPOST.md`.
+
+## Install (for judges)
+
+1. Install the app on a Jira site from the installation link in the Devpost submission. The app is Jira-only: it declares no Confluence scope and no multi-app compatibility, so it installs on any single Jira site. Developers working on the app install their own build with `forge install -e development --product jira`.
+2. Open a work item, click the apps icon under the summary (tooltip "View app actions") and choose **Handoff Guard**. The panel opens on one card, "Your next step"; **Show everything** shows the rest, including a guide with three paths: "New to this project", "Handing over this work" (the default) and "Leaving the project". A step-by-step path of about 10 minutes, with the exact read-backs to type, is in `docs/DEVPOST.md` ("Testing instructions"). One account is enough to see a refusal and an accepted read-back; reaching Clear needs a second user as receiver.
+3. Teamwork Graph needs no setup from you. If it returns nothing, was not asked, or could not be read (one retry, then the app says so), the app says which, and no rule depends on it.
 
 ## Bounce autopsy and project rules
 
@@ -51,12 +59,6 @@ Without Rovo, the form on the Decisions page does all of this by hand.
 ## Accessibility
 
 Every text box in the panel has a label, the verdict and each step carry a word as well as a colour, and a refusal is shown in an error box with its reasons as text. The panel has not been tested with a screen reader or with the keyboard alone.
-
-## Install (for judges)
-
-1. Install the app on a Jira site from the installation link in the Devpost submission. The app is Jira-only: it declares no Confluence scope and no multi-app compatibility, so it installs on any single Jira site. Developers working on the app install their own build with `forge install -e development --product jira`.
-2. Open a work item, click the apps icon under the summary (tooltip "View app actions") and choose **Handoff Guard**. The panel shows a short checklist with three paths to choose from: "New to this project", "Handing over this work" (the default) and "Leaving the project". A step-by-step path of about 10 minutes, with the exact read-backs to type, is in `docs/DEVPOST.md` ("Testing instructions"). One account is enough to see a refusal and an accepted read-back; reaching Clear needs a second user as receiver.
-3. Teamwork Graph needs no setup from you. If it returns nothing, was not asked, or could not be read (one retry, then the app says so), the app says which, and no rule depends on it.
 
 ## Joining, handing over, leaving
 
