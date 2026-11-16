@@ -1,6 +1,7 @@
 ---
 name: handoff-check
 description: Check whether a Jira work item may be handed to someone, or started by an agent, against the decisions recorded for it. Use before starting, taking or picking up a work item.
+allowed-tools: check-handoff gather-handoff-context
 ---
 
 # Handoff check
