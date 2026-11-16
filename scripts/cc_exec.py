@@ -12,6 +12,7 @@ push, deploy, the key folder); this script adds nothing to it. Standard library 
 import argparse
 import json
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -32,6 +33,12 @@ TREES = REPO.parent / "cc-worktrees"
 
 def worktree(name: str) -> pathlib.Path:
     """The run's own checkout of main on branch runner/<name>; an existing one is reused for a rework round."""
+    # A name with a separator or dots could point at the main checkout, which an existing path would then be reused as.
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", name):
+        sys.exit("--name must be letters, digits, - and _ only.")
+    # A name with a separator or dots could point at the main checkout, which an existing path would then reuse.
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", name):
+        sys.exit("--name must be letters, digits, - and _ only.")
     tree = TREES / name
     if not tree.exists():
         made = subprocess.run(["git", "-C", str(REPO), "worktree", "add", "-b", f"runner/{name}", str(tree), "HEAD"], capture_output=True, text=True)
