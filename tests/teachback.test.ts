@@ -9,7 +9,7 @@ import llmSource from "../src/llm?raw";
 import resolvers from "../src/resolvers/index?raw";
 import actionsIndex from "../src/actions/index?raw";
 import manifest from "../manifest.yml?raw";
-import { EXPLAIN_BY, EXPLAIN_MAX, explainMessages, explanationNote, explanationText } from "../src/handoff/explain";
+import { EXPLAIN_BY, EXPLAIN_MAX, READBACK_TO_MODEL_MAX, explainMessages, explanationNote, explanationText } from "../src/handoff/explain";
 import { acknowledgeAll } from "../src/handoff/acknowledge";
 import { fingerprintOf } from "../src/handoff/drift";
 import { contradictions, datesIn } from "../src/handoff/teachback";
@@ -201,6 +201,13 @@ describe("model explanation", () => {
     expect(system!.content).toContain("Do not judge, do not overrule the code");
     expect(user!.content).toContain('"""Got it, I will ship by Dec 15 and skip legal review."""');
     expect(user!.content).toContain(found[0]!.reason);
+  });
+
+  it("sends at most READBACK_TO_MODEL_MAX characters of the read-back to the model", () => {
+    const long = `skip legal review ${"x".repeat(5000)}`;
+    const [, user] = explainMessages(long, found);
+    expect(user!.content).toContain(`"""${long.slice(0, READBACK_TO_MODEL_MAX)}"""`);
+    expect(user!.content.length).toBeLessThan(READBACK_TO_MODEL_MAX + 500);
   });
 
   it("reads the array-of-parts answer seen on the dev site, and caps it", () => {

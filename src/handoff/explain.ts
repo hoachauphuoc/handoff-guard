@@ -10,6 +10,8 @@ import type { Contradiction } from "./teachback";
 export const EXPLAIN_MODEL = "claude-haiku-4-5-20251001";
 export const EXPLAIN_BY = "Forge LLMs (Claude Haiku 4.5)";
 export const EXPLAIN_MAX = 300;
+/** Forge LLMs is billed to the developer with no cap, judging included; the code still checks the whole read-back. */
+export const READBACK_TO_MODEL_MAX = 2000;
 
 export type Explanation = { text: string; by: string } | { unavailable: string };
 
@@ -25,7 +27,7 @@ export function explainMessages(readBack: string, found: Contradiction[]): Messa
     {
       role: "user",
       content: [
-        `Read-back (quoted): """${readBack.trim()}"""`,
+        `Read-back (quoted): """${readBack.trim().slice(0, READBACK_TO_MODEL_MAX)}"""`,
         "Refusal reasons from the code:",
         ...found.map((c) => `- ${c.reason}`),
       ].join("\n"),
