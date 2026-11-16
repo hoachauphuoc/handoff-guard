@@ -151,6 +151,14 @@ describe("load sample decisions", () => {
   });
 });
 
+describe("remove sample decisions", () => {
+  it("sits last in the full panel, apart from the view toggles, and asks a second click first", () => {
+    const at = panel.indexOf('<SectionMessage appearance="warning" title="Remove the demo rules">');
+    expect(at).toBeGreaterThan(panel.indexOf("{everything ? SHOW_LESS : SHOW_EVERYTHING}"));
+    expect(panel).toMatch(/if \(!confirmRemove\) return setConfirmRemove\(true\);\s*setConfirmRemove\(false\);\s*return call\("removeSampleDecisions"\);/);
+  });
+});
+
 describe("delete project data", () => {
   it("checks the typed project key on the server before anything is deleted", () => {
     const start = resolvers.indexOf('resolver.define("deleteProjectData"');

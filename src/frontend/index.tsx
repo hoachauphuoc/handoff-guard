@@ -98,6 +98,7 @@ const App = () => {
   const [error, setError] = useState<string | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [confirmAgain, setConfirmAgain] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const [receipt, setReceipt] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [brief, setBrief] = useState<GatherOutput | null>(null);
@@ -678,11 +679,6 @@ const App = () => {
           </Stack>
         </SectionMessage>
       )}
-      {everything && state.hasSamples && state.canManage && state.inForceCount > 0 && (
-        <Button isDisabled={busy} onClick={() => call("removeSampleDecisions")}>
-          Remove sample decisions
-        </Button>
-      )}
       <Button onClick={() => setEverything(!everything)}>{everything ? SHOW_LESS : SHOW_EVERYTHING}</Button>
       {everything && <Button onClick={() => setToolsOpen(!toolsOpen)}>{toolsOpen ? "Hide handoff brief and Rovo tools" : "Show handoff brief and Rovo tools"}</Button>}
       {everything && toolsOpen && (
@@ -742,6 +738,22 @@ const App = () => {
       </>
       )}
       {rovoNote && <Text>{rovoNote}</Text>}
+      {/* Last, apart from the view toggles and behind a second click: one stray click would take a tester's demo rules away. */}
+      {everything && state.hasSamples && state.canManage && state.inForceCount > 0 && (
+        <SectionMessage appearance="warning" title="Remove the demo rules">
+          <Text>This removes the sample decisions from this project for everyone. Handoffs stay; nothing in Jira changes.</Text>
+          <Button
+            isDisabled={busy}
+            onClick={() => {
+              if (!confirmRemove) return setConfirmRemove(true);
+              setConfirmRemove(false);
+              return call("removeSampleDecisions");
+            }}
+          >
+            {confirmRemove ? "Yes, remove sample decisions" : "Remove sample decisions"}
+          </Button>
+        </SectionMessage>
+      )}
       <Text>Source: rule check, {count(state.decisionCount, "stored decision")} for this project.</Text>
     </Stack>
   );
