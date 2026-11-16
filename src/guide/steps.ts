@@ -90,15 +90,15 @@ export const STEPS: GuideStep[] = [
   },
   {
     id: "rovo",
-    title: "Ask Rovo to explain",
+    title: "Optional: ask Rovo to explain",
     how: "Click Explain with Rovo. Click Find decisions with Rovo to have it propose decisions from this work item's description and comments. On a site without Rovo the buttons say so, and the verdict still comes from the rule check.",
     needs: "rovo",
     done: () => null,
   },
   {
     id: "validator",
-    title: "Gate a transition with the validator",
-    how: "Jira admin: Project settings > Workflows > edit a transition > Validators > add Handoff Guard.",
+    title: "Optional: hold a status change until Clear",
+    how: "Jira admin: Project settings > Workflows > edit a transition (a move between two statuses) > Validators > add Handoff Guard. Jira then refuses that move until the handoff is Clear.",
     needs: "admin",
     done: () => null,
   },
