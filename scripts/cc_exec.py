@@ -5,7 +5,7 @@ this launcher always pairs --yolo with a new worktree (-w): the run can touch on
 reads its diff before anything reaches the main checkout. The brief says what must not be done (commit,
 push, deploy, the key folder); this script adds nothing to it. Standard library only.
 
-  python scripts/cc_exec.py --brief brief.md --name <worktree> [--model <id>] [--max-turns 40] [--timeout 900]
+  python scripts/cc_exec.py --brief brief.md --name <worktree> [--max-turns 40] [--timeout 900]
 """
 import argparse
 import json
@@ -15,9 +15,10 @@ import subprocess
 import sys
 import time
 
-# A cheap default; any id from `commandcode --list-models` can be passed instead.
-DEFAULT_MODEL = "deepseek/deepseek-v4.1-flash"
 REPO = pathlib.Path(__file__).resolve().parent.parent
+# The owner's rule: runners use only Muse Spark contributor, and its id comes only from scripts/models.json.
+# Command Code names the same model under its maker.
+MODEL = "meta/" + json.loads((REPO / "scripts" / "models.json").read_text(encoding="utf-8"))["muse"]["model"]
 
 
 def worktree_of(name: str) -> pathlib.Path | None:
@@ -33,7 +34,6 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--brief", required=True)
     ap.add_argument("--name", required=True, help="worktree name; the same name continues in the same worktree")
-    ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--max-turns", type=int, default=40)
     ap.add_argument("--timeout", type=int, default=900, help="seconds before Command Code is stopped")
     a = ap.parse_args()
@@ -41,7 +41,7 @@ def main() -> None:
     if cc is None:
         sys.exit("Command Code (`commandcode`) is not on PATH.")
     brief = pathlib.Path(a.brief).read_text(encoding="utf-8")
-    cmd = [cc, "-p", brief, "-w", a.name, "--yolo", "--max-turns", str(a.max_turns), "-m", a.model, "--output-format", "json"]
+    cmd = [cc, "-p", brief, "-w", a.name, "--yolo", "--max-turns", str(a.max_turns), "-m", MODEL, "--output-format", "json"]
     started = time.time()
     proc = subprocess.Popen(cmd, cwd=REPO, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace")
     try:
@@ -69,7 +69,7 @@ def main() -> None:
         print(f"worktree: {tree}\n{status or '(no changes)'}")
     if err:
         sys.stderr.write(err[-3000:])
-    print(f"\ncommandcode: exit {code}{' (timed out)' if code == 124 else ''}, {time.time() - started:.0f}s, model {a.model}", file=sys.stderr)
+    print(f"\ncommandcode: exit {code}{' (timed out)' if code == 124 else ''}, {time.time() - started:.0f}s, model {MODEL}", file=sys.stderr)
     sys.exit(code)
 
 
