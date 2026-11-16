@@ -8,7 +8,7 @@ For software teams whose Jira work items change owner while the work is still op
 
 A Forge app for Jira. When a work item is handed to someone else, the receiver restates each recorded decision that binds it, and plain code refuses a restatement that contradicts one in ways it can detect, for example a date after a recorded limit or a required label described as skipped. It does not catch every contradiction or prove understanding. Rules also check what is missing from the work item. The verdict (Clear, Needs info, Blocked) always comes from plain code (`checkHandoff()`); Rovo only explains it and proposes decisions that a person must confirm.
 
-## Try it in 3 minutes (one account)
+## Try it in 3 minutes (one account: the refusal; Clear needs a second account)
 
 What you will see: the Handoff Guard panel on a work item refuses a read-back that contradicts a team decision, says why, and accepts a corrected one. Four steps, one account, nothing written to Jira.
 

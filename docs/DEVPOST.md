@@ -15,7 +15,7 @@ A task is handed over on Friday. The team decided it ships by the end of the yea
 - **A gate in the workflow.** Where a Jira admin adds the validator, the transition goes through only when the handoff is Clear.
 - **Decisions that keep each other honest, and a record of what went wrong.** A new decision that contradicts one in force is refused unless it supersedes the older one; if the work item changes after the receiver agreed, the acknowledgement goes stale; and handoffs that bounced back are counted with what they lacked, so a project administrator can turn a lack into a rule.
 
-Try it with one account in three minutes: "Testing instructions" below. Everything else the app does is under "What it does".
+With one account, three minutes show a read-back refused and then accepted; a Clear verdict needs a second account as receiver (steps 4-6 of "Testing instructions" below). Everything else the app does is under "What it does".
 
 ## Who it is for
 
