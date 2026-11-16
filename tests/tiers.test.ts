@@ -88,4 +88,8 @@ describe("decisions page: replace and retire", () => {
   it("says replace or retire on its buttons and lines, not supersede", () => {
     for (const s of ["Save and supersede", "Confirm and supersede", "only they can supersede", "Supersede one of them", "they can\n        supersede."]) expect(page).not.toContain(s);
   });
+
+  it("says whose list Leaving the project shows before a person is picked", () => {
+    expect(page).toContain("{!leavingPicked && <Text>Showing what you hold. Pick a person to see theirs.</Text>}");
+  });
 });

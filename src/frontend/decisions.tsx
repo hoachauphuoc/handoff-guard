@@ -37,6 +37,7 @@ const EMPTY_FORM = { title: "", scope: "project", scopeValue: "", constraint: "d
 const App = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [confirmRetire, setConfirmRetire] = useState<string | null>(null);
+  const [leavingPicked, setLeavingPicked] = useState(false);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [autopsy, setAutopsy] = useState<AutopsyState | null>(null);
@@ -498,7 +499,13 @@ const App = () => {
         Everything a person still holds in this project: their open work items, handoffs they have not acknowledged, and decisions only they can
         retire.
       </Text>
-      <UserPicker label="Person" name="leaving-person" onChange={(u: { id: string } | null | undefined) => void loadLeaving(u?.id)} />
+      <UserPicker label="Person" name="leaving-person" onChange={(u: { id: string } | null | undefined) => {
+          setLeavingPicked(Boolean(u?.id));
+          void loadLeaving(u?.id);
+        }}
+      />
+      {/* Before a person is picked the list is the viewer's own; say so, or it reads as nobody's. */}
+      {!leavingPicked && <Text>Showing what you hold. Pick a person to see theirs.</Text>}
       {leavingError !== null && <Text>{leavingError}</Text>}
       {leaving === null && leavingError === null && <Text>Reading what this person holds…</Text>}
       {leaving !== null && (
