@@ -22,7 +22,7 @@ Try it with one account in three minutes: "Testing instructions" below. Everythi
 Software teams whose Jira work items change owner while the work is still open: release work passed between engineers, on-call rotation, cover for someone on leave. The buyer we have in mind is an engineering manager or release owner.
 
 - **What it costs a team to start:** a project administrator records the decisions (by hand on the Decisions page, or by confirming what Rovo proposes from text the team already wrote), and a Jira admin adds the validator to the handoff transition. Senders and receivers then work in the panel. Nothing here has been timed with a real team yet.
-- **Who would pay (a hypothesis):** see "What's next". No customer has been asked about price.
+- **Who would pay (a hypothesis):** see "What's next". No customer has been asked about price, and no one outside this project has used the app yet: the outside user test (`docs/USER-TEST.md`) has not been run.
 
 ## The problem
 
