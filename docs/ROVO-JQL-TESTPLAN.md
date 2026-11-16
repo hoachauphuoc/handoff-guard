@@ -270,5 +270,8 @@ Open: F13 (prompt: when the rule is about anything other than the one work item'
 |---|---|
 | N1 "which rules are in force, how many break each" (51 open items) | Pass: answer in about 10 seconds; "0 conditions in force, counted over 51 open work items of MOBL." |
 | D14 three rules in one message | Pass: three separate checks with their own JQL and counts (2/49, 17/34, 51/0), nothing stored, then asks whether to save them as drafts |
+| D7 eleven drafts in one message (run on the **production** agent, 3.32.0, by mistake) | Fail: the agent said 11 drafts were stored; the Decisions page held 5 (T1, T2, T8, T10, T11). The agent called `draft-condition` in parallel and the writes to one storage key replaced each other; the cap was never reached. Fix at 10.59.0: the action reads the drafts back and refuses when its own draft is missing, and the prompt tells the agent to draft one at a time. Not rerun on the site yet. The 5 drafts were discarded. |
 
-Not run: D2, C4, F16, D12, S3 to S6, R8 (second account, second project, bigger project or MCP client needed); E2 (validator on a transition); E4; D7 (ten drafts; the cap is covered by a unit test); proposals left from ROVO-TESTS row 7 on MOBL-53.
+Sweep part 3 ran on the production agent: of the two agents named Handoff Guard in the picker, the first is development and the second is production. N1 and D14 read the same on both.
+
+Not run: D2, C4, F16, D12, S3 to S6, R8 (second account, second project, bigger project or MCP client needed); E2 (validator on a transition); E4; D7 rerun at 10.59.0; proposals left from ROVO-TESTS row 7 on MOBL-53.
