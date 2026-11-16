@@ -34,8 +34,8 @@ export async function proposeDecisionsAction(payload: unknown) {
   return runProposeDecisions(payload, plain);
 }
 
-export async function draftReceiptAction(payload: unknown) {
-  return runDraftReceipt(payload, plain);
+export async function draftReceiptAction(payload: unknown, context: Ctx) {
+  return runDraftReceipt(payload, callerAccountId(payload, context), plain);
 }
 
 export async function gatherHandoffContextAction(payload: unknown, context: Ctx) {

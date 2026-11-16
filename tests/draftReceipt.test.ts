@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { runDraftReceipt, runListBindingDecisions, type Deps } from "../src/actions/core";
+import type { HandoffRecord } from "../src/handoff/types";
 import type { Decision, WorkItem } from "../src/rules/types";
 
 const item: WorkItem = { key: "OPS-1", projectKey: "OPS", summary: "Launch", description: "Body", labels: [], components: [], dueDate: "2026-12-10", assigneeId: "to" };
@@ -16,12 +17,14 @@ const never = async (): Promise<never> => {
 };
 
 // Every store the action must not touch throws, so a draft that reached a record or a proposal would fail the test.
+// The record is read only to know who the receiver is.
+const record = { toId: "to" } as HandoffRecord;
 function setup(decisions: Decision[] = [decision]) {
   const drafts: { issueId: string; draft: Record<string, string> }[] = [];
   const deps: Deps = {
     readItem: async () => ({ item, issueId: "10001" }),
     getDecisions: async () => decisions,
-    getRecord: never,
+    getRecord: async () => record,
     readSource: never,
     getProposals: never,
     putProposals: never,
@@ -31,7 +34,7 @@ function setup(decisions: Decision[] = [decision]) {
   };
   return { deps, drafts };
 }
-const call = (answers: unknown, s = setup()) => runDraftReceipt({ issueKey: "OPS-1", answers }, s.deps).then((out) => ({ out, drafts: s.drafts }));
+const call = (answers: unknown, s = setup()) => runDraftReceipt({ issueKey: "OPS-1", answers }, "to", s.deps).then((out) => ({ out, drafts: s.drafts }));
 
 describe("draft-receipt", () => {
   it("saves an accepted draft for the receiver to sign and says it acknowledges nothing", async () => {
@@ -64,7 +67,19 @@ describe("draft-receipt", () => {
     expect(none.drafts).toEqual([]);
     const s = setup();
     const { putDraft: _removed, ...withoutStore } = s.deps;
-    expect(await runDraftReceipt({ issueKey: "OPS-1", answers: JSON.stringify({ "d1:0": "2026-12-15" }) }, withoutStore)).toMatchObject({ ok: false });
+    expect(await runDraftReceipt({ issueKey: "OPS-1", answers: JSON.stringify({ "d1:0": "2026-12-15" }) }, "to", withoutStore)).toMatchObject({ ok: false });
+  });
+});
+
+describe("draft-receipt is the receiver's", () => {
+  const answers = JSON.stringify({ "d1:0": "2026-12-15" });
+  it("refuses anyone but the receiver, and a work item with no prepared handoff, and saves nothing", async () => {
+    for (const [who, rec] of [["someone", record], [null, record], ["to", null]] as const) {
+      const s = setup();
+      const out = await runDraftReceipt({ issueKey: "OPS-1", answers }, who, { ...s.deps, getRecord: async () => rec });
+      expect(out).toMatchObject({ ok: false, error: { code: "not_allowed" } });
+      expect(s.drafts).toEqual([]);
+    }
   });
 });
 

@@ -202,7 +202,7 @@ const ANSWERS_SHAPE = 'answers must be a JSON object, as a string, from slot key
 
 // GET for the same reason as propose-decisions. The only write is a draft of typed values in app storage. A
 // draft acknowledges nothing: the receiver has to sign it in the panel, where the same check runs again.
-export async function runDraftReceipt(payload: unknown, deps: Deps): Promise<DraftReceiptOutput> {
+export async function runDraftReceipt(payload: unknown, accountId: string | null, deps: Deps): Promise<DraftReceiptOutput> {
   const schema = SCHEMA_VERSION.draft;
   const parsed = parse(payload, false);
   if (!parsed.ok) return failure(schema, null, null, parsed.message);
@@ -218,6 +218,13 @@ export async function runDraftReceipt(payload: unknown, deps: Deps): Promise<Dra
   if (typeof answers !== "object" || answers === null || Array.isArray(answers)) return failure(schema, key, null, ANSWERS_SHAPE);
   try {
     const { item, issueId } = await deps.readItem(key);
+    // The draft is the receiver's answers, so only the receiver's own chat may write it; anyone else who can
+    // read the work item would otherwise overwrite what the receiver is about to sign.
+    const record = await deps.getRecord(issueId);
+    if (accountId === null || record === null || record.toId !== accountId) {
+      const message = `Only the receiver of the handoff prepared on ${key} can save a draft of its answers. Nothing was saved.`;
+      return { schema, ok: false, source: "rules", issueKey: key, error: { code: "not_allowed", message }, quote: `Handoff Guard did not do this: ${message}` };
+    }
     const binding = bindingDecisions(await deps.getDecisions(item.projectKey), item);
     const slots = slotsFor(binding);
     // Typed values only, and only for slots that exist: nothing else an agent sends is kept.
