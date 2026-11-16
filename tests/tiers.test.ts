@@ -83,3 +83,9 @@ describe("decisions page words", () => {
     expect(page).toContain('confirmRetire === d.id ? (setConfirmRetire(null), void retire(d.id)) : setConfirmRetire(d.id)');
   });
 });
+
+describe("decisions page: replace and retire", () => {
+  it("says replace or retire on its buttons and lines, not supersede", () => {
+    for (const s of ["Save and supersede", "Confirm and supersede", "only they can supersede", "Supersede one of them", "they can\n        supersede."]) expect(page).not.toContain(s);
+  });
+});

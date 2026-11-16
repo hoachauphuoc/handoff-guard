@@ -284,7 +284,7 @@ const App = () => {
               {state.canManage && (
                 <Inline space="space.100">
                   <Button appearance="primary" isDisabled={draftBusy} onClick={() => void onDraft("confirmConditionDraft", d.id)}>
-                    {d.supersedes ? `Confirm and supersede "${d.supersedes.title}"` : "Confirm"}
+                    {d.supersedes ? `Confirm and replace "${d.supersedes.title}"` : "Confirm"}
                   </Button>
                   <Button isDisabled={draftBusy} onClick={() => void onDraft("discardConditionDraft", d.id)}>
                     Discard
@@ -301,7 +301,7 @@ const App = () => {
         {state.clashes.length > 0 && (
           <SectionMessage appearance="warning" title="Decisions in force that say opposite things">
             {state.clashes.map((c, i) => (
-              <Text key={i}>{`"${c.a}" and "${c.b}" bind the same work and cannot both be met. Supersede one of them above.`}</Text>
+              <Text key={i}>{`"${c.a}" and "${c.b}" bind the same work and cannot both be met. Retire one of them above.`}</Text>
             ))}
           </SectionMessage>
         )}
@@ -368,10 +368,10 @@ const App = () => {
               </Text>
               {preview.unchecked > 0 && <Text>{`Jira could not answer the filter for ${count(preview.unchecked, "open work item")}; they are not counted, and their handoffs wait until Jira answers.`}</Text>}
               {preview.clash.length > 0 && (
-            <Text>{`It clashes with ${preview.clash.map((t) => `"${t}"`).join(", ")}, in force for the same work. Both cannot be in force, so saving it supersedes the older one.`}</Text>
+            <Text>{`It clashes with ${preview.clash.map((t) => `"${t}"`).join(", ")}, in force for the same work. Both cannot be in force, so saving it retires the older one and this one replaces it.`}</Text>
           )}
           <Button onClick={() => void saveForm(preview.clash.length > 0)}>
-            {preview.clash.length > 0 ? `Save and supersede ${preview.clash.map((t) => `"${t}"`).join(", ")}` : "Save decision"}
+            {preview.clash.length > 0 ? `Save and replace ${preview.clash.map((t) => `"${t}"`).join(", ")}` : "Save decision"}
           </Button>
             </Stack>
           )}
@@ -496,7 +496,7 @@ const App = () => {
       <Heading size="small">Leaving the project</Heading>
       <Text>
         Everything a person still holds in this project: their open work items, handoffs they have not acknowledged, and decisions only they can
-        supersede.
+        retire.
       </Text>
       <UserPicker label="Person" name="leaving-person" onChange={(u: { id: string } | null | undefined) => void loadLeaving(u?.id)} />
       {leavingError !== null && <Text>{leavingError}</Text>}
@@ -529,13 +529,13 @@ const App = () => {
               <Text>{`${count(t.waiting, "decision")} to acknowledge with a read-back on the work item.`}</Text>
             </Stack>
           ))}
-          <Heading size="small">Decisions only they can supersede</Heading>
+          <Heading size="small">Decisions only they can retire</Heading>
           {leaving.decisions.length === 0 && <Text>None.</Text>}
           {leaving.decisions.map((d) => (
             <Stack key={d.id} space="space.050">
               <Text>{d.title}</Text>
               <Text>{d.reach}</Text>
-              <Text>Only they confirmed it, so only they can supersede it, from the decisions listed above. Ask them before they leave, or ask a teammate to record a replacement.</Text>
+              <Text>Only they confirmed it, so only they can retire it, from the decisions listed above. Ask them before they leave, or ask a teammate to record a replacement.</Text>
             </Stack>
           ))}
         </>
