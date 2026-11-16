@@ -83,6 +83,11 @@ describe("buildDecisionsPage", () => {
     expect(page.rows[1]?.impact).toBeNull();
     expect(page).toMatchObject({ scanned: 2, capped: true });
   });
+
+  it("gives a commitment no count, since nothing on a work item can contradict it", () => {
+    const page = buildDecisionsPage("OPS", [decision({ constraints: [] })], [{ item: item("OPS-1"), record: null }], false, NOW, "viewer", true);
+    expect(page.rows[0]?.impact).toBeNull();
+  });
 });
 
 describe("buildDecisionsPage label scopes", () => {

@@ -363,7 +363,9 @@ const App = () => {
           {preview !== null && (
             <Stack space="space.050">
               <Text>
-                {preview.count === 0
+                {form.constraint === "commitment"
+                  ? "A work item cannot contradict a commitment: the receiver of each handoff it applies to confirms it by name."
+                  : preview.count === 0
                   ? `No open work item contradicts it, among ${count(preview.scanned, "open work item")}${preview.capped ? " (list cut at 100)" : ""}.`
                   : `${count(preview.count, "open work item")} would contradict it: ${preview.keys.join(", ")}${preview.count > preview.keys.length ? ", …" : ""}.`}
               </Text>

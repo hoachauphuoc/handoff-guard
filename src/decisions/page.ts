@@ -70,7 +70,8 @@ export function buildDecisionsPage(
   const rows = decisions
     .filter((d) => touches(d, projectKey))
     .map((d): DecisionRow => {
-      const hit = d.status === "decided" ? impactOf(d, items) : null;
+      // A commitment has nothing on the work item to contradict, so a count of zero would say nothing true.
+      const hit = d.status === "decided" && d.constraints.length > 0 ? impactOf(d, items) : null;
       return {
         id: d.id,
         title: d.title,
