@@ -348,6 +348,8 @@ const App = () => {
           {record ? (confirmAgain ? "Yes, prepare again" : "Prepare again") : "Prepare handoff"}
         </Button>
       )}
+      {/* A first click that only asks must be undoable without reloading the page. */}
+      {show("prepare") && canPick && confirmAgain && <Button onClick={() => setConfirmAgain(false)}>Cancel</Button>}
       {everything && (
         <Text>
           {PATH_NAMES[path]}: {guide.doneCount} of {guide.total} steps done{guide.optional > 0 ? `, plus ${guide.optional} optional` : ""}.
@@ -755,6 +757,7 @@ const App = () => {
           >
             {confirmRemove ? "Yes, remove sample decisions" : "Remove sample decisions"}
           </Button>
+          {confirmRemove && <Button onClick={() => setConfirmRemove(false)}>Cancel</Button>}
         </SectionMessage>
       )}
       <Text>Source: rule check, {count(state.decisionCount, "stored decision")} for this project.</Text>

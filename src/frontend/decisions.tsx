@@ -257,6 +257,7 @@ const App = () => {
               {confirmRetire === d.id ? "Yes, retire it: it stops binding work items" : "Retire this decision"}
             </Button>
           )}
+          {d.canSupersede && confirmRetire === d.id && <Button onClick={() => setConfirmRetire(null)}>Cancel</Button>}
           {d.impact !== null && (
             <Text>
               {d.impact.count === 0

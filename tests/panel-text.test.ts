@@ -212,3 +212,12 @@ describe("typed receipt", () => {
     expect(panel).toContain("Acknowledge all with these answers");
   });
 });
+
+describe("two-click buttons", () => {
+  it("offer a Cancel after the first click, so nothing needs a page reload to undo", async () => {
+    const { default: page } = await import("../src/frontend/decisions.tsx?raw");
+    expect(panel).toContain("confirmAgain && <Button onClick={() => setConfirmAgain(false)}>Cancel</Button>");
+    expect(panel).toContain("{confirmRemove && <Button onClick={() => setConfirmRemove(false)}>Cancel</Button>}");
+    expect(page).toContain("confirmRetire === d.id && <Button onClick={() => setConfirmRetire(null)}>Cancel</Button>");
+  });
+});
