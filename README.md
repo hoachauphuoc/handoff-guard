@@ -176,7 +176,8 @@ See `docs/PRIVACY.md` and `docs/SECURITY.md`.
 ## For developers
 
 - TypeScript on Forge (UI Kit), tests with vitest. `src/rules/` is the rule core: pure, no Forge imports, no network, no clock (time is passed in); `tests/boundaries.test.ts` keeps it so.
-- `npm ci`, then `npm run typecheck`, `npm test` and `npm run measure`. On Windows, `powershell -File scripts/check.ps1` runs all of them plus `forge lint` and the script tests; CI (`.github/workflows/check.yml`) runs the same without `forge lint`.
+- `npm ci`, then `npm run typecheck`, `npm test` and `npm run measure`. On Windows, `powershell -File scripts/check.ps1` runs all of them plus `forge lint` and the script tests; CI (`.github/workflows/check.yml`) runs the same without `forge lint`, which needs a Forge login, so a manifest error is caught only by `check.ps1` locally.
+- Layout: UI Kit panels in `src/frontend/`; their server side in `src/resolvers/index.ts`; the Rovo and MCP actions in `src/actions/`; both call the rule core in `src/rules/` (`checkHandoff()`), with the Jira reads in `src/jira.ts` and the workflow validators in `src/validator.ts`.
 - Every storage write goes through `src/store.ts`; the keys are listed in `docs/PRIVACY.md`. The docs are indexed in `docs/README.md`, the data in `data/README.md`.
 
 ## License
