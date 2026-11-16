@@ -362,7 +362,8 @@ const App = () => {
       {everything && open && <Text>{GUIDE_SOURCE}</Text>}
       {/* A receiver already has the real read-back form; a second box on the same screen invites answering in the wrong one. */}
       {/* A sender can try the check before choosing a receiver; its buttons stay secondary to Prepare handoff. */}
-      {show("practice", "prepare") && state.exampleReadBack !== "" && !state.isReceiver && (
+      {/* A handoff to oneself never becomes Clear, so practice is the one way left for a single account to see the check. */}
+      {show("practice", "prepare") && state.exampleReadBack !== "" && (!state.isReceiver || record?.fromId === record?.toId) && (
         <Stack space="space.100">
           <Heading as="h3" size="small">
             Practice: say what you would do (read-back)

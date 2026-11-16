@@ -68,6 +68,8 @@ describe("practice read-back", () => {
 
   it("is offered to a sender whose next step is to prepare, with what the code does not read", () => {
     expect(panel).toContain('show("practice", "prepare") && state.exampleReadBack !== ""');
+    // Hidden from a receiver, who has the real form, except after a handoff to oneself, which can never be Clear.
+    expect(panel).toContain('(!state.isReceiver || record?.fromId === record?.toId)');
     expect(panel).toContain("<Text>{READ_BACK_LIMITS}</Text>");
     expect(panel).toContain("${TEACH_BACK_NOTE} ${READ_BACK_LIMITS}");
   });

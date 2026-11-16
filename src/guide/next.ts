@@ -28,7 +28,7 @@ export function nextStep(s: PanelState): NextStep {
   if (record && result) {
     // A handoff to oneself can never be Clear, and "wait for the receiver" would leave that person waiting for themself.
     if (s.canPrepare && result.findings.some((f) => f.rule === "same_person")) {
-      return { kind: "prepare", title: "Pick another receiver", how: "This work was handed to you by yourself, which can never be Clear. Pick the person who takes over, then click Prepare again. A real handoff needs a second person." };
+      return { kind: "prepare", title: "Pick another receiver", how: "This work was handed to you by yourself, which can never be Clear. Pick the person who takes over, then click Prepare again. A real handoff needs a second person; alone, try the practice read-back below." };
     }
     if (s.isReceiver && waitingFor(s).length > 0) {
       return { kind: "read_back", title: "Say what you will do", how: "This work was handed to you. Say in your own words what you will do about each rule below, then click Acknowledge all with this read-back; one that breaks a rule is refused." };
