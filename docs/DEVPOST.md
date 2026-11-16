@@ -123,7 +123,7 @@ Not covered, by design or for now:
 
 ## Bonus prizes
 
-- **Best Agents.** `rovo:agent` "Handoff Guard" with eight `action` modules, including `check-condition` (counts which open work items a Jira filter would match, before anything is stored) and `draft-condition` (stores a rule as a draft that binds nothing until an administrator confirms it on the Decisions page), and a `rovo:skill` ("handoff-check") that the agent lists and that may call only `check-handoff` and `gather-handoff-context`. The agent explains and proposes; the rule check decides.
+- **Best Agents.** `rovo:agent` "Handoff Guard" with eight `action` modules, including `check-condition` (counts which open work items a Jira filter would match, before anything is stored) and `draft-condition` (stores a rule as a draft that binds nothing until an administrator confirms it on the Decisions page), and a `rovo:skill` ("handoff-check") that the agent lists and that may call only `check-handoff` and `gather-handoff-context` (seen in chat on development, 2026-11-16: "Start work on TD-1." began with the rule check's quote and declined to start). The agent explains and proposes; the rule check decides.
 - **Best app with MCP.** One `rovo:mcp` module exposes the same eight actions as tools to external MCP clients, run with the calling user's permissions. A live call from an MCP client is not logged yet (see "Not seen").
 - **Best apps with Teamwork Graph integration.** The app consumes the Teamwork Graph API: two saved Cypher queries, called as the current user, return people the work item was shared with or who are mentioned on it.
 
