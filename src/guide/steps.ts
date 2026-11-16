@@ -40,7 +40,8 @@ export const PRACTICE_NONE =
 export const PRACTICE_READBACK_HOW =
   "Try it alone: say what you would do about each decision that binds this work item, naming it by its title. A read-back that contradicts a decision, such as a later date, is refused.";
 export const PRACTICE_READBACK_BUTTON = "Try a read-back (practice, nothing is saved)";
-export const PRACTICE_READBACK_ACCEPTED = "This read-back would be accepted. Practice only: nothing is saved and there is no verdict. In a real handoff the receiver's read-back gets this same check.";
+export const PRACTICE_READBACK_ACCEPTED =
+  "No contradiction found in the dates, labels and components the code reads. Practice only: nothing is saved and there is no verdict. In a real handoff the receiver's read-back gets this same check.";
 export const PRACTICE_READBACK_REFUSED = "This read-back would be refused:";
 
 export const STEPS: GuideStep[] = [

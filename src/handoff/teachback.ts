@@ -225,3 +225,6 @@ export function contradictions(readBack: string, binding: Decision[], fromIso: s
 }
 
 export const TEACH_BACK_NOTE = "A read-back that contradicts a decision is refused: a later date, a required label or component said to be skipped, or a forbidden one said to be added.";
+// Said beside every read-back box, so an accepted answer is not taken as proof it was understood.
+export const READ_BACK_LIMITS =
+  'What the code reads: a day ("15 January 2027", "2027-01-15") or a month and year after a word such as "by" ("by March 2027"), and label and component names. "In 2027", "Q1 2027" or "next sprint" are not read, and a Jira filter is not compared with the text.';

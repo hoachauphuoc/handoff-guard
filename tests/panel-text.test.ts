@@ -52,9 +52,23 @@ describe("practice read-back", () => {
   it("defines the practice read-back strings in the guide", () => {
     expect(stepsRaw).toContain('PRACTICE_READBACK_BUTTON = "Try a read-back (practice, nothing is saved)"');
     expect(stepsRaw).toContain(
-      `PRACTICE_READBACK_ACCEPTED = "This read-back would be accepted. Practice only: nothing is saved and there is no verdict. In a real handoff the receiver's read-back gets this same check."`,
+      `"No contradiction found in the dates, labels and components the code reads. Practice only: nothing is saved and there is no verdict. In a real handoff the receiver's read-back gets this same check."`,
     );
     expect(stepsRaw).toContain('PRACTICE_READBACK_REFUSED = "This read-back would be refused:"');
+  });
+
+  it("is offered to a sender whose next step is to prepare, with what the code does not read", () => {
+    expect(panel).toContain('show("practice", "prepare") && state.exampleReadBack !== ""');
+    expect(panel).toContain("<Text>{READ_BACK_LIMITS}</Text>");
+    expect(panel).toContain("${TEACH_BACK_NOTE} ${READ_BACK_LIMITS}");
+  });
+
+  it("states read-back limits that match what the date reader does", async () => {
+    const { datesIn, READ_BACK_LIMITS } = await import("../src/handoff/teachback");
+    expect(READ_BACK_LIMITS).toContain('"Q1 2027"');
+    expect(datesIn("I will ship by March 2027", "2026-11-16", 2026)).toEqual(["2027-03-01"]);
+    expect(datesIn("I will ship on 15 January 2027", "2026-11-16", 2026)).toEqual(["2027-01-15"]);
+    expect(datesIn("I will ship in 2027, Q1 2027 or next sprint", "2026-11-16", 2026)).toEqual([]);
   });
 
   it("imports the practice strings in the panel", () => {

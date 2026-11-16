@@ -14,7 +14,7 @@ import { HINTS } from "../guide/hints";
 import { nextStep, SHOW_EVERYTHING, SHOW_LESS } from "../guide/next";
 import { BEFORE_READ_BACK, CONTINGENCY_MAX, READ_BACK_MAX, READ_BACK_MIN, READ_BACK_NOTE } from "../handoff/ipass";
 import { explanationNote, type Explanation } from "../handoff/explain";
-import { TEACH_BACK_NOTE } from "../handoff/teachback";
+import { READ_BACK_LIMITS, TEACH_BACK_NOTE } from "../handoff/teachback";
 import type { Verdict } from "../rules/types";
 
 const LOOK: Record<Verdict, { text: string; appearance: "success" | "moved" | "removed" }> = {
@@ -299,12 +299,14 @@ const App = () => {
         ))}
       {everything && open && <Text>{GUIDE_SOURCE}</Text>}
       {/* A receiver already has the real read-back form; a second box on the same screen invites answering in the wrong one. */}
-      {show("practice") && state.exampleReadBack !== "" && !state.isReceiver && (
+      {/* A sender can try the check before choosing a receiver; its buttons stay secondary to Prepare handoff. */}
+      {show("practice", "prepare") && state.exampleReadBack !== "" && !state.isReceiver && (
         <Stack space="space.100">
           <Heading as="h3" size="small">
             Practice read-back
           </Heading>
           <Text>{PRACTICE_READBACK_HOW}</Text>
+          <Text>{READ_BACK_LIMITS}</Text>
           <Label labelFor="practiceReadBack">Your practice read-back</Label>
           <TextArea id="practiceReadBack" name="practiceReadBack" value={practiceText} onChange={(e) => setPracticeText(e.target.value)} />
           <Button isDisabled={busy} onClick={() => setPracticeText(state.exampleReadBack)}>
@@ -505,7 +507,7 @@ const App = () => {
               </Button>
             </>
           )}
-          {show("read_back") && protocol && <Text>{`${READ_BACK_NOTE} ${TEACH_BACK_NOTE}`}</Text>}
+          {show("read_back") && protocol && <Text>{`${READ_BACK_NOTE} ${TEACH_BACK_NOTE} ${READ_BACK_LIMITS}`}</Text>}
         </>
       ) : (
         <Text>
