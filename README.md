@@ -168,6 +168,7 @@ All of them:
 - A Jira filter decision is evaluated by Jira: as the viewer in the panel, the Rovo actions and the counts, and as the app in the workflow validator, so results can differ where permissions differ. The validator checks the stored work item, not fields changed on the transition screen. At most 5 filters per project are evaluated; the rest read as not checked. Replay on a date evaluates a filter as of now.
 - Teach-back has no contradiction pattern for a filter or a commitment: the receiver addresses them by title, and code cannot compare prose with JQL.
 - Rovo writes the filter and can write a wrong one. The counts and keys come from Jira, are shown before anything is stored, and a person confirms; the Rovo counts cover only the first 100 open work items and say so.
+- A label decision stored before labels carried a project (only on old development data) still binds work items but is not counted in the panel's "decisions in force".
 
 ## Privacy and security
 
@@ -176,7 +177,7 @@ See `docs/PRIVACY.md` and `docs/SECURITY.md`.
 ## For developers
 
 - TypeScript on Forge (UI Kit), tests with vitest. `src/rules/` is the rule core: pure, no Forge imports, no network, no clock (time is passed in); `tests/boundaries.test.ts` keeps it so.
-- `npm ci`, then `npm run typecheck`, `npm test` and `npm run measure`. On Windows, `powershell -File scripts/check.ps1` runs all of them plus `forge lint` and the script tests; CI (`.github/workflows/check.yml`) runs the same without `forge lint`, which needs a Forge login, so a manifest error is caught only by `check.ps1` locally.
+- Node 22.18 or later (`npm run measure` runs `scripts/measure.ts` with Node's own type stripping). `npm ci`, then `npm run typecheck`, `npm test` and `npm run measure`. On Windows, `powershell -File scripts/check.ps1` runs all of them plus `forge lint` and the script tests; CI (`.github/workflows/check.yml`) runs the same without `forge lint`, which needs a Forge login, so a manifest error is caught only by `check.ps1` locally.
 - Layout: UI Kit panels in `src/frontend/`; their server side in `src/resolvers/index.ts`; the Rovo and MCP actions in `src/actions/`; both call the rule core in `src/rules/` (`checkHandoff()`), with the Jira reads in `src/jira.ts` and the workflow validators in `src/validator.ts`.
 - Every storage write goes through `src/store.ts`; the keys are listed in `docs/PRIVACY.md`. The docs are indexed in `docs/README.md`, the data in `data/README.md`.
 
