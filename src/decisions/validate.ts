@@ -17,6 +17,7 @@ export type RejectReason =
   | "bad_date"
   | "no_evidence"
   | "evidence_not_in_source"
+  | "constraint_not_in_quote"
   | "already_decided"
   | "over_cap";
 
@@ -33,6 +34,8 @@ export const REASON_TEXT: Record<RejectReason, string> = {
   bad_date: "A dueNotAfter date must be a real calendar date written YYYY-MM-DD.",
   no_evidence: "evidence.quote is missing or not between 12 and 300 characters.",
   evidence_not_in_source: "evidence.quote was not found word for word in the work item text; copy it exactly from read-decision-source.",
+  constraint_not_in_quote:
+    "Each label or component in constraints must be named in evidence.quote, and each dueNotAfter date must have its year there; use only what the quote says.",
   already_decided:
     "A confirmed decision of equal or wider reach already sets these constraints, so there is nothing to propose. Do not retry this candidate.",
   over_cap: "Only 5 proposals can be saved at once.",
@@ -50,6 +53,19 @@ export function normalise(s: string): string {
     .replace(/[–—]/g, "-")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+// Letters and digits only, so "legacy billing" in a sentence names the component "legacy-billing".
+const bare = (s: string): string => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+
+// The model picks the constraint; this keeps it to values the quoted sentence itself names, so a person
+// confirming the proposal sees the constraint's source in the quote beside it.
+function namedIn(quote: string, c: Constraint): boolean {
+  const q = bare(quote);
+  if (c.kind === "dueNotAfter") return q.includes(c.date.slice(0, 4));
+  if (c.kind === "labelRequired" || c.kind === "labelForbidden") return q.includes(bare(c.label));
+  if (c.kind === "componentRequired" || c.kind === "componentForbidden") return q.includes(bare(c.component));
+  return true;
 }
 
 const same = (a: string, b: string): boolean => a.trim().toLowerCase() === b.trim().toLowerCase();
@@ -111,6 +127,7 @@ function check(raw: unknown, parts: SourcePart[], ctx: Context, nowIso: string):
   if (wanted.length < MIN_QUOTE || wanted.length > MAX_QUOTE) return "no_evidence";
   const part = parts.find((p) => normalise(p.text).includes(wanted));
   if (!part) return "evidence_not_in_source";
+  if (!constraints.every((c) => namedIn(wanted, c))) return "constraint_not_in_quote";
   if (relate(ctx.stored ?? [], scope, constraints)?.kind === "already_decided") return "already_decided";
   const id = "p-" + fnv1a([part.from, title, JSON.stringify(scope), JSON.stringify(constraints)].join("|"));
   return { id, title, scope, constraints, evidence: { quote, from: part.from }, proposedAt: nowIso };

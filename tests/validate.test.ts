@@ -38,12 +38,13 @@ describe("evidence check", () => {
   it("normalises curly quotes and dashes on both sides", () => {
     const p = [{ from: "c1", text: "The team’s rule — ship “early” – is final for everyone." }];
     const q = "The team's rule - ship \"early\" - is final";
-    expect(validateCandidates([cand(q)], p, ctx, NOW).kept).toHaveLength(1);
+    expect(validateCandidates([cand(q, { constraints: [{ kind: "labelRequired", label: "early" }] })], p, ctx, NOW).kept).toHaveLength(1);
   });
 
   it("matches Jira wiki markup raw and rejects a quote with the markup stripped", () => {
     const p = [{ from: "c1", text: "We agreed *all launch work* needs [the checklist|http://x.test/c] first." }];
-    expect(validateCandidates([cand("*all launch work* needs [the checklist|http://x.test/c]")], p, ctx, NOW).kept).toHaveLength(1);
+    const launch = { constraints: [{ kind: "labelRequired", label: "launch" }] };
+    expect(validateCandidates([cand("*all launch work* needs [the checklist|http://x.test/c]", launch)], p, ctx, NOW).kept).toHaveLength(1);
     expect(validateCandidates([cand("all launch work needs the checklist")], p, ctx, NOW).rejected[0]?.reason).toBe("evidence_not_in_source");
   });
 
@@ -122,8 +123,30 @@ describe("candidate shape", () => {
 describe("new constraint kinds", () => {
   it("keeps labelForbidden and componentRequired and still rejects an unknown kind", () => {
     const q = "all launch work needs the legal-reviewed label";
-    const ok = run([cand(q, { constraints: [{ kind: "labelForbidden", label: "draft" }, { kind: "componentRequired", component: "web" }] })]);
-    expect(ok.kept[0]?.constraints).toEqual([{ kind: "labelForbidden", label: "draft" }, { kind: "componentRequired", component: "web" }]);
+    const ok = run([cand(q, { constraints: [{ kind: "labelForbidden", label: "launch" }, { kind: "componentRequired", component: "legal" }] })]);
+    expect(ok.kept[0]?.constraints).toEqual([{ kind: "labelForbidden", label: "launch" }, { kind: "componentRequired", component: "legal" }]);
     expect(reasons([cand(q, { constraints: [{ kind: "labelMaybe", label: "x" }] })])).toEqual(["bad_constraint"]);
+  });
+});
+
+describe("constraint named in the quote", () => {
+  const p = [{ from: "c1", text: "Decision (2026-11-10 sync): stop using the legacy billing component; launch work ships by the end of 2026." }];
+  const q = "stop using the legacy billing component; launch work ships by the end of 2026";
+  const with_ = (constraints: unknown[]) => validateCandidates([cand(q, { constraints })], p, ctx, NOW);
+
+  it("keeps a component written with spaces in the quote and a date whose year is there", () => {
+    const out = with_([{ kind: "componentForbidden", component: "legacy-billing" }, { kind: "dueNotAfter", date: "2026-12-31" }]);
+    expect(out.rejected).toEqual([]);
+    expect(out.kept).toHaveLength(1);
+  });
+
+  it("rejects a label, a component or a date year the quote does not name", () => {
+    for (const c of [
+      { kind: "labelRequired", label: "tax-column" },
+      { kind: "componentRequired", component: "payments" },
+      { kind: "dueNotAfter", date: "2027-01-31" },
+    ]) {
+      expect(with_([c]).rejected.map((r) => r.reason)).toEqual(["constraint_not_in_quote"]);
+    }
   });
 });
