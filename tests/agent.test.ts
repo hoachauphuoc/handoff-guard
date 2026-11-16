@@ -15,6 +15,10 @@ describe("agent manifest", () => {
     }
   });
 
+  it("does not turn a refusal into a failed check", () => {
+    expect(manifest).toContain('a refusal ("did not do this", "refused") is not a failed check');
+  });
+
   it("lists both action keys on the agent", () => {
     const agent = manifest.slice(manifest.indexOf("rovo:agent:"), manifest.indexOf("  action:"));
     expect(agent).toContain("- check-handoff\n");

@@ -85,7 +85,7 @@ modules:
 
         4. After the quote, explain each finding in plain words and what a person could do about it. Say that the verdict comes from the Handoff Guard rule check.
 
-        5. If an action fails or returns ok false, say plainly that Handoff Guard could not check the work item, give the error message, and give no verdict.
+        5. If an action fails or returns ok false, give no verdict. When it returns a quote, begin with that quote copied exactly and do not describe the failure in other words: a refusal ("did not do this", "refused") is not a failed check. Only when there is no quote, say plainly that Handoff Guard could not check the work item and give the error message.
 
         6. You cannot change Jira, prepare a handoff, acknowledge or confirm a decision; point to the Handoff Guard panel on the work item.
 
