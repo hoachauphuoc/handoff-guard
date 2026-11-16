@@ -580,6 +580,7 @@ resolver.define("previewRule", async ({ context, payload }): Promise<RuleImpact>
 });
 
 const AUTOPSY_CAP = 50;
+const AUTOPSY_PARALLEL = 10;
 
 export type AutopsyState = Autopsy & { withHandoff: number; capped: boolean; notClear: number; days: number };
 
@@ -592,24 +593,27 @@ resolver.define("bounceAutopsy", async ({ context }): Promise<AutopsyState> => {
   const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
   const held = open.items.flatMap((i, n) => (records[n] ? [{ item: i.item, record: records[n] as HandoffRecord }] : []));
   const read = held.slice(0, AUTOPSY_CAP);
-  let notClear = 0;
-  const handoffs: AutopsyHandoff[] = [];
-  for (const { item, record } of read) {
+  // Only handoffs that were Clear need a changelog, so those are picked first.
+  const clear = read.flatMap(({ item, record }) => {
     const ack = lastAcknowledgedAt(record);
     const asOf = ack === null ? [] : decisionsAsOf(decisions, ack);
     const then = ack === null ? null : replayAt({ item, fromId: record.fromId, toId: record.toId, acknowledged: record.acknowledged, acknowledgedAt: record.acknowledgedAt, preparedAt: record.preparedAt }, asOf, ack);
-    if (ack === null || then === null || then.verdict !== "clear") {
-      notClear += 1;
-      continue;
-    }
-    handoffs.push({
-      key: item.key,
-      record,
-      bounce: bounceOf(await changesAsUser(item.key), record, done),
-      drifted: Object.values(driftByDecision(record.acknowledged, record.acknowledgedWith, item)).some((d) => d.length > 0),
-      bindingCount: bindingDecisions(asOf, item).length,
-    });
+    return then !== null && then.verdict === "clear" ? [{ item, record, asOf }] : [];
+  });
+  const notClear = read.length - clear.length;
+  // Up to AUTOPSY_CAP changelogs, read one after another, could outlast the function's time limit; a few at a
+  // time keeps the number of Jira calls in flight small.
+  const changes: Awaited<ReturnType<typeof changesAsUser>>[] = [];
+  for (let n = 0; n < clear.length; n += AUTOPSY_PARALLEL) {
+    changes.push(...(await Promise.all(clear.slice(n, n + AUTOPSY_PARALLEL).map(({ item }) => changesAsUser(item.key)))));
   }
+  const handoffs: AutopsyHandoff[] = clear.map(({ item, record, asOf }, n) => ({
+    key: item.key,
+    record,
+    bounce: bounceOf(changes[n]!, record, done),
+    drifted: Object.values(driftByDecision(record.acknowledged, record.acknowledgedWith, item)).some((d) => d.length > 0),
+    bindingCount: bindingDecisions(asOf, item).length,
+  }));
   return { ...autopsy(handoffs), withHandoff: held.length, capped: open.capped || held.length > AUTOPSY_CAP, notClear, days: RECENT_DAYS };
 });
 
