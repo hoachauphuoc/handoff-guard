@@ -523,7 +523,7 @@ const App = () => {
             <Stack key={d.id} space="space.050">
               <Text>{d.title}</Text>
               <Text>{d.reach}</Text>
-              <Text>Supersede it here, or ask a teammate to record a replacement.</Text>
+              <Text>Only they confirmed it, so only they can supersede it, from the decisions listed above. Ask them before they leave, or ask a teammate to record a replacement.</Text>
             </Stack>
           ))}
         </>
