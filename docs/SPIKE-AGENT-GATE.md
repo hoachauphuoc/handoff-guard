@@ -1,6 +1,6 @@
 # Spike: Agent Gate (2026-11-12)
 
-Question: can Handoff Guard stop an AI agent from starting a work item that is not ready, and hand it the binding decisions first? Tested on `one-atlas-hxpc`, item TD-1 (dev, version 6.10.0).
+Question: can Handoff Guard stop an AI agent from starting a work item that is not ready, and hand it the binding decisions first? Tested on the demo site, item TD-1 (dev, version 6.10.0).
 
 ## What was tested and seen
 
@@ -63,7 +63,7 @@ Question: can our Forge `rovo:agent` be chosen in the assignee field, and would 
 3. If it is not there: turn Work items on in Studio for this agent, reload TD-1, and look again. Note that this changes the agent's visibility for the whole site; turn it off afterwards.
 4. Choose "Handoff Guard" as the assignee. Note: does the field change; what does the item History tab say and who is named as the actor; does an agent session or comment appear.
 5. Open the Handoff Guard panel on TD-1. Expected if detection works: "Detected from a change of assignee on 2026-.." with a Needs info verdict. Note the receiver shown. If there is no handoff, the trigger did not fire or the id was not a string: look at the fallback advisory under "Also worth a look".
-6. In the browser, open `https://one-atlas-hxpc.atlassian.net/rest/api/3/issue/TD-1/changelog` and copy the newest item whose field is "assignee" (the `from` and `to` values, and any other keys). Paste it into this file under this heading; it is the shape the code has to match.
+6. In the browser, open `https://<demo site>/rest/api/3/issue/TD-1/changelog` and copy the newest item whose field is "assignee" (the `from` and `to` values, and any other keys). Paste it into this file under this heading; it is the shape the code has to match.
 7. If a workflow validator is attached to a transition on TD-1, move it and note the message.
 8. Put the assignee back to the person it was, and turn the Studio toggle back if you changed it.
 

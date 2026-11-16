@@ -1,6 +1,6 @@
 # Demo video script (about 3 minutes, six scenes)
 
-Everything on screen is the Codegeist demo site `one-atlas-hxpc.atlassian.net`. Work items: MOBL-53 (blocked case) and TD-1 or MOBL-58 (clear case). Captions or voice-over in English. The labels in the Screen column are the ones the panel shows today (`src/frontend/index.tsx`, `src/frontend/decisions.tsx`).
+Everything on screen is the Codegeist demo site. Work items: MOBL-53 (blocked case) and TD-1 or MOBL-58 (clear case). Captions or voice-over in English. The labels in the Screen column are the ones the panel shows today (`src/frontend/index.tsx`, `src/frontend/decisions.tsx`).
 
 One story, one set of decisions. The video uses the project's sample decisions ("Load sample decisions (demo)") and nothing else, so a judge who loads them can repeat every step. The two that matter: "Work ships by the end of 2026" (a date limit of 2026-12-31) and "Stop using the legacy billing component" (the component `legacy-billing` must not be added). The refused read-back is always the same one: "I will ship on 15 January 2027." The accepted one is always: "I will ship by 15 December 2026 and I will not add the legacy billing component."
 

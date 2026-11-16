@@ -15,7 +15,7 @@ The model is the part code cannot prove, so most cases below are chats. Every ch
 
 ## Setup (once)
 
-- Site `one-atlas-hxpc.atlassian.net`, project MOBL (51 open work items), **development** build first, then production.
+- Site: the Codegeist demo site, project MOBL (51 open work items), **development** build first, then production.
 - Seed: items with different priorities (at least 2 Highest or High, rest lower), one with label `legal-reviewed`, one with no assignee, one with a due date in the past. Write what exists in the run log.
 - Accounts: **A** project administrator; **B** not an administrator (needed for D2, D13, C4); **C** administrator of another project only (needed for S7, D13).
 - Start with no condition in force (supersede any test rule), then add the ones a case asks for.

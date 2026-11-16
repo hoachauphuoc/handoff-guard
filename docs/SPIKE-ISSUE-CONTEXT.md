@@ -12,7 +12,7 @@ Question: can a small `jira:issueContext` module show the handoff verdict (Clear
   - `src/frontend/context.tsx`: calls the existing `getPanel` resolver and shows a Lozenge with the verdict and "N finding(s) - open Handoff Guard for details", "No handoff is prepared..." when there is no record, or "Handoff Guard could not check this work item, so there is no verdict: ..." on error.
 - `src/rules`, storage keys and scopes are unchanged.
 - `forge lint`: no issues. `forge deploy -e development --non-interactive` (no `--approve` flag).
-- Looked at TD-1 and MOBL-53 on `one-atlas-hxpc` in the development installation, one account, in the built-in browser.
+- Looked at TD-1 and MOBL-53 on the demo site in the development installation, one account, in the built-in browser.
 
 ## Results (observed)
 
