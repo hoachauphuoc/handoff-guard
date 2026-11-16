@@ -3,7 +3,7 @@ import type { HandoffRecord } from "../handoff/types";
 import { impactOf } from "../rules/impact";
 import type { Decision, ProjectRules, WorkItem } from "../rules/types";
 import { canSupersede } from "./supersede";
-import { constraintText, reachText } from "./reach";
+import { constraintText, reachText, sourceText } from "./reach";
 
 export type DecisionRow = {
   id: string;
@@ -76,7 +76,7 @@ export function buildDecisionsPage(
         title: d.title,
         reach: reachText(d.scope),
         constraints: d.constraints.map(constraintText),
-        source: `${d.source.kind} ${d.source.ref}`,
+        source: sourceText(d.source),
         link: d.source.link ?? null,
         status: d.status,
         confirmedBy: d.confirmedBy ?? null,

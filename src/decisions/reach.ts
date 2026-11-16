@@ -1,4 +1,16 @@
-import type { Constraint, DecisionScope } from "../rules/types";
+import type { Constraint, Decision, DecisionScope } from "../rules/types";
+
+/** Where a person can read the decision, without the storage word "ledger". */
+export function sourceText(source: Decision["source"]): string {
+  switch (source.kind) {
+    case "ledger":
+      return source.ref === "Handoff Guard demo ledger" ? "demo rules of Handoff Guard" : source.ref;
+    case "jira":
+      return `work item ${source.ref}`;
+    case "confluence":
+      return `Confluence: ${source.ref}`;
+  }
+}
 
 /** Plain words for who a decision would apply to, shown before a person confirms it. */
 export function reachText(scope: DecisionScope): string {

@@ -5,13 +5,22 @@ import acknowledge from "../src/handoff/acknowledge?raw";
 import build from "../src/handoff/build?raw";
 import checkHandoffSource from "../src/rules/checkHandoff?raw";
 import validator from "../src/validator?raw";
-import { reachText } from "../src/decisions/reach";
+import { reachText, sourceText } from "../src/decisions/reach";
 
 describe("proposals stay out of the verdict path", () => {
   it("is never read by the validator, the rules, acknowledge, build or measure", () => {
     for (const src of [validator, checkHandoffSource, acknowledge, build, measure]) {
       expect(src).not.toMatch(/getProposals|putProposals|proposals:/);
     }
+  });
+});
+
+describe("sourceText", () => {
+  it("names where a decision can be read without the storage word ledger", () => {
+    expect(sourceText({ kind: "ledger", ref: "Handoff Guard demo ledger" })).toBe("demo rules of Handoff Guard");
+    expect(sourceText({ kind: "ledger", ref: "Added by hand in project OPS" })).toBe("Added by hand in project OPS");
+    expect(sourceText({ kind: "jira", ref: "OPS-7" })).toBe("work item OPS-7");
+    expect(sourceText({ kind: "confluence", ref: "Launch notes" })).toBe("Confluence: Launch notes");
   });
 });
 

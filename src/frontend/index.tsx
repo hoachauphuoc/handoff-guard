@@ -6,7 +6,7 @@ import { PREPARE_DENIED } from "../handoff/prepare";
 import { plainError } from "../errors";
 import type { GatherOutput } from "../actions/schema";
 import type { MarkedState } from "../decisions/marked";
-import { COMMITMENT_TEXT, constraintText, LINK_NOTE, reachText } from "../decisions/reach";
+import { COMMITMENT_TEXT, constraintText, LINK_NOTE, reachText, sourceText } from "../decisions/reach";
 import { count } from "../plural";
 import type { AcknowledgeAllReply, PanelState, PracticeReadBackReply } from "../handoff/types";
 import { GUIDE_SOURCE, HOW_IT_WORKS, HOW_IT_WORKS_TITLE, PATH_NAMES, PRACTICE_NONE, PRACTICE_READBACK_ACCEPTED, PRACTICE_READBACK_BUTTON, PRACTICE_READBACK_HOW, PRACTICE_READBACK_REFUSED, PRACTICE_REAL, PRACTICE_TITLE, PRACTICE_WOULD_BE, guideView, type GuidePath, type StepNeed, type StepState } from "../guide/steps";
@@ -287,8 +287,6 @@ const App = () => {
             lead={
               <Text>
                 Handoff <User accountId={record.fromId} /> to <User accountId={record.toId} />
-                {/* The I-PASS name is a clinical term; a first-time reader gets it only with everything shown. */}
-                {everything && state.severity ? ` (${state.severity})` : ""}
               </Text>
             }
           >
@@ -480,7 +478,7 @@ const App = () => {
             result.binding.map((d) => (
             <Stack key={d.id} space="space.050">
               <Text>
-                {d.title} (source: {d.source.kind} {d.source.ref})
+                {d.title} (source: {sourceText(d.source)})
               </Text>
               {d.constraints.length === 0 && <Text>{COMMITMENT_TEXT}</Text>}
               {d.source.link && (

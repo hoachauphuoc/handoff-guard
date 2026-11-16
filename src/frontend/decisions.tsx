@@ -384,7 +384,7 @@ const App = () => {
           {h.unacknowledged > 0 && <Text>{`${count(h.unacknowledged, "decision")} not acknowledged by the receiver.`}</Text>}
         </Stack>
       ))}
-      <Heading size="small">Governance: rules this project can release</Heading><Text>A rule is a draft until a project administrator releases it.</Text>
+      <Heading size="small">Extra checks for every handoff (optional)</Heading><Text>Each check here is off until a project administrator switches it on (releases it).</Text>
       {ruleError !== null && <Text>{ruleError}</Text>}
       {(
         [
