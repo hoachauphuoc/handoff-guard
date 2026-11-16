@@ -151,6 +151,16 @@ describe("load sample decisions", () => {
   });
 });
 
+describe("receiver field", () => {
+  it("comes right after the next step that names it, before practice", () => {
+    const step = panel.indexOf("title={`Your next step: ${next.title}`}");
+    const picker = panel.indexOf('label="Receiver"');
+    expect(step).toBeGreaterThan(-1);
+    expect(picker).toBeGreaterThan(step);
+    expect(picker).toBeLessThan(panel.indexOf("Practice: say what you would do (read-back)"));
+  });
+});
+
 describe("remove sample decisions", () => {
   it("sits last in the full panel, apart from the view toggles, and asks a second click first", () => {
     const at = panel.indexOf('<SectionMessage appearance="warning" title="Remove the demo rules">');

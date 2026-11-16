@@ -321,6 +321,32 @@ const App = () => {
       <SectionMessage appearance="discovery" title={`Your next step: ${next.title}`}>
         <Text>{next.how}</Text>
       </SectionMessage>
+      {/* Right under the step that names them: the receiver field and its button, before practice and the guide. */}
+      {show("prepare") && canPick && (
+        <UserPicker
+          label="Receiver"
+          name="receiver"
+          onChange={(u: { id: string } | null | undefined) => setPicked(u?.id ?? null)}
+        />
+      )}
+      {everything && !state.canPrepare && <Text>{PREPARE_DENIED}</Text>}
+      {state.canPrepare && record && confirmAgain && (
+        <Text>{`Preparing again clears ${count(record.acknowledged.length, "acknowledgement")} by the receiver and starts over with the receiver you picked.`}</Text>
+      )}
+      {show("prepare") && canPick && (
+        <Button
+          appearance="primary"
+          isDisabled={busy || picked === null}
+          onClick={() => {
+            // A prepared handoff holds the receiver's work, so the first click only warns.
+            if (record && !confirmAgain) return setConfirmAgain(true);
+            setConfirmAgain(false);
+            return call("prepareHandoff", { toId: picked });
+          }}
+        >
+          {record ? (confirmAgain ? "Yes, prepare again" : "Prepare again") : "Prepare handoff"}
+        </Button>
+      )}
       {everything && (
         <Text>
           {PATH_NAMES[path]}: {guide.doneCount} of {guide.total} steps done.
@@ -402,31 +428,6 @@ const App = () => {
             </SectionMessage>
           )}
         </Stack>
-      )}
-      {show("prepare") && canPick && (
-        <UserPicker
-          label="Receiver"
-          name="receiver"
-          onChange={(u: { id: string } | null | undefined) => setPicked(u?.id ?? null)}
-        />
-      )}
-      {everything && !state.canPrepare && <Text>{PREPARE_DENIED}</Text>}
-      {state.canPrepare && record && confirmAgain && (
-        <Text>{`Preparing again clears ${count(record.acknowledged.length, "acknowledgement")} by the receiver and starts over with the receiver you picked.`}</Text>
-      )}
-      {show("prepare") && canPick && (
-        <Button
-          appearance="primary"
-          isDisabled={busy || picked === null}
-          onClick={() => {
-            // A prepared handoff holds the receiver's work, so the first click only warns.
-            if (record && !confirmAgain) return setConfirmAgain(true);
-            setConfirmAgain(false);
-            return call("prepareHandoff", { toId: picked });
-          }}
-        >
-          {record ? (confirmAgain ? "Yes, prepare again" : "Prepare again") : "Prepare handoff"}
-        </Button>
       )}
       {record && result ? (
         <>
