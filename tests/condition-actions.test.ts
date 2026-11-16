@@ -160,6 +160,11 @@ describe("draft-condition", () => {
     expect(bad.ok).toBe(false);
   });
 
+  it("does not report a draft as stored when another write replaced it", async () => {
+    const r = await runDraftCondition(ask, "u-admin", fake({ putDrafts: async () => undefined }).deps);
+    expect(!r.ok && r.error.message).toContain("was not kept");
+  });
+
   it("refuses the same draft twice and stops at the cap", async () => {
     const f = fake();
     expect((await runDraftCondition(ask, "u-admin", f.deps)).ok).toBe(true);

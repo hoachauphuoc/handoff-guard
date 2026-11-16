@@ -135,6 +135,11 @@ export async function runDraftCondition(payload: unknown, accountId: string | nu
       return refusal(schema, "bad_input", `${MAX_CONDITION_DRAFTS} drafts are already waiting on the Decisions page. Confirm or discard some first. Nothing was stored.`);
     }
     await deps.putDrafts(projectKey, [...drafts, { id, title, jql, supersedes, by: accountId, at: deps.now() }]);
+    // Storage has no atomic append: a draft stored at the same moment can overwrite this one. Reading it back
+    // narrows that, so the chat does not report a draft the Decisions page will not show.
+    if (!(await deps.getDrafts(projectKey)).some((d) => d.id === id)) {
+      return refusal(schema, "internal", "Another draft was being stored at the same moment and this one was not kept. Ask for it again.");
+    }
     return { schema, ok: true, source: "rules", projectKey, draftId: id, title, jql, supersedes, quote: DRAFT_STORED };
   } catch (e) {
     return crash(schema, e);
