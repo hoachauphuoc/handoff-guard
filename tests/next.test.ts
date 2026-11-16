@@ -45,6 +45,15 @@ describe("the viewer's next step", () => {
     expect(nextStep(state({ record, result: blocked })).kind).toBe("wait_receiver");
   });
 
+  it("is picking another receiver after a handoff to oneself, for who may prepare again", () => {
+    const self: HandoffResult = { ...blocked, verdict: "blocked", findings: [{ rule: "same_person", severity: "block", message: "m" }] };
+    const toSelf = { ...record, toId: "me", acknowledged: ["d1"] };
+    const step = nextStep(state({ record: toSelf, result: self, isReceiver: true }));
+    expect(step.kind).toBe("prepare");
+    expect(step.title).toBe("Pick another receiver");
+    expect(nextStep(state({ record: toSelf, result: self, isReceiver: true, canPrepare: false })).kind).toBe("wait_receiver");
+  });
+
   it("is fixing the work item when a rule it breaks has no suggested edit, such as a Jira filter", () => {
     const filter: HandoffResult = { ...blocked, verdict: "blocked", findings: [{ rule: "contradicts_decision", severity: "block", message: "m" }] };
     expect(nextStep(state({ record, result: filter })).kind).toBe("fix");
