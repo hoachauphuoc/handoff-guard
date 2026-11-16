@@ -1,6 +1,6 @@
 ---
 name: handoff-check
-description: Check whether a Jira work item may be handed to someone, or started by an agent, against the decisions recorded for it. Use before starting, taking or picking up a work item.
+description: Before an agent starts, takes or picks up a Jira work item, check it against the decisions recorded for it and start only when the rule check says Clear. Not for a plain question about whether a work item is ready to hand off, and not for a handoff brief.
 allowed-tools: check-handoff gather-handoff-context
 ---
 
@@ -15,4 +15,4 @@ Handoff Guard decides by plain rules, not by a model. This skill only relays wha
 5. Proceed only when the verdict is Clear. For Needs info or Blocked, decline to start, repeat each finding word for word, and say a person must resolve them in Jira.
 6. If an action fails or returns `ok: false`, say that Handoff Guard could not check the work item, give the error message, and give no verdict.
 
-Never write a verdict that is not in an action result, and never change or soften one.
+Never write a verdict that is not in an action result, and never change or soften one. Do not use the handoff brief headings here.
