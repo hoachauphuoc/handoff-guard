@@ -51,8 +51,8 @@ export function startView(input: {
         n: 1,
         title: "Record what your team decided",
         how: recorded
-          ? `${project.name} has ${inForceCount === 1 ? "1 decision" : `${inForceCount} decisions`} in force. A decision is a rule your team agreed, such as "launch work is due by 15 December".`
-          : 'A decision is a rule your team agreed, such as "launch work is due by 15 December". To try the app, open a work item (step 2) and click Load sample decisions (demo); to record your own, open the Decisions page.',
+          ? `${project.name} has ${inForceCount === 1 ? "1 decision" : `${inForceCount} decisions`} in force. A decision is a rule your team agreed, such as "work ships by 31 December 2026".`
+          : 'A decision is a rule your team agreed, such as "work ships by 31 December 2026". To try the app, open a work item (step 2) and click Load sample decisions (demo); to record your own, open the Decisions page.',
         button: "Open the Decisions page",
         go: { kind: "decisions", projectKey: project.key },
         // Trying the app starts on a work item (sample decisions load from its panel), so with an item to open
