@@ -13,6 +13,9 @@ export type StartView = {
 export const START_INTRO =
   "Handoff Guard checks a Jira work item when it moves from one person to another: is anything missing, and does it break a rule your team agreed? Three steps, each with a button that takes you there.";
 export const NO_PROJECT_TEXT = "You cannot see any Jira project yet. Ask a Jira administrator to add you to one, or create a project from Projects at the top of Jira.";
+// The one sentence for finding the panel, as seen on the site; README and DEVPOST say the same.
+export const OPEN_PANEL =
+  'Under the work item\'s summary, click the apps icon (its tooltip is "View app actions"), then Handoff Guard; the panel opens below the description.';
 export const NO_ITEM_TEXT = "This project has no open work item. Create one with the + Create button at the top of Jira, then come back.";
 
 // Six Jira words the app uses, each in one sentence, for someone who has never used Jira.
@@ -52,17 +55,19 @@ export function startView(input: {
           : 'A decision is a rule your team agreed, such as "launch work is due by 15 December". To try the app, open a work item (step 2) and click Load sample decisions (demo); to record your own, open the Decisions page.',
         button: "Open the Decisions page",
         go: { kind: "decisions", projectKey: project.key },
-        state: recorded ? "done" : "next",
+        // Trying the app starts on a work item (sample decisions load from its panel), so with an item to open
+        // step 2 is the one filled button; the Decisions page is for recording the team's own.
+        state: recorded ? "done" : itemKey ? "open" : "next",
       },
       {
         n: 2,
         title: "Open a work item and find Handoff Guard",
         how: itemKey
-          ? `This opens ${itemKey}. Under its title, click the Handoff Guard button (on some sites: Apps, then Handoff Guard). The panel opens on the right or below. There, try a read-back: say in your own words what you will do about each decision; one that breaks a decision is refused.`
+          ? `This opens ${itemKey}. ${OPEN_PANEL} There, try a read-back: say in your own words what you will do about each decision; one that breaks a decision is refused.`
           : NO_ITEM_TEXT,
         button: itemKey ? `Open ${itemKey}` : "Open a work item",
         go: item,
-        state: recorded ? "next" : "open",
+        state: itemKey ? "next" : "open",
       },
       {
         n: 3,

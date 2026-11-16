@@ -5,6 +5,7 @@ import { LOOK } from "../handoff/context";
 import type { PanelState } from "../handoff/types";
 import { count } from "../plural";
 import { plainError } from "../errors";
+import { OPEN_PANEL } from "../guide/start";
 
 // Same resolver as the issue panel, so this summary cannot disagree with it.
 const App = () => {
@@ -20,7 +21,7 @@ const App = () => {
 
   if (error) return <Text>{`Handoff Guard could not check this work item, so there is no verdict: ${error}`}</Text>;
   if (!state) return <Text>Checking the handoff…</Text>;
-  if (!state.result) return <Text>No handoff is prepared. To prepare one, click the Handoff Guard button under the work item's title.</Text>;
+  if (!state.result) return <Text>{`No handoff is prepared. To prepare one: ${OPEN_PANEL}`}</Text>;
 
   const look = LOOK[state.result.verdict];
   const n = state.result.verdict === "clear" ? 0 : state.result.findings.length;

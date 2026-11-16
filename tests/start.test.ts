@@ -21,14 +21,26 @@ describe("start page", () => {
     expect(manifest).toMatch(/jira:globalPage:\s*\n\s*- key: handoff-guard-start/);
   });
 
-  it("makes recording decisions the next step until one is in force", () => {
+  it("makes opening a work item the next step whenever there is one, since the samples load from its panel", () => {
     const v = startView({ project, inForceCount: 0, itemKey: "MOBL-58" });
-    expect(v.steps.map((s) => s.state)).toEqual(["next", "open", "open"]);
+    expect(v.steps.map((s) => s.state)).toEqual(["open", "next", "open"]);
     expect(v.steps[0]!.go).toEqual({ kind: "decisions", projectKey: "MOBL" });
     expect(v.steps[0]!.how).toContain("Load sample decisions (demo)");
     const w = startView({ project, inForceCount: 3, itemKey: "MOBL-58" });
     expect(w.steps.map((s) => s.state)).toEqual(["done", "next", "open"]);
     expect(w.steps[0]!.how).toContain("3 decisions in force");
+    const empty = startView({ project, inForceCount: 0, itemKey: null });
+    expect(empty.steps.map((s) => s.state)).toEqual(["next", "open", "open"]);
+  });
+
+  it("says how to open the panel in the same words as the context row, README and DEVPOST", async () => {
+    const { OPEN_PANEL } = await import("../src/guide/start");
+    const context = (await import("../src/frontend/context.tsx?raw")).default;
+    const readme = (await import("../README.md?raw")).default;
+    const devpost = (await import("../docs/DEVPOST.md?raw")).default;
+    expect(startView({ project, inForceCount: 1, itemKey: "MOBL-58" }).steps[1]!.how).toContain(OPEN_PANEL);
+    expect(context).toContain("${OPEN_PANEL}");
+    for (const doc of [readme, devpost]) expect(doc).toContain('"View app actions"');
   });
 
   it("links steps 2 and 3 to a real work item, and says so when there is none", () => {
