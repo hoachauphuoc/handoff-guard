@@ -1,5 +1,7 @@
 # Handoff Guard
 
+[![check](https://github.com/hoachauphuoc/handoff-guard/actions/workflows/check.yml/badge.svg)](https://github.com/hoachauphuoc/handoff-guard/actions/workflows/check.yml)
+
 **The read-back gate for Jira handoffs:** the receiver restates the decisions that bind the work, and plain code refuses a restatement that contradicts one.
 
 For software teams whose Jira work items change owner while the work is still open: release work passed between engineers, on-call rotation, cover for someone on leave. The decisions that bind such work often live in one person's head, a page or a comment, and the next person finds them late.
@@ -168,6 +170,12 @@ All of them:
 ## Privacy and security
 
 See `docs/PRIVACY.md` and `docs/SECURITY.md`.
+
+## For developers
+
+- TypeScript on Forge (UI Kit), tests with vitest. `src/rules/` is the rule core: pure, no Forge imports, no network, no clock (time is passed in); `tests/boundaries.test.ts` keeps it so.
+- `npm ci`, then `npm run typecheck`, `npm test` and `npm run measure`. On Windows, `powershell -File scripts/check.ps1` runs all of them plus `forge lint` and the script tests; CI (`.github/workflows/check.yml`) runs the same without `forge lint`.
+- Every storage write goes through `src/store.ts`; the keys are listed in `docs/PRIVACY.md`. The docs are indexed in `docs/README.md`, the data in `data/README.md`.
 
 ## License
 
