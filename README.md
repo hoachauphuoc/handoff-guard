@@ -60,6 +60,17 @@ Every text box in the panel has a label, the verdict and each step carry a word 
 
 The panel's checklist has one path for each moment. "New to this project" points a newcomer at the decisions that bind the work item, the handoff brief and the project's Decisions page. "Handing over this work" is the handoff itself. "Leaving the project" leads to a section of the same name on the Decisions page: pick a person and it lists their open work items with the state of each handoff, the handoffs they have not acknowledged, and the decisions only they can supersede. That section is read-only and uses the same rule check.
 
+## Workflow gates and the reassignment trigger
+
+Two workflow validators, added by a Jira admin to a transition in the workflow editor:
+
+- **Handoff Guard** (`handoff-guard-validator`): lets the transition through only when the prepared handoff is Clear and the work item is held by its sender, its receiver or no one.
+- **Handoff Guard: no decision contradicted** (`decision-guard-validator`): for transitions that are not a handoff. It needs no handoff record and refuses only when the work item breaks a decision that binds it.
+
+Both read the work item as the app (a validator carries no user session) and refuse when they cannot check.
+
+One trigger (`handoff-guard-reassigned`, on `avi:jira:updated:issue`): when the assignee changes from one person to another, it records a handoff from the old assignee to the new one, so the receiver's decisions are listed without anyone clicking Prepare. It reads nothing from Jira and writes only that record. A newly set or removed assignee, or a record that already names the new person, is left alone; a different receiver replaces the record, so acknowledgements never carry over to a new person.
+
 ## Scopes
 
 Every scope in `manifest.yml` and why it is there. A test fails if this table and the manifest differ. The app has no `permissions.external`: it sends nothing outside Atlassian.
