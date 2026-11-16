@@ -73,7 +73,7 @@ export const STEPS: GuideStep[] = [
   {
     id: "prepare",
     title: "A handoff is prepared",
-    how: "Pick a receiver who is not you, then click Prepare handoff.",
+    how: "Pick a receiver who is not you, then click Prepare handoff (Prepare again if one exists).",
     needs: "teammate",
     done: (s) => s.record !== null && s.record.toId !== s.record.fromId,
   },
@@ -82,7 +82,8 @@ export const STEPS: GuideStep[] = [
     title: "The receiver has acknowledged the decisions",
     how: "The receiver opens this work item, writes one read-back that mentions each decision, then clicks Acknowledge all with this read-back.",
     needs: "teammate",
-    done: (s) => s.record !== null && s.record.acknowledged.length > 0,
+    // Acknowledging a handoff to oneself is not a receiver's acknowledgement, so it cannot tick a step after an unticked one.
+    done: (s) => s.record !== null && s.record.toId !== s.record.fromId && s.record.acknowledged.length > 0,
   },
   {
     id: "real_clear",

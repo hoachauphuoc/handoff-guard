@@ -68,6 +68,8 @@ describe("guide steps", () => {
     expect(by("prepare").done(state({ record }))).toBe(true);
     expect(by("acknowledge").done(state({ record }))).toBe(false);
     expect(by("acknowledge").done(state({ record: { ...record, acknowledged: ["d1"] } }))).toBe(true);
+    // A handoff to oneself ticks neither step, so "acknowledged" never reads Done after an unticked "prepared".
+    expect(by("acknowledge").done(state({ record: { ...record, toId: "me", acknowledged: ["d1"] } }))).toBe(false);
     expect(by("real_clear").done(state())).toBe(false);
     expect(by("real_clear").done(state({ result: { verdict: "clear", findings: [], binding: [] } }))).toBe(true);
     expect(by("rovo").done(state())).toBeNull();
