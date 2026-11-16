@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, Heading, Label, Link, Lozenge, SectionMessage, Textfield, Stack, Text, TextArea, User, UserPicker } from "@forge/react";
+import ForgeReconciler, { Box, Button, Heading, Icon, Inline, Label, Link, Lozenge, ProgressTracker, SectionMessage, Textfield, Stack, Text, TextArea, User, UserPicker, xcss } from "@forge/react";
 import { invoke, rovo } from "@forge/bridge";
 import { MANAGE_DENIED } from "../authz";
 import { PREPARE_DENIED } from "../handoff/prepare";
@@ -23,13 +23,54 @@ const LOOK: Record<Verdict, { text: string; appearance: "success" | "moved" | "r
   blocked: { text: "Blocked", appearance: "removed" },
 };
 
+// The verdict is the answer of the whole panel, so it gets a card of its own; the word stays text, never colour alone.
+const CARD: Record<Verdict, { glyph: "check-circle" | "warning" | "cross-circle"; color: "color.icon.success" | "color.icon.warning" | "color.icon.danger"; box: ReturnType<typeof xcss> }> = {
+  clear: { glyph: "check-circle", color: "color.icon.success", box: card("success") },
+  needs_info: { glyph: "warning", color: "color.icon.warning", box: card("warning") },
+  blocked: { glyph: "cross-circle", color: "color.icon.danger", box: card("danger") },
+};
+function card(tone: "success" | "warning" | "danger") {
+  return xcss({
+    backgroundColor: `color.background.${tone}`,
+    borderColor: `color.border.${tone}`,
+    borderStyle: "solid",
+    borderWidth: "border.width",
+    borderRadius: "radius.medium",
+    padding: "space.150",
+  });
+}
+
+// One component for the real and the practice verdict, so the two cannot look different.
+const VerdictCard = ({ verdict, lead, children }: { verdict: Verdict; lead?: React.ReactNode; children?: React.ReactNode }) => (
+  <Box xcss={CARD[verdict].box}>
+    <Stack space="space.100">
+      {lead}
+      <Inline space="space.100" alignBlock="center">
+        <Icon glyph={CARD[verdict].glyph} label="" color={CARD[verdict].color} />
+        <Heading as="h3" size="medium">
+          {LOOK[verdict].text}
+        </Heading>
+      </Inline>
+      {children}
+    </Stack>
+  </Box>
+);
+
 const STEP_LOOK: Record<StepState, { text: string; appearance: "success" | "inprogress" | "default" | "new" }> = {
   done: { text: "Done", appearance: "success" },
   next: { text: "Next", appearance: "inprogress" },
   todo: { text: "To do", appearance: "default" },
   manual: { text: "Manual", appearance: "new" },
 };
-const NEEDS: Record<StepNeed, string> = { teammate: "a teammate", rovo: "Rovo", admin: "a Jira admin" };
+// The text above the tracker says the same in words ("2 of 7 steps done"), so the tracker is a picture of it.
+const trackerItems = (steps: { id: string; title: string; state: StepState }[]) =>
+  steps.map((s) => ({
+    id: s.id,
+    label: s.title,
+    percentageComplete: s.state === "done" ? 100 : 0,
+    status: s.state === "done" ? ("visited" as const) : s.state === "next" ? ("current" as const) : ("unvisited" as const),
+  }));
+const NEEDS: Record<StepNeed, string> ={ teammate: "a teammate", rovo: "Rovo", admin: "a Jira admin" };
 
 // One component for the real and the practice refusal, so the model sentence cannot be shown differently.
 const ModelExplanation = ({ explanation }: { explanation: Explanation | null }) =>
@@ -241,12 +282,24 @@ const App = () => {
       {/* The answer first: the verdict and its findings lead the panel; help, practice and the controls follow. */}
       {record && result && (
         <>
-          <Text>
-            Handoff <User accountId={record.fromId} /> to <User accountId={record.toId} />:{" "}
-            <Lozenge appearance={LOOK[result.verdict].appearance}>{LOOK[result.verdict].text}</Lozenge>
-            {/* The I-PASS name is a clinical term; a first-time reader gets it only with everything shown. */}
-            {everything && state.severity ? ` (${state.severity})` : ""}
-          </Text>
+          <VerdictCard
+            verdict={result.verdict}
+            lead={
+              <Text>
+                Handoff <User accountId={record.fromId} /> to <User accountId={record.toId} />
+                {/* The I-PASS name is a clinical term; a first-time reader gets it only with everything shown. */}
+                {everything && state.severity ? ` (${state.severity})` : ""}
+              </Text>
+            }
+          >
+            {result.findings.map((f, i) => (
+              // The hint is panel wording beside the finding; the finding's own message is shown unchanged.
+              <Text key={i}>
+                • {f.message}
+                {open ? ` ${HINTS[f.rule]}` : ""}
+              </Text>
+            ))}
+          </VerdictCard>
           {!protocol && <Text>{BEFORE_READ_BACK}</Text>}
           {state.gateHeld && (
             <SectionMessage appearance="warning" title="The workflow gate will refuse this work item">
@@ -256,13 +309,6 @@ const App = () => {
           {record.origin === "reassignment" && (
             <Text>{`Detected from a change of assignee on ${record.preparedAt.slice(0, 10)}. Prepare the handoff again to name a different receiver.`}</Text>
           )}
-          {result.findings.map((f, i) => (
-            // The hint is panel wording beside the finding; the finding's own message is shown unchanged.
-            <Text key={i}>
-              • {f.message}
-              {open ? ` ${HINTS[f.rule]}` : ""}
-            </Text>
-          ))}
         </>
       )}
       <SectionMessage appearance="discovery" title={`Your next step: ${next.title}`}>
@@ -273,6 +319,7 @@ const App = () => {
           {PATH_NAMES[path]}: {guide.doneCount} of {guide.total} steps done.
         </Text>
       )}
+      {everything && <ProgressTracker label={PATH_NAMES[path]} items={trackerItems(guide.steps)} />}
       {everything &&
         (Object.keys(PATH_NAMES) as GuidePath[]).map((p) => (
           <Button key={p} appearance={p === path ? "primary" : undefined} onClick={() => setPath(p)}>
@@ -329,17 +376,14 @@ const App = () => {
             </SectionMessage>
           )}
           {practice?.wouldBe && (
-            <Stack space="space.050">
-              <Text>
-                {PRACTICE_WOULD_BE}: <Lozenge appearance={LOOK[practice.wouldBe.verdict].appearance}>{LOOK[practice.wouldBe.verdict].text}</Lozenge>
-              </Text>
+            <VerdictCard verdict={practice.wouldBe.verdict} lead={<Text>{`${PRACTICE_WOULD_BE}:`}</Text>}>
               {practice.wouldBe.findings.map((f, i) => (
                 <Text key={i}>
                   • {f.message} {HINTS[f.rule]}
                 </Text>
               ))}
               <Text>{PRACTICE_REAL}</Text>
-            </Stack>
+            </VerdictCard>
           )}
           {practice && !practice.accepted && (
             <SectionMessage appearance="error" title={PRACTICE_READBACK_REFUSED}>

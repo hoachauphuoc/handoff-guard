@@ -79,7 +79,9 @@ describe("focused panel", () => {
     expect(verdict).toBeLessThan(card);
     const top = panel.slice(verdict, card);
     expect(top).toMatch(/\n\s*\{result\.findings\.map\(/);
-    expect(top).toMatch(/\n\s*<Lozenge appearance=\{LOOK\[result\.verdict\]\.appearance\}>/);
+    expect(top).toMatch(/\n\s*<VerdictCard\n\s*verdict=\{result\.verdict\}/);
+    // The verdict word is a heading inside the card, so it is read out, not only coloured.
+    expect(panel).toMatch(/<Heading as="h3" size="medium">\s*\{LOOK\[verdict\]\.text\}/);
     expect(top).toMatch(/\n\s*\{state\.gateHeld && \(/);
   });
 });

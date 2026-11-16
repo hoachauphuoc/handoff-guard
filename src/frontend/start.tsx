@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ForgeReconciler, { Button, Heading, Inline, Label, Lozenge, SectionMessage, Select, Stack, Text } from "@forge/react";
+import ForgeReconciler, { Button, Heading, Inline, Label, Lozenge, ProgressTracker, SectionMessage, Select, Stack, Text } from "@forge/react";
 import { invoke, router } from "@forge/bridge";
 import { GLOSSARY, NO_PROJECT_TEXT, START_INTRO, type StartGo } from "../guide/start";
 import { plainError } from "../errors";
@@ -42,6 +42,17 @@ const App = () => {
           <Label labelFor="start-project">Project</Label>
           <Select inputId="start-project" name="start-project" options={options} value={chosen} onChange={(o: { value: string }) => void load(o.value)} />
         </Stack>
+      )}
+      {state && state.steps.length > 0 && (
+        <ProgressTracker
+          label="Three steps to a first handoff"
+          items={state.steps.map((s) => ({
+            id: String(s.n),
+            label: s.title,
+            percentageComplete: s.state === "done" ? 100 : 0,
+            status: s.state === "done" ? "visited" : s.state === "next" ? "current" : "unvisited",
+          }))}
+        />
       )}
       {state?.steps.map((s) => (
         <Stack key={s.n} space="space.100">
