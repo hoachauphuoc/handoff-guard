@@ -555,7 +555,7 @@ const App = () => {
       <Heading size="small">Activity</Heading>
       <Text>
         Who changed decisions and handoffs in this project, newest first. Only the action, the person, the time and the work item or decision are
-        kept; nothing anyone typed.
+        kept; nothing anyone typed. A handoff detected from a change of assignee is not listed here; it shows under Handoffs in flight.
       </Text>
       {state.activity.length === 0 && <Text>Nothing recorded yet.</Text>}
       {state.activity.map((e, i) => (
@@ -569,7 +569,7 @@ const App = () => {
       {state.counts.length === 0 && <Text>Nothing to count yet.</Text>}
       {state.counts.map((c) => (
         <Text key={c.month}>
-          {`${c.month}: ${count(c.prepared, "handoff")} prepared, ${count(c.acknowledged, "read-back")} accepted, ${count(c.refused, "read-back")} refused, ${count(c.decisions, "decision")} recorded.`}
+          {`${c.month}: ${count(c.prepared, "handoff")} prepared in the panel, ${count(c.acknowledged, "read-back")} accepted, ${count(c.refused, "read-back")} refused, ${count(c.decisions, "decision")} recorded.`}
         </Text>
       ))}
       <Text>Counts come from the activity list above, which keeps the latest 300 entries; older months can be incomplete.</Text>
