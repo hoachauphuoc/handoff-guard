@@ -10,6 +10,7 @@ import { count } from "../plural";
 import type { RuleImpact } from "../handoff/impact";
 import type { ProjectRule as RuleName } from "../autopsy/causes";
 import type { AutopsyState, DecisionsPageView, ReplayState } from "../resolvers";
+import { browsePath, IN_FLIGHT_SHOWN, shownInFlight } from "../handoff/inflight";
 
 const VERDICT = { blocked: { text: "Blocked", appearance: "removed" }, needs_info: { text: "Needs info", appearance: "moved" } } as const;
 
@@ -58,6 +59,8 @@ const App = () => {
   const [draftBusy, setDraftBusy] = useState(false);
   // The page reads top-down as "what binds, what waits"; history and reports are one click away so a first reader is not lost.
   const [reports, setReports] = useState(false);
+  // Ten worst handoffs fit above the fold; the reader asks for the rest so a long tail does not bury the page.
+  const [allInFlight, setAllInFlight] = useState(false);
 
   // A bad date or a failed read stays beside the control; it does not replace the page.
   const replayOn = (date: string) =>
@@ -380,21 +383,27 @@ const App = () => {
           )}
         </Stack>
       )}
-      <Heading size="small">Handoffs in flight</Heading>
+      <Heading size="small">{state.inFlight.length === 0 ? "Handoffs in flight" : `Handoffs in flight (${state.inFlight.length})`}</Heading>
       {state.inFlight.length === 0 && <Text>No prepared handoff in this project is waiting on anything.</Text>}
-      {state.inFlight.map((h) => (
-        <Stack key={h.key} space="space.050">
-          <Text>
-            <Lozenge appearance={VERDICT[h.verdict].appearance}>{VERDICT[h.verdict].text}</Lozenge> {h.key} {h.summary}
-          </Text>
-          <Text>
-            <User accountId={h.fromId} /> to <User accountId={h.toId} />, prepared {count(h.ageDays, "day")} ago.
-          </Text>
-          {h.blockedBy.length > 0 && <Text>{`Contradicts: ${h.blockedBy.join("; ")}.`}</Text>}
-          {h.unacknowledged > 0 && <Text>{`${count(h.unacknowledged, "decision")} not acknowledged by the receiver.`}</Text>}
-          {h.missing.length > 0 && <Text>{h.missing.join(" ")}</Text>}
-        </Stack>
-      ))}
+      {shownInFlight(state.inFlight, allInFlight).map((h) => {
+        const path = browsePath(h.key);
+        return (
+          <Stack key={h.key} space="space.050">
+            <Text>
+              <Lozenge appearance={VERDICT[h.verdict].appearance}>{VERDICT[h.verdict].text}</Lozenge> {path === null ? h.key : <Link href={path}>{h.key}</Link>} {h.summary}
+            </Text>
+            <Text>
+              <User accountId={h.fromId} /> to <User accountId={h.toId} />, prepared {count(h.ageDays, "day")} ago.
+            </Text>
+            {h.blockedBy.length > 0 && <Text>{`Contradicts: ${h.blockedBy.join("; ")}.`}</Text>}
+            {h.unacknowledged > 0 && <Text>{`${count(h.unacknowledged, "decision")} not acknowledged by the receiver.`}</Text>}
+            {h.missing.length > 0 && <Text>{h.missing.join(" ")}</Text>}
+          </Stack>
+        );
+      })}
+      {state.inFlight.length > IN_FLIGHT_SHOWN && (
+        <Button onClick={() => setAllInFlight(!allInFlight)}>{allInFlight ? "Show fewer" : `Show ${state.inFlight.length - IN_FLIGHT_SHOWN} more`}</Button>
+      )}
       <Heading size="small">Extra checks for every handoff (optional)</Heading><Text>Each check here is off until a project administrator switches it on.</Text>
       {ruleError !== null && <Text>{ruleError}</Text>}
       {(
@@ -432,7 +441,7 @@ const App = () => {
         A check that is on is run by the same rule check as everything else: a handoff that lacks it is Needs info in the panel and is
         refused by the workflow validator. Rules come from this fixed list; code decides, and every switch on or off is written to Activity.
       </Text>
-      <Button onClick={() => setReports(!reports)}>{reports ? "Hide reports and history" : "Show reports and history: replay, bounced handoffs, a person leaving, activity, counts"}</Button>
+      <Button onClick={() => setReports(!reports)}>{reports ? "Hide reports and history" : "Show reports and history"}</Button>
       {reports && (
         <>
       <Heading size="small">Replay on a date</Heading>
@@ -516,31 +525,41 @@ const App = () => {
           {leaving.capped && <Text>{`Only the first ${leaving.scanned} open work items you can see were checked.`}</Text>}
           <Text>Open work items assigned to them</Text>
           {leaving.assigned.length === 0 && <Text>None.</Text>}
-          {leaving.assigned.map((a) => (
-            <Stack key={a.key} space="space.050">
-              <Text>{`${a.key} ${a.summary}`}</Text>
-              {a.handoff === "none" ? (
-                <Text>Prepare a handoff on this work item.</Text>
-              ) : a.handoff.verdict === "clear" ? (
+          {leaving.assigned.map((a) => {
+            const path = browsePath(a.key);
+            return (
+              <Stack key={a.key} space="space.050">
                 <Text>
-                  Nothing missing for <User accountId={a.handoff.toId} />, but the work item is still assigned to this person.
+                  {path === null ? a.key : <Link href={path}>{a.key}</Link>} {a.summary}
                 </Text>
-              ) : (
-                <Text>
-                  Prepared to <User accountId={a.handoff.toId} />: {a.handoff.verdict === "blocked" ? "Blocked" : "Needs info"}. Resolve the findings
-                  on the work item.
-                </Text>
-              )}
-            </Stack>
-          ))}
+                {a.handoff === "none" ? (
+                  <Text>Prepare a handoff on this work item.</Text>
+                ) : a.handoff.verdict === "clear" ? (
+                  <Text>
+                    Nothing missing for <User accountId={a.handoff.toId} />, but the work item is still assigned to this person.
+                  </Text>
+                ) : (
+                  <Text>
+                    Prepared to <User accountId={a.handoff.toId} />: {a.handoff.verdict === "blocked" ? "Blocked" : "Needs info"}. Resolve the findings
+                    on the work item.
+                  </Text>
+                )}
+              </Stack>
+            );
+          })}
           <Text>Handoffs they have not acknowledged</Text>
           {leaving.toAcknowledge.length === 0 && <Text>None.</Text>}
-          {leaving.toAcknowledge.map((t) => (
-            <Stack key={t.key} space="space.050">
-              <Text>{`${t.key} ${t.summary}`}</Text>
-              <Text>{`${count(t.waiting, "decision")} to acknowledge with a read-back on the work item.`}</Text>
-            </Stack>
-          ))}
+          {leaving.toAcknowledge.map((t) => {
+            const path = browsePath(t.key);
+            return (
+              <Stack key={t.key} space="space.050">
+                <Text>
+                  {path === null ? t.key : <Link href={path}>{t.key}</Link>} {t.summary}
+                </Text>
+                <Text>{`${count(t.waiting, "decision")} to acknowledge with a read-back on the work item.`}</Text>
+              </Stack>
+            );
+          })}
           <Heading size="small">Decisions only they can retire</Heading>
           {leaving.decisions.length === 0 && <Text>None.</Text>}
           {leaving.decisions.map((d) => (
@@ -580,15 +599,12 @@ const App = () => {
           <Heading size="small">Export and delete (project administrators)</Heading>
           <Text>
             Export shows what the app holds for this project as JSON: decisions, drafts from Rovo, the project rules switched on, the activity
-            list, and for the open work items you can see (the first 100) their handoffs, proposals and unsigned read-back drafts. Work items
-            that are done, that you cannot see, or beyond the first 100 open ones are not in it; their data stays until the app is
-            uninstalled. Copy it from the box.
+            list, and for the open work items you can see (the first 100) their handoffs, proposals and unsigned read-back drafts. Copy it from the box.
           </Text>
           <Button onClick={() => void exportData()}>Export this project's data</Button>
           {exported !== null && <CodeBlock language="json" text={exported} />}
           <Text>
-            Delete removes the same data from the app for good. The data of work items that are already done, that you cannot see, or beyond
-            the first 100 open ones is not reached and stays until the app is uninstalled. Jira is not changed. Export first if you may need it.
+            Delete removes the same data from the app for good, and Jira is not changed. Work items that are done, that you cannot see, or beyond the first 100 open ones keep their data.
           </Text>
           <Label labelFor="delete-key">{`Project key to confirm (${state.projectKey})`}</Label>
           <Textfield

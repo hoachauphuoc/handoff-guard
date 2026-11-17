@@ -20,6 +20,9 @@ export type InFlight = {
 const DAY = 86_400_000;
 const RANK: Record<InFlight["verdict"], number> = { blocked: 0, needs_info: 1 };
 
+// Ten worst first fit above the fold; the rest wait behind a button so a long list does not bury the page.
+export const IN_FLIGHT_SHOWN = 10;
+
 const keyParts = (key: string): [string, number] => {
   const dash = key.lastIndexOf("-");
   return [key.slice(0, dash), Number(key.slice(dash + 1))];
@@ -65,3 +68,9 @@ export function inFlight(entries: { item: WorkItem; record: HandoffRecord | null
   }
   return out.sort((a, b) => RANK[a.verdict] - RANK[b.verdict] || b.ageDays - a.ageDays || compareKeys(a.key, b.key));
 }
+
+// The page shows the worst ten first; the rest only after the reader asks, never dropped by code.
+export const shownInFlight = (list: InFlight[], all: boolean): InFlight[] => (all ? list : list.slice(0, IN_FLIGHT_SHOWN));
+
+// A key of the form ABC-12 opens that work item; anything else stays plain text so no crafted key becomes a link.
+export const browsePath = (key: string): string | null => (/^[A-Z][A-Z0-9_]+-\d+$/.test(key) ? `/browse/${key}` : null);

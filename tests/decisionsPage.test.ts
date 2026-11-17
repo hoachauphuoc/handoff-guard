@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { buildDecisionsPage } from "../src/decisions/page";
 import { hypothetical } from "../src/decisions/hypothetical";
 import { itemsFromSearch } from "../src/handoff/build";
-import { inFlight } from "../src/handoff/inflight";
+import { browsePath, IN_FLIGHT_SHOWN, inFlight, shownInFlight, type InFlight } from "../src/handoff/inflight";
 import type { HandoffRecord } from "../src/handoff/types";
 import { impactOf } from "../src/rules/impact";
 import type { Decision, WorkItem } from "../src/rules/types";
@@ -137,5 +137,42 @@ describe("canManage", () => {
     const page = buildDecisionsPage("OPS", [d], [], false, NOW, "viewer", false);
     expect(page.rows[0]?.canSupersede).toBe(false);
     expect(page.canManage).toBe(false);
+  });
+});
+
+describe("shownInFlight", () => {
+  // The page asks for the worst ten first; the rest wait behind a button, never cut silently.
+  const row = (key: string): InFlight => ({ key, summary: "s", fromId: "a", toId: "b", ageDays: 1, verdict: "blocked", blockedBy: [], unacknowledged: 0, missing: [] });
+  const list = (n: number) => Array.from({ length: n }, (_, i) => row(`OPS-${i + 1}`));
+
+  it("returns the whole list when it fits under the cap, and the first ten otherwise", () => {
+    expect(IN_FLIGHT_SHOWN).toBe(10);
+    expect(shownInFlight(list(9), false).map((h) => h.key)).toEqual(list(9).map((h) => h.key));
+    expect(shownInFlight(list(10), false)).toHaveLength(10);
+    expect(shownInFlight(list(11), false)).toHaveLength(10);
+    expect(shownInFlight(list(11), false).map((h) => h.key)).toEqual(list(11).slice(0, 10).map((h) => h.key));
+  });
+
+  it("returns everything once the reader asks for more", () => {
+    expect(shownInFlight(list(11), true).map((h) => h.key)).toEqual(list(11).map((h) => h.key));
+  });
+});
+
+describe("the page keeps the rest of a long in-flight list one click away", () => {
+  it("shows the worst ten first and both button texts", async () => {
+    const { default: page } = await import("../src/frontend/decisions.tsx?raw");
+    expect(page).toContain("shownInFlight(state.inFlight, allInFlight)");
+    expect(page).toContain("Show fewer");
+    expect(page).toMatch(/Show \$\{state\.inFlight\.length - IN_FLIGHT_SHOWN\} more/);
+  });
+});
+
+describe("browsePath", () => {
+  it("opens a plain work item key and leaves anything else as text", () => {
+    expect(browsePath("OPS-12")).toBe("/browse/OPS-12");
+    expect(browsePath("ops-12")).toBeNull();
+    expect(browsePath("OPS-12/4")).toBeNull();
+    expect(browsePath("OPS 12")).toBeNull();
+    expect(browsePath("")).toBeNull();
   });
 });
