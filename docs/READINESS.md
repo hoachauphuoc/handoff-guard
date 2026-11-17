@@ -57,7 +57,7 @@ Smoke list, run on the site after a production deploy (about 5 minutes, page tex
 | 9 | Leaving the project lists what a person holds | 3.58.0 | Pass |
 | 10 | Phone width (375): Decisions page has no sideways scroll | 3.59.0 | Pass |
 | 11 | Workflow validator refuses, naming the findings | 3.55.0, MOBL-53 | Pass |
-| 11b | Workflow validator lets a Clear handoff through the same transition | 3.59.0, MOBL-58 (To Do to Architecture Review) | Pass, no message |
+| 11b | Workflow validator lets a Clear handoff through the same transition | 3.62.0, MOBL-58 (To Do to Architecture Review) | Pass, no message |
 | 12 | Rovo agent returns the rule check's verdict and findings | 3.55.0, MOBL-53 | Pass |
 | 13 | Replay on a date, the day picked by clicking the calendar | 3.59.0, OPS, 2026-11-16 | Pass: "No handoff differs", with the decisions it had to assume named |
 
@@ -101,7 +101,7 @@ An outside technical review read the code at 4d4f7e0 and set ten acceptance test
 | T01 A late date in a read-back is refused, then accepted once fixed | Site, smoke rows 5 and 6 |
 | T02 No handoff to oneself; only the receiver acknowledges; only an administrator records a decision | Tests (`same_person` in `tests/checkHandoff.test.ts`; section 1 above); site, section 1 |
 | T03 An acknowledgement goes stale when the work item changes | Site, smoke row 7 (due date); labels and components in `tests/drift.test.ts`; a new or replacing decision has no acknowledgement until read back |
-| T04 Fields edited on the transition screen | Fixed in 1c00119: due date, labels, description and components are applied before the check (test). A Jira filter and the assignee are read as stored (stated in `docs/SECURITY.md`). Not tried on a site: no transition screen with those fields is set up |
+| T04 Fields edited on the transition screen | Code (1c00119): due date, labels, description and components in `modifiedFields` are applied before the check (test). Site, 2026-11-18, production 3.62.0, MOBL-58 with the project's default screen put on the transition for the test: the description emptied on the screen went through; typed on the screen over an empty one, it was refused with "The description is empty." So the check used the stored description; why Jira did not bring the edit is not known (no app log could be read). Stated in `docs/LIMITS.md` and `docs/SECURITY.md`: edit those fields before the transition. Not fixed. The screen was taken off again |
 | T05 Two people saving at once | Section 2. Forge storage transactions offer set and delete only, with no condition, so the window of a few milliseconds stays and is stated |
 | T06 Jira or storage failing | Tests (ba122c0): both validators refuse. What an administrator does is in `docs/SECURITY.md`, "When the validator cannot check". A drill with an operations team is not done |
 | T07 The if-then rule on its own, contingency empty | Fixed in a606da7: Needs info, "the sender has not written a contingency" |
