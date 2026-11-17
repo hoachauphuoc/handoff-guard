@@ -41,7 +41,7 @@ const listChange = (field: "labels" | "components", before: string[], after: str
 /** What changed on the work item since the fingerprint was taken. Pure and without a clock. */
 export function changesSince(fp: Fingerprint, item: WorkItem): Drift[] {
   const out: Drift[] = [];
-  if (fp.dueDate !== item.dueDate) out.push({ field: "dueDate", text: `due ${fp.dueDate ?? "not set"} to ${item.dueDate ?? "not set"}` });
+  if (fp.dueDate !== item.dueDate) out.push({ field: "dueDate", text: `due date moved from ${fp.dueDate ?? "not set"} to ${item.dueDate ?? "not set"}` });
   const labels = listChange("labels", fp.labels, item.labels);
   if (labels) out.push(labels);
   const components = listChange("components", fp.components, item.components);

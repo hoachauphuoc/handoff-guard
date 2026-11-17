@@ -40,7 +40,7 @@ describe("changesSince", () => {
   it("shows before and after for due date, labels and components, and only 'changed' for text", () => {
     const now = item({ dueDate: "2026-12-15", labels: ["Launch", "legal"], components: [], summary: "Launch v2", description: "Other body" });
     expect(changesSince(fp, now).map((c) => c.text)).toEqual([
-      "due 2026-12-31 to 2026-12-15",
+      "due date moved from 2026-12-31 to 2026-12-15",
       "labels: added legal",
       "components: removed web",
       "summary changed",
@@ -51,7 +51,7 @@ describe("changesSince", () => {
   });
 
   it("says 'not set' for a missing due date and ignores case and order in lists", () => {
-    expect(changesSince(fingerprintOf(item({ dueDate: null })), item())[0]?.text).toBe("due not set to 2026-12-31");
+    expect(changesSince(fingerprintOf(item({ dueDate: null })), item())[0]?.text).toBe("due date moved from not set to 2026-12-31");
     expect(changesSince(fingerprintOf(item({ labels: ["b", "A"] })), item({ labels: ["a", "B"] }))).toEqual([]);
   });
 });
@@ -89,7 +89,7 @@ describe("staleAcks", () => {
   const acked = record({ acknowledged: ["d1"], acknowledgedWith: { d1: fingerprintOf(item()) } });
 
   it("marks only decisions whose inputs changed, with the reason", () => {
-    expect(staleAcks(acked.acknowledged, acked.acknowledgedWith, item({ dueDate: "2026-12-15" }), [due()])).toEqual({ d1: "due 2026-12-31 to 2026-12-15 since then" });
+    expect(staleAcks(acked.acknowledged, acked.acknowledgedWith, item({ dueDate: "2026-12-15" }), [due()])).toEqual({ d1: "due date moved from 2026-12-31 to 2026-12-15 since then" });
     expect(staleAcks(acked.acknowledged, acked.acknowledgedWith, item({ labels: ["x"] }), [due()])).toEqual({});
     const req = due({ constraints: [{ kind: "labelRequired", label: "legal-reviewed" }] });
     const ackedReq = { d1: fingerprintOf(item({ labels: ["legal-reviewed"] })) };
@@ -125,7 +125,7 @@ describe("a stale acknowledgement in the verdict", () => {
       {
         rule: "decision_not_acknowledged",
         severity: "info_needed",
-        message: 'The receiver acknowledged "Ship by 31 December", but due 2026-12-31 to 2026-12-15 since then; it needs to be acknowledged again.',
+        message: 'The receiver acknowledged "Ship by 31 December", but due date moved from 2026-12-31 to 2026-12-15 since then; it needs to be acknowledged again.',
         decisionId: "d1",
       },
     ]);
