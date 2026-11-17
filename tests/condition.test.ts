@@ -14,6 +14,8 @@ import { changesSince, fingerprintOf, touches } from "../src/handoff/drift";
 import { exampleReadBack } from "../src/handoff/example";
 import type { Decision, Handoff, WorkItem } from "../src/rules/types";
 
+const T = "2026-11-17T00:00:00.000Z";
+
 const JQL = "priority = Highest";
 
 const item = (over: Partial<WorkItem> = {}): WorkItem => ({
@@ -102,10 +104,10 @@ describe("condition elsewhere in the handoff", () => {
   });
 
   it("is addressed by the decision title or the JQL itself, and named when neither appears", () => {
-    expect(unaddressed("Only the highest priority ships, understood and accepted here", [condDecision()])).toEqual([]);
-    expect(unaddressed("This work item has priority = Highest so it is fine to ship now", [condDecision()])).toEqual([]);
-    expect(unaddressed("I read all of this and will follow it carefully", [condDecision()])).toEqual([condDecision()]);
-    expect(readBackProblems("I will follow everything that was decided here", [condDecision()])).toEqual([
+    expect(unaddressed("Only the highest priority ships, understood and accepted here", [condDecision()], T)).toEqual([]);
+    expect(unaddressed("This work item has priority = Highest so it is fine to ship now", [condDecision()], T)).toEqual([]);
+    expect(unaddressed("I read all of this and will follow it carefully", [condDecision()], T)).toEqual([condDecision()]);
+    expect(readBackProblems("I will follow everything that was decided here", [condDecision()], T)).toEqual([
       `Your read-back does not mention "Only the highest priority ships" (condition ${JQL}).`,
     ]);
   });

@@ -2,6 +2,7 @@ import { HINTS } from "../guide/hints";
 import { CONTINGENCY_MIN, isIfThen, norm } from "../rules/checkHandoff";
 import { changeText, type Change } from "../rules/feasible";
 import type { Constraint, Decision, Finding, HandoffResult, Verdict } from "../rules/types";
+import { datesIn } from "./teachback";
 
 /*
  * The I-PASS structure over the rule check, as plain functions. Nothing here decides a verdict: severity is
@@ -94,22 +95,28 @@ const escape = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // A value counts only as a whole word, so the label "ui" is not found inside "build".
 const mentions = (text: string, value: string): boolean => new RegExp(`(?<![a-z0-9])${escape(norm(value))}(?![a-z0-9])`).test(norm(text));
 
+// A receiver names their own date ("I'll ship by 15 December 2026"), not the limit itself, so any date the
+// teach-back reads addresses a date limit; one later than the limit is then refused as a contradiction.
+const addresses = (text: string, c: Constraint, fromIso: string): boolean =>
+  mentions(text, valueOf(c).value) || (c.kind === "dueNotAfter" && datesIn(text, fromIso, Number(c.date.slice(0, 4))).length > 0);
+
 /**
- * The binding decisions the read-back does not address: it neither contains the decision's title nor one of
- * its constraint values (date, label or component), compared the way the rules compare. A decision with no
- * constraints is addressed by any read-back of the minimum length. This checks that each decision is
- * addressed, not that it was understood.
+ * The binding decisions the read-back does not address: it contains neither the decision's title nor one of
+ * its constraint values (date, label or component), compared the way the rules compare, nor, for a date limit,
+ * any date at all. A decision with no constraints is addressed by any read-back of the minimum length.
+ * `fromIso` is the time of the read-back, for a date written without a year. This checks that each decision
+ * is addressed, not that it was understood.
  */
-export function unaddressed(readBack: string, binding: Decision[]): Decision[] {
+export function unaddressed(readBack: string, binding: Decision[], fromIso: string): Decision[] {
   const t = readBack.trim();
-  return binding.filter((d) => (d.constraints.length === 0 ? t.length < READ_BACK_MIN : !mentions(t, d.title) && !d.constraints.some((c) => mentions(t, valueOf(c).value))));
+  return binding.filter((d) => (d.constraints.length === 0 ? t.length < READ_BACK_MIN : !mentions(t, d.title) && !d.constraints.some((c) => addresses(t, c, fromIso))));
 }
 
 /** The reasons a read-back is refused, in words for the receiver. Empty when it is accepted. */
-export function readBackProblems(readBack: string, binding: Decision[]): string[] {
+export function readBackProblems(readBack: string, binding: Decision[], fromIso: string): string[] {
   const t = readBack.trim();
   if (t.length < READ_BACK_MIN || t.length > READ_BACK_MAX) return [`Write a read-back of ${READ_BACK_MIN} to ${READ_BACK_MAX} characters in your own words.`];
-  return unaddressed(t, binding).map((d) => {
+  return unaddressed(t, binding, fromIso).map((d) => {
     const values = d.constraints.map((c) => valueOf(c).text).join(" or ");
     return `Your read-back does not mention "${d.title}"${values ? ` (${values})` : ""}.`;
   });

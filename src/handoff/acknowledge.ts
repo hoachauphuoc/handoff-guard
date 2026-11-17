@@ -48,7 +48,7 @@ export type AckAllResult =
  * each contradiction's reason, in the same order `acknowledgeAll` reports them.
  */
 export function checkReadBack(readBack: string, binding: Decision[], nowIso: string): { problems: string[]; contradictions: Contradiction[] } {
-  const reasons = readBackProblems(readBack, binding);
+  const reasons = readBackProblems(readBack, binding, nowIso);
   const length = readBack.trim().length;
   // A read-back of the wrong length gets only the length reason; there is nothing to compare yet.
   const contradicted = length < READ_BACK_MIN || length > READ_BACK_MAX ? [] : contradictions(readBack, binding, nowIso);

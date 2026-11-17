@@ -11,7 +11,7 @@ import resolvers from "../src/resolvers/index?raw";
 import manifest from "../manifest.yml?raw";
 import readme from "../README.md?raw";
 import checkSource from "../src/rules/checkHandoff?raw";
-import { acknowledge, acknowledgeAll } from "../src/handoff/acknowledge";
+import { acknowledge, acknowledgeAll, checkReadBack } from "../src/handoff/acknowledge";
 import { handoffFrom } from "../src/handoff/build";
 import { withContingency } from "../src/handoff/contingency";
 import { fingerprintOf } from "../src/handoff/drift";
@@ -35,6 +35,8 @@ import muse1 from "../data/samples/muse-20261112T013558Z.json";
 import muse2 from "../data/samples/muse-20261112T013950Z.json";
 import muse3 from "../data/samples/muse-20261112T015137Z.json";
 import adversarial from "../data/samples/sonnet-adversarial.json";
+
+const T = "2026-11-17T00:00:00.000Z";
 
 const item = (over: Partial<WorkItem> = {}): WorkItem => ({
   key: "OPS-1",
@@ -129,33 +131,41 @@ describe("contingency", () => {
 
 describe("read-back", () => {
   it("addresses a decision by its title or by a constraint value, compared the way the rules compare", () => {
-    expect(unaddressed("I will make sure the LEGAL-REVIEWED label is on before the launch", [legal])).toEqual([]);
-    expect(unaddressed("Launch work needs legal review, understood and accepted", [legal])).toEqual([]);
-    expect(unaddressed("The due date must be 2026-12-31 or earlier, got it", [due])).toEqual([]);
-    expect(unaddressed("I read all of this and will follow it carefully", [legal, due])).toEqual([legal, due]);
+    expect(unaddressed("I will make sure the LEGAL-REVIEWED label is on before the launch", [legal], T)).toEqual([]);
+    expect(unaddressed("Launch work needs legal review, understood and accepted", [legal], T)).toEqual([]);
+    expect(unaddressed("The due date must be 2026-12-31 or earlier, got it", [due], T)).toEqual([]);
+    expect(unaddressed("I read all of this and will follow it carefully", [legal, due], T)).toEqual([legal, due]);
+  });
+
+  it("addresses a date limit by the receiver's own date, and leaves a later one to the contradiction check", () => {
+    const text = "I will ship by 15 December 2026 and keep the legal-reviewed label on";
+    expect(unaddressed(text, [legal, due], T)).toEqual([]);
+    expect(checkReadBack(text, [legal, due], T)).toEqual({ problems: [], contradictions: [] });
+    const late = checkReadBack("I will ship on 15 January 2027 and keep the legal-reviewed label on", [legal, due], T);
+    expect(late.problems).toEqual(['Your read-back gives 2027-01-15, later than 2026-12-31, the latest date "Ship by 31 December" allows.']);
   });
 
   it("counts a value only as a whole word", () => {
     const ui: Decision = { ...legal, constraints: [{ kind: "componentRequired", component: "ui" }] };
-    expect(unaddressed("We will build and ship the thing carefully soon", [ui])).toEqual([ui]);
-    expect(unaddressed("The ui component stays on this work item for sure", [ui])).toEqual([]);
+    expect(unaddressed("We will build and ship the thing carefully soon", [ui], T)).toEqual([ui]);
+    expect(unaddressed("The ui component stays on this work item for sure", [ui], T)).toEqual([]);
   });
 
   it("accepts any read-back of the minimum length for a decision with no constraints", () => {
     const none: Decision = { ...legal, constraints: [] };
-    expect(unaddressed("I have read the decision in full", [none])).toEqual([]);
+    expect(unaddressed("I have read the decision in full", [none], T)).toEqual([]);
   });
 
   it("names each decision it does not address, with the values it looked for", () => {
-    expect(readBackProblems("I will follow everything that was decided here", [legal, due])).toEqual([
+    expect(readBackProblems("I will follow everything that was decided here", [legal, due], T)).toEqual([
       'Your read-back does not mention "Launch work needs legal review" (label legal-reviewed).',
       'Your read-back does not mention "Ship by 31 December" (date 2026-12-31).',
     ]);
   });
 
   it("refuses text that is too short or longer than the cap", () => {
-    expect(readBackProblems("legal-reviewed", [legal])).toHaveLength(1);
-    expect(readBackProblems(`legal-reviewed ${"x".repeat(READ_BACK_MAX)}`, [legal])).toHaveLength(1);
+    expect(readBackProblems("legal-reviewed", [legal], T)).toHaveLength(1);
+    expect(readBackProblems(`legal-reviewed ${"x".repeat(READ_BACK_MAX)}`, [legal], T)).toHaveLength(1);
     expect(READ_BACK_MAX).toBe(600);
   });
 });
