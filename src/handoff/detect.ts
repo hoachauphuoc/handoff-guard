@@ -1,15 +1,24 @@
+import { BOUNCE_WINDOW_DAYS, lastAcknowledgedAt } from "../autopsy/bounce";
 import { norm } from "../rules/checkHandoff";
 import type { HandoffRecord } from "./types";
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 const id = (v: unknown): string | null => (typeof v === "string" && v.trim() !== "" ? v : null);
 
+const withinBounceWindow = (record: HandoffRecord, nowIso: string): boolean => {
+  const ack = lastAcknowledgedAt(record);
+  return ack !== null && Date.parse(nowIso) - Date.parse(ack) <= BOUNCE_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+};
+
 /**
  * Reads a Jira changelog for a change of assignee and returns the handoff it implies: the old assignee
  * hands to the new one. Null when there is nothing to record: no assignee change, an assignee removed or
  * newly set (no one handed anything), the same person, or a stored handoff that already names this
  * receiver, whose acknowledgements must survive. A different receiver replaces the record, as preparing
- * a handoff does, so acknowledgements are never carried to a new person. Pure: the clock is passed in.
+ * a handoff does, so acknowledgements are never carried to a new person. The one exception is work coming
+ * back to the sender within the bounce window of the receiver's last acknowledgement: that record is the
+ * evidence of the bounce, so replacing it would hide the very thing the autopsy looks for. Pure: the clock
+ * is passed in.
  */
 export function detectReassignment(items: unknown, existing: HandoffRecord | null, nowIso: string): HandoffRecord | null {
   if (!Array.isArray(items)) return null;
@@ -20,5 +29,6 @@ export function detectReassignment(items: unknown, existing: HandoffRecord | nul
   const to = id(last.to);
   if (from === null || to === null || norm(from) === norm(to)) return null;
   if (existing !== null && norm(existing.toId) === norm(to)) return null;
+  if (existing !== null && norm(existing.fromId) === norm(to) && withinBounceWindow(existing, nowIso)) return null;
   return { fromId: from, toId: to, acknowledged: [], preparedAt: nowIso, acknowledgedAt: {}, origin: "reassignment", protocol: 1 };
 }

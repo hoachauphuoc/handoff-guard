@@ -42,6 +42,14 @@ describe("detectReassignment", () => {
     expect(next).toMatchObject({ fromId: "b", toId: "c", acknowledged: [], acknowledgedAt: {}, origin: "reassignment" });
   });
 
+  it("keeps the record when work comes back to the sender soon after an acknowledgement, so the bounce stays readable", () => {
+    const acked: HandoffRecord = { ...existing, acknowledgedAt: { d1: "2026-11-12T09:00:00.000Z" } };
+    expect(detectReassignment(change("b", "A"), acked, NOW)).toBeNull();
+    // Nothing acknowledged, or the window has passed: it is an ordinary handoff back to the sender.
+    expect(detectReassignment(change("b", "a"), { ...existing, acknowledgedAt: {} }, NOW)).toMatchObject({ fromId: "b", toId: "a" });
+    expect(detectReassignment(change("b", "a"), { ...existing, acknowledgedAt: { d1: "2026-11-01T00:00:00.000Z" } }, NOW)).toMatchObject({ fromId: "b", toId: "a" });
+  });
+
   it("takes the last change when a changelog lists several", () => {
     expect(detectReassignment([...change("a", "b"), ...change("b", "c")], null, NOW)).toMatchObject({ fromId: "b", toId: "c" });
   });
