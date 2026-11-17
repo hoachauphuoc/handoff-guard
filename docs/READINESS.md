@@ -2,7 +2,7 @@
 
 What was tried before the code freeze, along four lines: security, conflicting flows, regression, user experience. Each row says how it was tried and what came out. "Test" means an automated test run by `powershell -File scripts/check.ps1`; "site" means seen on a Jira site with production installed (hoachauphuoc.atlassian.net with two accounts, one a project administrator and one not; one-atlas-hxpc.atlassian.net for Rovo and the workflow validator).
 
-First round: 2026-11-17, production 3.55.0 to 3.59.0.
+First round: 2026-11-17, production 3.55.0 to 3.59.0. Second round the same day, 3.60.0: the rows that were "not tried" after the first.
 
 ## 1. Security: the wrong person, and a payload that lies
 
@@ -36,7 +36,8 @@ Forge storage has no lock. A handoff record carries a save count (`rev`): a chan
 | The due date changed between panel load and acknowledgement | Test, same block | The acknowledgement stores the date Jira has at that moment |
 | 25 reassignments in 0.65 s | Site, OPS-7 to OPS-31 | All 25 handoffs recorded |
 | Reassignment to the same receiver, to another, back to the sender | Tests (existing), `tests/reassign.test.ts` | Acknowledgements kept, dropped, or the record kept for the bounce, as documented |
-| Two saves in the same few milliseconds | Not tried | Cannot be produced from two browsers; the limit is stated above and in `src/store.ts` |
+| Two saves started in the same instant, both read before either writes | Test, `tests/store.test.ts` | Neither is refused and the later write stays; the next save from an older copy is refused. This is the stated limit, now pinned by a test |
+| Three assignee changes sent at once on one work item, 8 work items | Site, OPS-40 to OPS-47 (two changes landed 0.1 s apart on OPS-44) | The stored handoff names the assignee Jira ended with, on all 8 |
 | Activity lines written in a burst | Read of the code | The activity list has no save count; lines can be lost in a burst. It is a trail, not an input to any verdict |
 
 ## 3. Regression: what worked must still work
@@ -55,10 +56,10 @@ Smoke list, run on the site after a production deploy (about 5 minutes, page tex
 | 8 | Bounce autopsy finds the bounced handoffs | 3.58.0 | Pass: 2 of 4 Clear handoffs |
 | 9 | Leaving the project lists what a person holds | 3.58.0 | Pass |
 | 10 | Phone width (375): Decisions page has no sideways scroll | 3.59.0 | Pass |
-| 11 | Workflow validator refuses, naming the findings | 3.55.0, MOBL-53 | Pass for the refusal only; letting a Clear handoff through is under "Not tried" |
+| 11 | Workflow validator refuses, naming the findings | 3.55.0, MOBL-53 | Pass |
+| 11b | Workflow validator lets a Clear handoff through the same transition | 3.59.0, MOBL-58 (To Do to Architecture Review) | Pass, no message |
 | 12 | Rovo agent returns the rule check's verdict and findings | 3.55.0, MOBL-53 | Pass |
-
-Not in this round: Replay on a date (the date picker does not take typed input from automation; last seen working by hand).
+| 13 | Replay on a date, the day picked by clicking the calendar | 3.59.0, OPS, 2026-11-16 | Pass: "No handoff differs", with the decisions it had to assume named |
 
 Mutation spot-check of the fixes of 2026-11-17 (the new condition inverted, the suite run, the file restored): `src/guide/next.ts`, `compareKeys`, the in-flight `missing` list: each caught by a test. The plain-sentence refusal in the resolvers was not caught at first; the tests now name the sentence and catch all three places.
 
@@ -74,9 +75,24 @@ Mutation spot-check of the fixes of 2026-11-17 (the new condition inverted, the 
 
 Left, with the reason: the "Show everything: help, the full handoff, Rovo tools" button is cut at phone width, but its first two words say what it does; the context row on the work item's right side keeps its old value until the page is reloaded (Jira decides when it asks again).
 
+## 5. More than 100 open work items
+
+Tried on OPS with 106 open work items (75 synthetic ones added, then moved to Done), production 3.59.0 and 3.60.0.
+
+| Page | Result |
+|---|---|
+| Decisions page | Loaded in about 9 s; says "the list was cut at 100, so the counts are at least these numbers"; 64 handoffs in flight listed |
+| Leaving the project | Says "Only the first 100 open work items you can see were checked." |
+| Bounce autopsy | Finding: only the first 50 stored handoffs were looked at, and "No Clear handoff bounced." was said without a caveat while two real bounces were out of reach. Fixed in 9f044b3: every stored handoff is looked at and only the Jira history reads are capped at 50; when the list was cut the page says an older bounce can be missing. Seen on 3.60.0: the counts add up (65 = 1 + 64) |
+| Panel on a work item | Unaffected: it reads one work item |
+
+Left: the cut keeps the 100 that Jira returns first, so the newest work items are the ones dropped on the Decisions page and the least recently changed ones in the autopsy. Both pages say the list was cut.
+
+## Critique of the read-back change (040cd9e)
+
+One Gemini critique, 2026-11-17. Two points were about the rule itself: any date in a read-back addresses a date limit, and one addressed constraint addresses the whole decision. Both are as designed: the read-back shows that a decision was addressed, a later date is refused as a contradiction by the next check, and the panel says "addressed, not understood". No change. The other points were about wording for a reader of a pitch, which this diff is not.
+
 ## Not tried
 
 - Three or more people on one work item (two accounts only).
-- More than 100 open work items in a project (the cap is tested in code, `tests/cap.test.ts`, not seen on a site).
 - A screen reader pass and outside testers (the owner's).
-- The validator letting a Clear handoff through on production (needs the receiver's account on the site that has the validator).
