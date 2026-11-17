@@ -20,7 +20,7 @@ First round: 2026-11-17, production 3.55.0 to 3.59.0.
 | The non-administrator account on the site | Site | No administrator buttons on the Decisions page or in the panel |
 | Text a person typed shown to someone else | Read of the code | UI Kit renders it as text; a source link must be https |
 
-Known and left: any person who can see a work item can have the agent store proposals on it (at most a fixed number, and a proposal binds nothing until a project administrator confirms it).
+Known and left: any person who can see a work item can have the agent store proposals on it (at most 5 per work item, and a proposal binds nothing until a project administrator confirms it).
 
 ## 2. Conflicting flows: two people, one record
 
@@ -55,7 +55,7 @@ Smoke list, run on the site after a production deploy (about 5 minutes, page tex
 | 8 | Bounce autopsy finds the bounced handoffs | 3.58.0 | Pass: 2 of 4 Clear handoffs |
 | 9 | Leaving the project lists what a person holds | 3.58.0 | Pass |
 | 10 | Phone width (375): Decisions page has no sideways scroll | 3.59.0 | Pass |
-| 11 | Workflow validator refuses, naming the findings | 3.55.0, MOBL-53 | Pass |
+| 11 | Workflow validator refuses, naming the findings | 3.55.0, MOBL-53 | Pass for the refusal only; letting a Clear handoff through is under "Not tried" |
 | 12 | Rovo agent returns the rule check's verdict and findings | 3.55.0, MOBL-53 | Pass |
 
 Not in this round: Replay on a date (the date picker does not take typed input from automation; last seen working by hand).
