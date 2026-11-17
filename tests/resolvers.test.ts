@@ -49,7 +49,7 @@ const call = (name: string, payload: unknown = {}, accountId: string = context.a
   return fn({ context: { ...context, accountId, extension: { ...context.extension } }, payload });
 };
 const writes = () =>
-  [store.updateDecisions, store.putConditionDrafts, store.deleteItemData, store.deleteConditionDrafts, store.deleteRules, store.resetAudit, store.addAudit, store.purgeLegacyDecisions].filter(
+  [store.updateDecisions, store.putConditionDrafts, store.deleteItemData, store.deleteConditionDrafts, store.deleteRules, store.resetAudit, store.addAudit, store.purgeLegacyDecisions, store.putProposals, store.setRule, store.putRecord, store.replaceRecord].filter(
     (f) => vi.mocked(f).mock.calls.length > 0,
   ).length;
 
@@ -80,6 +80,15 @@ describe("project administrator gate", () => {
     ["confirmConditionDraft", { draftId: "x" }],
     ["exportProject", {}],
     ["deleteProjectData", { confirm: "OPS" }],
+    ["previewDecision", manual],
+    ["loadSampleDecisions", {}],
+    ["removeSampleDecisions", {}],
+    ["confirmProposal", { proposalId: "p1" }],
+    ["dismissProposal", { proposalId: "p1" }],
+    ["supersedeDecision", { decisionId: "d1" }],
+    ["discardConditionDraft", { draftId: "x" }],
+    ["setProjectRule", { rule: "requireContingency", on: true }],
+    ["previewRule", { rule: "requireContingency" }],
   ])("%s refuses a person who is not a project administrator and writes nothing", async (name, payload) => {
     mocks.isAdmin.mockResolvedValue(false);
     await expect(call(name, payload)).rejects.toThrow(MANAGE_DENIED);
@@ -181,7 +190,7 @@ describe("acknowledge all", () => {
     readAs({ ...workItem, assigneeId: "u-receiver" });
     vi.mocked(store.getDecisions).mockResolvedValue(binding);
     vi.mocked(store.getRecord).mockResolvedValue(protocolRecord("u-receiver"));
-    await expect(call("acknowledgeAll", { readBack: "Work ships by the end of 2026: I will deliver by 2026-12-31." }, "u-stranger")).rejects.toThrow();
+    await expect(call("acknowledgeAll", { readBack: "Work ships by the end of 2026: I will deliver by 2026-12-31." }, "u-stranger")).rejects.toThrow("no longer names you as the receiver");
     expect(store.putRecord).not.toHaveBeenCalled();
   });
 
@@ -222,5 +231,77 @@ describe("acknowledge all", () => {
     expect(vi.mocked(store.putRecord).mock.calls.length).toBe(1);
     const [, saved] = vi.mocked(store.putRecord).mock.calls[0] as unknown as [string, HandoffRecord];
     expect(saved.acknowledged).toEqual(expect.arrayContaining(binding.map((d) => d.id)));
+  });
+});
+
+describe("what a caller sends is not trusted", () => {
+  const record = (over: Partial<HandoffRecord> = {}) =>
+    ({ fromId: "u-sender", toId: "u-receiver", acknowledged: [], preparedAt: "t", acknowledgedAt: {}, protocol: 1, ...over }) as unknown as HandoffRecord;
+
+  it("prepare takes the sender and the work item from the session, whatever the payload names", async () => {
+    readAs(workItem);
+    await call("prepareHandoff", { toId: "u-new", fromId: "u-forged", accountId: "u-forged", issueId: "999", issueKey: "SECRET-1" }, "u-assignee");
+    const [issueId, saved] = vi.mocked(store.replaceRecord).mock.calls[0] as unknown as [string, HandoffRecord];
+    expect(issueId).toBe("10001");
+    expect(saved.fromId).toBe("u-assignee");
+    expect(mocks.readItem).toHaveBeenCalledWith("OPS-1");
+  });
+
+  it.each([
+    ["acknowledgeDecision", { decisionId: "d1", accountId: "u-receiver" }, "no longer names you as the receiver"],
+    ["acknowledgeReceipt", { receipt: { "d1:0": "2026-12-01" }, accountId: "u-receiver" }, "no longer names you as the receiver"],
+    ["saveContingency", { text: "If the build fails then call the sender.", accountId: "u-sender" }, "Only the sender"],
+  ])("%s by a person who is neither sender nor receiver writes nothing, even naming someone else", async (name, payload, says) => {
+    readAs(workItem);
+    vi.mocked(store.getDecisions).mockResolvedValue([sampleDecisions("OPS")[0] as Decision]);
+    vi.mocked(store.getRecord).mockResolvedValue(record());
+    await expect(call(name, payload, "u-stranger")).rejects.toThrow(says);
+    expect(writes()).toBe(0);
+  });
+
+  it("a rule switch that is not a plain true or false, or not in the catalogue, changes nothing", async () => {
+    for (const payload of [{ rule: "requireContingency", on: "yes" }, { rule: "requireContingency" }, { rule: "__proto__", on: true }, null]) {
+      await expect(call("setProjectRule", payload)).rejects.toThrow();
+    }
+    expect(store.setRule).not.toHaveBeenCalled();
+  });
+
+  it("a receiver id that is not shaped like an account id is refused before anything is read", async () => {
+    for (const toId of ["a b", "<script>", "x".repeat(129), "u-1;drop"]) {
+      await expect(call("prepareHandoff", { toId })).rejects.toThrow("not a valid receiver");
+    }
+    expect(mocks.readItem).not.toHaveBeenCalled();
+  });
+});
+
+describe("two people on one record", () => {
+  const binding = [sampleDecisions("OPS")[0] as Decision];
+  const record = { fromId: "u-sender", toId: "u-receiver", acknowledged: [], preparedAt: "t", acknowledgedAt: {}, protocol: 1 } as unknown as HandoffRecord;
+  const good = { readBack: "Work ships by the end of 2026: I will deliver by 2026-12-31." };
+
+  it("an acknowledgement that loses the race to another save is refused whole: the error reaches the receiver and no activity line claims it", async () => {
+    readAs({ ...workItem, assigneeId: "u-receiver" });
+    vi.mocked(store.getDecisions).mockResolvedValue(binding);
+    vi.mocked(store.getRecord).mockResolvedValue(record);
+    vi.mocked(store.putRecord).mockRejectedValueOnce(new Error("This handoff was changed a moment ago by someone else. Reload the panel and try again."));
+    await expect(call("acknowledgeAll", good, "u-receiver")).rejects.toThrow("changed a moment ago");
+    expect(store.addAudit).not.toHaveBeenCalled();
+  });
+
+  it("a decision retired while the receiver was typing is not acknowledged: the read-back is checked against what is in force at that moment", async () => {
+    readAs({ ...workItem, assigneeId: "u-receiver" });
+    vi.mocked(store.getDecisions).mockResolvedValue(binding.map((d) => ({ ...d, status: "superseded" }) as Decision));
+    vi.mocked(store.getRecord).mockResolvedValue(record);
+    await expect(call("acknowledgeAll", good, "u-receiver")).rejects.toThrow("No decision applies to this work item any more");
+    expect(store.putRecord).not.toHaveBeenCalled();
+  });
+
+  it("the due date stored with an acknowledgement is the one Jira has at that moment, not the one the panel showed", async () => {
+    readAs({ ...workItem, assigneeId: "u-receiver", dueDate: "2026-12-24" });
+    vi.mocked(store.getDecisions).mockResolvedValue(binding);
+    vi.mocked(store.getRecord).mockResolvedValue(record);
+    await call("acknowledgeAll", good, "u-receiver");
+    const [, saved] = vi.mocked(store.putRecord).mock.calls[0] as unknown as [string, HandoffRecord];
+    expect(JSON.stringify(saved.acknowledgedWith)).toContain("2026-12-24");
   });
 });
