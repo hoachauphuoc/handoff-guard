@@ -71,6 +71,12 @@ describe("inFlight", () => {
     expect(out[0]?.blockedBy).toEqual(["Ship by mid December"]);
     expect(out[2]?.unacknowledged).toBe(1);
   });
+
+  it("lists keys in Jira's order when verdict and age are equal: OPS-8 before OPS-11", () => {
+    const d = { id: "d1", title: "t", status: "decided", source: { kind: "ledger", ref: "r" }, scope: { kind: "project", projectKey: "OPS" }, constraints: [] } as Decision;
+    const out = inFlight(["OPS-11", "OPS-8", "OPS-100", "OPS-9"].map((k) => ({ item: item(k), record: record() })), [d], NOW);
+    expect(out.map((h) => h.key)).toEqual(["OPS-8", "OPS-9", "OPS-11", "OPS-100"]);
+  });
 });
 
 describe("buildDecisionsPage", () => {

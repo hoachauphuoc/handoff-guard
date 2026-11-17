@@ -1,4 +1,5 @@
 import { handoffFrom } from "../handoff/build";
+import { compareKeys } from "../handoff/inflight";
 import type { HandoffRecord } from "../handoff/types";
 import { checkHandoff, norm } from "../rules/checkHandoff";
 import type { Decision, Verdict, WorkItem, ProjectRules } from "../rules/types";
@@ -41,14 +42,14 @@ export function leavingView(
           ? ("none" as const)
           : { toId: e.record.toId, verdict: checkHandoff(handoffFrom(e.item, e.record, decisions, rules), decisions).verdict },
     }))
-    .sort((a, b) => RANK[a.handoff === "none" ? "none" : a.handoff.verdict] - RANK[b.handoff === "none" ? "none" : b.handoff.verdict] || a.key.localeCompare(b.key));
+    .sort((a, b) => RANK[a.handoff === "none" ? "none" : a.handoff.verdict] - RANK[b.handoff === "none" ? "none" : b.handoff.verdict] || compareKeys(a.key, b.key));
   const toAcknowledge = entries
     .flatMap((e) => {
       if (e.record === null || norm(e.record.toId) !== norm(personId)) return [];
       const missing = checkHandoff(handoffFrom(e.item, e.record, decisions, rules), decisions).binding.filter((d) => !e.record?.acknowledged.includes(d.id));
       return missing.length === 0 ? [] : [{ key: e.item.key, summary: e.item.summary, fromId: e.record.fromId, waiting: missing.length }];
     })
-    .sort((a, b) => a.key.localeCompare(b.key));
+    .sort((a, b) => compareKeys(a.key, b.key));
   const mine = decisions
     .filter((d) => d.status === "decided" && d.confirmedBy === personId && touches(d, projectKey))
     .map((d) => ({ id: d.id, title: d.title, reach: reachText(d.scope) }))

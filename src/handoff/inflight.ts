@@ -18,6 +18,18 @@ export type InFlight = {
 const DAY = 86_400_000;
 const RANK: Record<InFlight["verdict"], number> = { blocked: 0, needs_info: 1 };
 
+const keyParts = (key: string): [string, number] => {
+  const dash = key.lastIndexOf("-");
+  return [key.slice(0, dash), Number(key.slice(dash + 1))];
+};
+
+/** Work item keys in the order Jira shows them: OPS-8 before OPS-11, which plain text order reverses. */
+export const compareKeys = (a: string, b: string): number => {
+  const [pa, na] = keyParts(a);
+  const [pb, nb] = keyParts(b);
+  return pa.localeCompare(pb) || na - nb || a.localeCompare(b);
+};
+
 /**
  * Prepared handoffs whose check is not Clear, worst first: blocked before needs info, then the oldest. The
  * order is plain code. The clock is passed in, so the same input always gives the same list.
@@ -48,5 +60,5 @@ export function inFlight(entries: { item: WorkItem; record: HandoffRecord | null
       unacknowledged: result.findings.filter((f) => f.rule === "decision_not_acknowledged").length,
     });
   }
-  return out.sort((a, b) => RANK[a.verdict] - RANK[b.verdict] || b.ageDays - a.ageDays || a.key.localeCompare(b.key));
+  return out.sort((a, b) => RANK[a.verdict] - RANK[b.verdict] || b.ageDays - a.ageDays || compareKeys(a.key, b.key));
 }
