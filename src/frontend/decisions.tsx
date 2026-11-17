@@ -409,7 +409,7 @@ const App = () => {
       {(
         [
           ["requireContingency", "Require a contingency from the sender", "no_contingency"],
-          ["requireIfThen", 'Require the contingency to be written as "if … then …"', "contingency_not_if_then"],
+          ["requireIfThen", 'Require a contingency written as "if … then …"', "contingency_not_if_then"],
           ["requireReceiverAssigned", "Require the work item to be assigned to the receiver", "receiver_not_assignee"],
         ] as const
       ).map(([rule, label, cause]) => {

@@ -30,9 +30,11 @@ describe("optional project rules", () => {
     expect(check({ ...NO_RULES, requireContingency: true }, "call me").verdict).toBe("clear");
   });
 
-  it("require the if-then form only of a contingency that was written", () => {
+  it("require the if-then form, and with it a contingency: an empty one is owed, never a block", () => {
     const rules = { ...NO_RULES, requireIfThen: true };
-    expect(check(rules).verdict).toBe("clear");
+    expect(check(rules).verdict).toBe("needs_info");
+    expect(ids(check(rules))).toEqual(["no_contingency"]);
+    expect(ids(check(rules, "   "))).toEqual(["no_contingency"]);
     expect(ids(check(rules, "call me"))).toEqual(["contingency_not_if_then"]);
     expect(check(rules, "If the export fails, then roll back to the last release.").verdict).toBe("clear");
   });

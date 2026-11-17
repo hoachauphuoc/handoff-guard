@@ -264,7 +264,7 @@ describe("principle guards", () => {
     for (const src of [checkSource, validator]) expect(src).not.toMatch(/ipass|readBack|severityOf|severityText/i);
     expect(validator).not.toMatch(/contingency/i);
     // The rule check reads the contingency only where a project rule asks for it; with no rule it adds nothing.
-    expect(checkSource).toMatch(/if \(handoff\.rules\?\.requireContingency && contingency === ""\)/);
+    expect(checkSource).toMatch(/if \(\(handoff\.rules\?\.requireContingency \|\| handoff\.rules\?\.requireIfThen\) && contingency === ""\)/);
     expect(checkSource).toMatch(/else if \(handoff\.rules\?\.requireIfThen && /);
   });
 

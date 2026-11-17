@@ -136,9 +136,10 @@ export function checkHandoff(handoff: Handoff, decisions: Decision[]): HandoffRe
   // Optional rules of the project. Each is information the sender still owes, never a block, and with no
   // rules switched on this adds nothing: the check is then exactly what it was.
   const contingency = (handoff.contingency ?? "").trim();
-  if (handoff.rules?.requireContingency && contingency === "") {
+  // Asking for the if-then form asks for a contingency, so an empty one gets the finding that says to write it.
+  if ((handoff.rules?.requireContingency || handoff.rules?.requireIfThen) && contingency === "") {
     findings.push({ rule: "no_contingency", severity: "info_needed", message: "The sender has not written a contingency, which this project requires." });
-  } else if (handoff.rules?.requireIfThen && contingency !== "" && !isIfThen(contingency)) {
+  } else if (handoff.rules?.requireIfThen && !isIfThen(contingency)) {
     findings.push({ rule: "contingency_not_if_then", severity: "info_needed", message: `The contingency is not written as "if … then …" in at least ${CONTINGENCY_MIN} characters, which this project requires.` });
   }
 
