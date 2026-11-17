@@ -597,15 +597,16 @@ resolver.define("bounceAutopsy", async ({ context }): Promise<AutopsyState> => {
   const [open, decisions, done] = await Promise.all([recentItemsAsUser(projectKey), getDecisions(projectKey), doneStatusIdsAsUser(projectKey)]);
   const records = await Promise.all(open.items.map((i) => getRecord(i.issueId)));
   const held = open.items.flatMap((i, n) => (records[n] ? [{ item: i.item, record: records[n] as HandoffRecord }] : []));
-  const read = held.slice(0, AUTOPSY_CAP);
-  // Only handoffs that were Clear need a changelog, so those are picked first.
-  const clear = read.flatMap(({ item, record }) => {
+  // Only handoffs that were Clear need a changelog, so those are picked first, from every stored handoff: the
+  // cap is on Jira reads, and cutting the list before this point hid a real bounce behind 50 newer handoffs.
+  const wasClear = held.flatMap(({ item, record }) => {
     const ack = lastAcknowledgedAt(record);
     const asOf = ack === null ? [] : decisionsAsOf(decisions, ack);
     const then = ack === null ? null : replayAt({ item, fromId: record.fromId, toId: record.toId, acknowledged: record.acknowledged, acknowledgedAt: record.acknowledgedAt, preparedAt: record.preparedAt }, asOf, ack);
     return then !== null && then.verdict === "clear" ? [{ item, record, asOf }] : [];
   });
-  const notClear = read.length - clear.length;
+  const clear = wasClear.slice(0, AUTOPSY_CAP);
+  const notClear = held.length - wasClear.length;
   // Up to AUTOPSY_CAP changelogs, read one after another, could outlast the function's time limit; a few at a
   // time keeps the number of Jira calls in flight small.
   const changes: Awaited<ReturnType<typeof changesAsUser>>[] = [];
@@ -619,7 +620,7 @@ resolver.define("bounceAutopsy", async ({ context }): Promise<AutopsyState> => {
     drifted: Object.values(driftByDecision(record.acknowledged, record.acknowledgedWith, item)).some((d) => d.length > 0),
     bindingCount: bindingDecisions(asOf, item).length,
   }));
-  return { ...autopsy(handoffs), withHandoff: held.length, capped: open.capped || held.length > AUTOPSY_CAP, notClear, days: RECENT_DAYS };
+  return { ...autopsy(handoffs), withHandoff: held.length, capped: open.capped || wasClear.length > AUTOPSY_CAP, notClear, days: RECENT_DAYS };
 });
 
 // What the app holds for one project, for a project administrator: decisions, Rovo's condition drafts, the

@@ -477,7 +477,7 @@ const App = () => {
           </Text>
           {autopsy.bounced.length === 0 ? (
             <Text>
-              No Clear handoff bounced. A bounce is a work item that goes back to the sender, or leaves a Done status, within 7 days of the
+              {autopsy.capped ? "No Clear handoff bounced among the work items read; the list was cut at the 100 most recently changed, so an older bounce can be missing." : "No Clear handoff bounced."} A bounce is a work item that goes back to the sender, or leaves a Done status, within 7 days of the
               receiver's last acknowledgement.
             </Text>
           ) : (

@@ -12,6 +12,8 @@ const mocks = vi.hoisted(() => ({
   isAdmin: vi.fn(),
   openItems: vi.fn(),
   readItem: vi.fn(),
+  recentItems: vi.fn(),
+  changes: vi.fn(),
 }));
 
 vi.mock("@forge/resolver", () => ({
@@ -36,6 +38,9 @@ vi.mock("../src/jira", async () => ({
   isProjectAdminAsUser: mocks.isAdmin,
   openItemsAsUser: mocks.openItems,
   readItemAsUser: mocks.readItem,
+  recentItemsAsUser: mocks.recentItems,
+  changesAsUser: mocks.changes,
+  doneStatusIdsAsUser: async () => [],
 }));
 
 import * as store from "../src/store";
@@ -303,5 +308,20 @@ describe("two people on one record", () => {
     await call("acknowledgeAll", good, "u-receiver");
     const [, saved] = vi.mocked(store.putRecord).mock.calls[0] as unknown as [string, HandoffRecord];
     expect(JSON.stringify(saved.acknowledgedWith)).toContain("2026-12-24");
+  });
+});
+
+describe("bounce autopsy with many handoffs", () => {
+  it("reads the Clear handoff that sits behind more than 50 that were never Clear, and caps only the Jira history reads", async () => {
+    const many = Array.from({ length: 60 }, (_, n) => ({ issueId: String(200 + n), item: { ...workItem, key: `OPS-${n + 1}` } }));
+    mocks.recentItems.mockResolvedValue({ items: many, capped: false });
+    mocks.changes.mockResolvedValue([]);
+    // Only the 56th was acknowledged, so only it was ever Clear; the others have nothing acknowledged.
+    vi.mocked(store.getRecord).mockImplementation(async (id: string) =>
+      ({ fromId: "u-sender", toId: "u-receiver", preparedAt: "2026-11-01T00:00:00.000Z", acknowledged: id === "255" ? ["x"] : [], acknowledgedAt: id === "255" ? { x: "2026-11-02T00:00:00.000Z" } : {} }) as unknown as HandoffRecord,
+    );
+    const out = (await call("bounceAutopsy")) as { withHandoff: number; total: number; notClear: number; capped: boolean };
+    expect(out).toMatchObject({ withHandoff: 60, total: 1, notClear: 59, capped: false });
+    expect(mocks.changes.mock.calls.map((c) => c[0])).toEqual(["OPS-56"]);
   });
 });
