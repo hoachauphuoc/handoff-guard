@@ -501,7 +501,7 @@ const App = () => {
                 </Text>
               )}
               {(state.drift[d.id] ?? []).length > 0 && (
-                <Text>{`${state.isReceiver ? "Changed since you acknowledged" : "Changed since the receiver acknowledged"}: ${(state.drift[d.id] ?? []).join("; ")}.`}</Text>
+                <Text>{`${state.isReceiver ? "Changed since you acknowledged" : "Changed since the receiver acknowledged"}${state.stale.includes(d.id) ? "" : " (this rule does not read it)"}: ${(state.drift[d.id] ?? []).join("; ")}.`}</Text>
               )}
               {!protocol && state.isReceiver && (!record.acknowledged.includes(d.id) || state.stale.includes(d.id)) && (
                 <Button isDisabled={busy} onClick={() => {

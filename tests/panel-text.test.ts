@@ -213,6 +213,12 @@ describe("typed receipt", () => {
   });
 });
 
+describe("changes since an acknowledgement", () => {
+  it("says when a change is one the decision does not read, so it is not mistaken for a stale one", () => {
+    expect(panel).toContain('state.stale.includes(d.id) ? "" : " (this rule does not read it)"');
+  });
+});
+
 describe("leaving the project", () => {
   it("never says handed over for work that is still assigned to the person", async () => {
     const { default: page } = await import("../src/frontend/decisions.tsx?raw");
