@@ -35,7 +35,9 @@ export function nextStep(s: PanelState): NextStep {
     }
     if (result.verdict === "clear") return { kind: "done", title: "Nothing to do", how: "The handoff is Clear: nothing is missing and the receiver has confirmed every rule." };
     if (!s.isReceiver && s.fixes.length > 0) {
-      return { kind: "fix", title: "Fix the work item", how: "The work item breaks a rule that applies to it. Make the change below in Jira, then reload this panel." };
+      // A suggested edit can fill a gap (no due date yet) as well as end a contradiction; only the second breaks a rule.
+      const breaks = result.findings.some((f) => f.rule === "contradicts_decision");
+      return { kind: "fix", title: "Fix the work item", how: `${breaks ? "The work item breaks a rule that applies to it" : "The work item is missing something a rule that applies to it needs"}. Make the change below in Jira, then reload this panel.` };
     }
     // A Jira filter has no edit to suggest, but the receiver cannot clear it either: the work item has to change.
     if (!s.isReceiver && result.findings.some((f) => f.rule === "contradicts_decision")) {

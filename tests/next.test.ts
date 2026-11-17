@@ -45,6 +45,14 @@ describe("the viewer's next step", () => {
     expect(nextStep(state({ record, result: blocked })).kind).toBe("wait_receiver");
   });
 
+  it("says a rule is broken only when a finding contradicts a decision, not when something is only missing", () => {
+    const fixes = ["Set the due date on or before 2026-12-31"];
+    const missing: HandoffResult = { ...blocked, findings: [{ rule: "no_due_date", severity: "info_needed", message: "m" }] };
+    expect(nextStep(state({ record, result: missing, fixes })).how).not.toContain("breaks a rule");
+    const broken: HandoffResult = { ...blocked, findings: [{ rule: "contradicts_decision", severity: "block", message: "m" }] };
+    expect(nextStep(state({ record, result: broken, fixes })).how).toContain("breaks a rule");
+  });
+
   it("is picking another receiver after a handoff to oneself, for who may prepare again", () => {
     const self: HandoffResult = { ...blocked, verdict: "blocked", findings: [{ rule: "same_person", severity: "block", message: "m" }] };
     const toSelf = { ...record, toId: "me", acknowledged: ["d1"] };
