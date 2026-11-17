@@ -92,6 +92,23 @@ Left: the cut keeps the 100 that Jira returns first, so the newest work items ar
 
 One Gemini critique, 2026-11-17. Two points were about the rule itself: any date in a read-back addresses a date limit, and one addressed constraint addresses the whole decision. Both are as designed: the read-back shows that a decision was addressed, a later date is refused as a contradiction by the next check, and the panel says "addressed, not understood". No change. The other points were about wording for a reader of a pitch, which this diff is not.
 
+## Independent review, 2026-11-17
+
+An outside technical review read the code at 4d4f7e0 and set ten acceptance tests. Where each stands:
+
+| Test | Where it stands |
+|---|---|
+| T01 A late date in a read-back is refused, then accepted once fixed | Site, smoke rows 5 and 6 |
+| T02 No handoff to oneself; only the receiver acknowledges; only an administrator records a decision | Tests (`same_person` in `tests/checkHandoff.test.ts`; section 1 above); site, section 1 |
+| T03 An acknowledgement goes stale when the work item changes | Site, smoke row 7 (due date); labels and components in `tests/drift.test.ts`; a new or replacing decision has no acknowledgement until read back |
+| T04 Fields edited on the transition screen | Fixed in 1c00119: due date, labels, description and components are applied before the check (test). A Jira filter and the assignee are read as stored (stated in `docs/SECURITY.md`). Not tried on a site: no transition screen with those fields is set up |
+| T05 Two people saving at once | Section 2. Forge storage transactions offer set and delete only, with no condition, so the window of a few milliseconds stays and is stated |
+| T06 Jira or storage failing | Tests (ba122c0): both validators refuse. What an administrator does is in `docs/SECURITY.md`, "When the validator cannot check". A drill with an operations team is not done |
+| T07 The if-then rule on its own, contingency empty | Fixed in a606da7: Needs info, "the sender has not written a contingency" |
+| T08 Export and delete beyond 100 open items or on done items | Section 5. They are not reached; the Decisions page and `docs/PRIVACY.md` say their data stays until the app is uninstalled (sentence put back in e4fd975) |
+| T09 MCP calls by people with different roles | Not tried: no live call from an outside MCP client yet |
+| T10 An outside pilot | Not done; the protocol is in `docs/PILOT.md` |
+
 ## Not tried
 
 - Three or more people on one work item (two accounts only).
