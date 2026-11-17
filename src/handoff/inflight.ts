@@ -13,6 +13,8 @@ export type InFlight = {
   /** Titles of the decisions the work item contradicts. */
   blockedBy: string[];
   unacknowledged: number;
+  /** What else the rule check says is missing, in its own words: an acknowledgement alone would not make these Clear. */
+  missing: string[];
 };
 
 const DAY = 86_400_000;
@@ -58,6 +60,7 @@ export function inFlight(entries: { item: WorkItem; record: HandoffRecord | null
         ),
       ],
       unacknowledged: result.findings.filter((f) => f.rule === "decision_not_acknowledged").length,
+      missing: result.findings.filter((f) => f.rule !== "contradicts_decision" && f.rule !== "decision_not_acknowledged").map((f) => f.message),
     });
   }
   return out.sort((a, b) => RANK[a.verdict] - RANK[b.verdict] || b.ageDays - a.ageDays || compareKeys(a.key, b.key));

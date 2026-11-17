@@ -392,6 +392,7 @@ const App = () => {
           </Text>
           {h.blockedBy.length > 0 && <Text>{`Contradicts: ${h.blockedBy.join("; ")}.`}</Text>}
           {h.unacknowledged > 0 && <Text>{`${count(h.unacknowledged, "decision")} not acknowledged by the receiver.`}</Text>}
+          {h.missing.length > 0 && <Text>{h.missing.join(" ")}</Text>}
         </Stack>
       ))}
       <Heading size="small">Extra checks for every handoff (optional)</Heading><Text>Each check here is off until a project administrator switches it on.</Text>

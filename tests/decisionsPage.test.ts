@@ -72,6 +72,12 @@ describe("inFlight", () => {
     expect(out[2]?.unacknowledged).toBe(1);
   });
 
+  it("names what else is missing, so an entry does not look as if an acknowledgement would clear it", () => {
+    const d = { id: "d1", title: "t", status: "decided", source: { kind: "ledger", ref: "r" }, scope: { kind: "project", projectKey: "OPS" }, constraints: [] } as Decision;
+    const out = inFlight([{ item: item("OPS-2", { dueDate: null }), record: record() }, { item: item("OPS-3", { dueDate: "2026-12-01" }), record: record() }], [d], NOW);
+    expect(out.map((h) => h.missing)).toEqual([["No due date is set."], []]);
+  });
+
   it("lists keys in Jira's order when verdict and age are equal: OPS-8 before OPS-11", () => {
     const d = { id: "d1", title: "t", status: "decided", source: { kind: "ledger", ref: "r" }, scope: { kind: "project", projectKey: "OPS" }, constraints: [] } as Decision;
     const out = inFlight(["OPS-11", "OPS-8", "OPS-100", "OPS-9"].map((k) => ({ item: item(k), record: record() })), [d], NOW);
