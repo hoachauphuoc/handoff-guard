@@ -1,0 +1,22 @@
+# Limits: the full list
+
+The four that matter most are in the README; these are all of them.
+
+- "Leaving the project" covers only the open work items of that project that you can see, up to the page's limit, and it does not know whether a person has left: someone picks the name.
+- The workflow validator reads the work item as the app, not as the person making the transition, so it can check an item that person may not see. It returns only findings. Project rules are re-read just before each change and the activity list is re-read just before each append; neither is atomic, so two changes within milliseconds can lose one.
+- Decisions are stored under one storage key per project, and a save is refused when another save landed first. Forge storage has no atomic compare-and-set here, so a window of a few milliseconds remains, and a project with a very large number of decisions would still hit the size limit of its value.
+- The workflow validator lets a transition through when the prepared handoff is Clear and the work item is held by its sender, its receiver or nobody. It refuses when a third person is the assignee. It does not require that the receiver is already the assignee; the panel shows that mismatch as advice.
+- Confirming, adding and superseding a decision, and loading or removing sample decisions, need a project administrator (Jira's own "Administer projects" permission, asked as the person). If Jira cannot answer, the app treats the person as not an administrator. Once a handoff is prepared, only its sender, the assignee or a project administrator can prepare it again.
+- A proposed decision is kept only if its quote is in the work item's text; that does not prove the constraint follows from the quote. Read both before confirming.
+- A decision scoped to a label binds only the project it was confirmed in.
+- An agent can be the receiver of a handoff, by assigning it in the Assignee field, but it cannot acknowledge, so that handoff stays Needs info until a person changes the receiver.
+- The read-back checks that each decision is addressed, not that it was understood.
+- Teach-back catches only a fixed list of patterns: late dates, negation or "optional" wording around a required label or component, and adding wording before a forbidden one. It can miss other contradictions, and can misread a nearby negation about something else (the receiver then rewrites the read-back). Loose dates ("early January") and indirect wording are among what it misses.
+- The model sentence beside a teach-back refusal is sent the read-back and the code's reasons. Its wording varies between attempts.
+- Superseding a decision from the Decisions page needs a project administrator. A decision with a recorded confirmer can be superseded only by that confirmer. "Confirm and supersede" in the panel retires the older decisions the new one makes redundant that you may supersede (you are a project administrator, and you confirmed them or they have no recorded confirmer); a decision someone else confirmed stays in force and the panel names it.
+- Reassigning a work item to a different person starts a new handoff record: the earlier acknowledgements, read-back and contingency are not carried over.
+- A handoff prepared before read-back existed keeps one acknowledgement per decision, and the panel says that no read-back was checked.
+- A Jira filter decision is evaluated by Jira: as the viewer in the panel, the Rovo actions and the counts, and as the app in the workflow validator, so results can differ where permissions differ. The validator checks the stored work item, not fields changed on the transition screen. At most 5 filters per project are evaluated; the rest read as not checked. Replay on a date evaluates a filter as of now.
+- Teach-back has no contradiction pattern for a filter or a commitment: the receiver addresses them by title, and code cannot compare prose with JQL.
+- Rovo writes the filter and can write a wrong one. The counts and keys come from Jira, are shown before anything is stored, and a person confirms; the Rovo counts cover only the first 100 open work items and say so.
+- A label decision stored before labels carried a project (only on old development data) still binds work items but is not counted in the panel's "decisions in force".

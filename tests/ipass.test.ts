@@ -10,6 +10,7 @@ import panel from "../src/frontend/index.tsx?raw";
 import resolvers from "../src/resolvers/index?raw";
 import manifest from "../manifest.yml?raw";
 import readme from "../README.md?raw";
+import limitsDoc from "../docs/LIMITS.md?raw";
 import checkSource from "../src/rules/checkHandoff?raw";
 import { acknowledge, acknowledgeAll, checkReadBack } from "../src/handoff/acknowledge";
 import { handoffFrom } from "../src/handoff/build";
@@ -306,7 +307,7 @@ describe("principle guards", () => {
     });
 
     it("states the limits: an agent cannot acknowledge, and the read-back checks coverage", () => {
-      const limits = section("Limits");
+      const limits = limitsDoc;
       expect(limits).toContain("it cannot acknowledge, so that handoff stays Needs info until a person changes the receiver");
       expect(limits).toContain(READ_BACK_NOTE);
     });
