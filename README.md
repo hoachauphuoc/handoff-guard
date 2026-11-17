@@ -60,7 +60,7 @@ Without Rovo, the form on the Decisions page does all of this by hand.
 
 ## Accessibility
 
-Every text box in the panel has a label, the verdict and each step carry a word as well as a colour, and a refusal is shown in an error box with its reasons as text. The panel has not been tested with a screen reader or with the keyboard alone.
+Every text box in the panel has a label, the verdict and each step carry a word as well as a colour, and a refusal is shown in an error box with its reasons as text. The panel has not been tested with a screen reader or with the keyboard alone. What was tried before the freeze, and what was not, is in `docs/READINESS.md`.
 
 ## Joining, handing over, leaving
 
@@ -90,7 +90,7 @@ Every scope in `manifest.yml` and why it is there. A test fails if this table an
 
 ## Rovo MCP server
 
-The app has one `rovo:mcp` module ("Handoff Guard") that exposes the same eight actions the Rovo agent uses: `check-handoff`, `list-binding-decisions`, `read-decision-source`, `propose-decisions`, `gather-handoff-context`, `draft-receipt`, `check-condition`, `draft-condition`. External access is off by default. A site admin turns it on per installation in Atlassian Administration (Apps, Sites, the site, Connected apps, this app, Tools). The endpoint is `https://mcp.atlassian.com/forge/8d2f4029-5c7f-49b4-a2b7-701a0ca1c1d2` (the app id in `manifest.yml`). Tools run with the calling user's permissions. Over MCP there is no work item context, so pass `issueKey` such as `OPS-1`. `propose-decisions` only saves proposals and `draft-condition` only saves drafts; a person confirms them in the panel or on the Decisions page. `check-condition` takes `projectKey`.
+The app has one `rovo:mcp` module ("Handoff Guard") that exposes the same eight actions the Rovo agent uses: `check-handoff`, `list-binding-decisions`, `read-decision-source`, `propose-decisions`, `gather-handoff-context`, `draft-receipt`, `check-condition`, `draft-condition`. External access is off by default. A site admin turns it on per installation in Atlassian Administration (Apps, Sites, the site, Connected apps, this app, Tools). The endpoint is `https://mcp.atlassian.com/forge/8d2f4029-5c7f-49b4-a2b7-701a0ca1c1d2` (the app id in `manifest.yml`). Tools run with the calling user's permissions. Over MCP there is no work item context, so pass `issueKey` such as `OPS-1`. `propose-decisions` only saves proposals and `draft-condition` only saves drafts; a person confirms them in the panel or on the Decisions page. `check-condition` takes `projectKey`. A call from an outside MCP client has not been seen working yet; the same actions have been seen through the Rovo agent.
 
 ## I-PASS structure
 
@@ -155,7 +155,7 @@ The full list is in `docs/LIMITS.md`.
 
 ## Privacy and security
 
-See `docs/PRIVACY.md` and `docs/SECURITY.md`.
+See `docs/PRIVACY.md` and `docs/SECURITY.md`. `docs/READINESS.md` records what was tried: each of the 13 resolvers that change decisions, rules or project data refuses a person who is not a project administrator (tests), the workflow validator was seen refusing a handoff and letting a Clear one through, and the pages were seen saying when a list was cut at 100 open work items.
 
 ## For developers
 
