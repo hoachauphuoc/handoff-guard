@@ -80,24 +80,70 @@ beforeEach(() => {
 describe("project administrator gate", () => {
   const manual = { title: "Ships by the end of 2026", scope: "project", scopeValue: "", constraint: "dueNotAfter", constraintValue: "2026-12-31", supersede: false };
 
-  it.each([
-    ["addDecision", manual],
-    ["confirmConditionDraft", { draftId: "x" }],
-    ["exportProject", {}],
-    ["deleteProjectData", { confirm: "OPS" }],
-    ["previewDecision", manual],
-    ["loadSampleDecisions", {}],
-    ["removeSampleDecisions", {}],
-    ["confirmProposal", { proposalId: "p1" }],
-    ["dismissProposal", { proposalId: "p1" }],
-    ["supersedeDecision", { decisionId: "d1" }],
-    ["discardConditionDraft", { draftId: "x" }],
-    ["setProjectRule", { rule: "requireContingency", on: true }],
-    ["previewRule", { rule: "requireContingency" }],
-  ])("%s refuses a person who is not a project administrator and writes nothing", async (name, payload) => {
-    mocks.isAdmin.mockResolvedValue(false);
-    await expect(call(name, payload)).rejects.toThrow(MANAGE_DENIED);
-    expect(writes()).toBe(0);
+  // A new resolver must land in exactly one of these two lists, or the decision test below names it.
+  const ADMIN_ONLY = [
+    "addDecision",
+    "confirmConditionDraft",
+    "exportProject",
+    "deleteProjectData",
+    "previewDecision",
+    "loadSampleDecisions",
+    "removeSampleDecisions",
+    "confirmProposal",
+    "dismissProposal",
+    "supersedeDecision",
+    "discardConditionDraft",
+    "setProjectRule",
+    "previewRule",
+  ];
+  const OPEN_TO_VIEWERS = [
+    "getPanel", // reads only
+    "getStart", // reads only
+    "getDecisionsPage", // reads only
+    "getLeaving", // reads only
+    "getMarked", // reads only
+    "gatherContext", // reads only
+    "replayOn", // reads only
+    "bounceAutopsy", // reads only
+    "practiceReadBack", // reads only and stores nothing
+    "prepareHandoff", // limited to the sender, the assignee or an administrator by its own check
+    "acknowledgeDecision", // limited to the receiver by its own check
+    "acknowledgeAll", // limited to the receiver by its own check
+    "acknowledgeReceipt", // limited to the receiver by its own check
+    "saveContingency", // limited to the sender by its own check
+  ];
+  const payloadFor: Record<string, unknown> = {
+    addDecision: manual,
+    confirmConditionDraft: { draftId: "x" },
+    exportProject: {},
+    deleteProjectData: { confirm: "OPS" },
+    previewDecision: manual,
+    loadSampleDecisions: {},
+    removeSampleDecisions: {},
+    confirmProposal: { proposalId: "p1" },
+    dismissProposal: { proposalId: "p1" },
+    supersedeDecision: { decisionId: "d1" },
+    discardConditionDraft: { draftId: "x" },
+    setProjectRule: { rule: "requireContingency", on: true },
+    previewRule: { rule: "requireContingency" },
+  };
+
+  it.each(ADMIN_ONLY.map((name): [string, unknown] => [name, payloadFor[name]]))(
+    "%s refuses a person who is not a project administrator and writes nothing",
+    async (name, payload) => {
+      mocks.isAdmin.mockResolvedValue(false);
+      await expect(call(name, payload)).rejects.toThrow(MANAGE_DENIED);
+      expect(writes()).toBe(0);
+    },
+  );
+
+  it("every registered resolver is in exactly one of ADMIN_ONLY or OPEN_TO_VIEWERS", () => {
+    for (const name of [...mocks.defined.keys()].sort()) {
+      if (ADMIN_ONLY.includes(name) === OPEN_TO_VIEWERS.includes(name)) throw new Error(`resolver ${name} must be in exactly one of ADMIN_ONLY or OPEN_TO_VIEWERS`);
+    }
+    for (const name of [...ADMIN_ONLY, ...OPEN_TO_VIEWERS].sort()) {
+      if (!mocks.defined.has(name)) throw new Error(`listed resolver ${name} is not registered`);
+    }
   });
 });
 
