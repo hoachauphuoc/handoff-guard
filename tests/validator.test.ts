@@ -195,4 +195,36 @@ describe("validator", () => {
     expect(withConditions).toHaveBeenNthCalledWith(1, expect.any(Array), expect.any(Array), "app");
     expect(withConditions).toHaveBeenNthCalledWith(2, expect.any(Array), expect.any(Array), "app");
   });
+
+  it("fails closed when reading the decisions fails", async () => {
+    mocks.getDecisions.mockRejectedValue(new Error("storage failure"));
+
+    const [a, b] = await Promise.all([validate({ issue: { key: "ABC-1" } }), validateDecisions({ issue: { key: "ABC-1" } })]);
+
+    for (const res of [a, b]) {
+      expect(res.result).toBe(false);
+      expect(res.errorMessage).toMatch(/^Handoff Guard could not check this work item/);
+    }
+  });
+
+  it("fails closed when reading the handoff record fails", async () => {
+    mocks.getRecord.mockRejectedValueOnce(new Error("storage failure"));
+
+    const res = await validate({ issue: { key: "ABC-1" } });
+
+    expect(res.result).toBe(false);
+    expect(res.errorMessage).toMatch(/^Handoff Guard could not check this work item/);
+  });
+
+  it("fails closed when evaluating the filter fails, for both entry points", async () => {
+    mocks.withConditions.mockRejectedValueOnce(new Error("jira failure"));
+    const gated = await validate({ issue: { key: "ABC-1" } });
+    expect(gated.result).toBe(false);
+    expect(gated.errorMessage).toMatch(/^Handoff Guard could not check this work item/);
+
+    mocks.withConditions.mockRejectedValueOnce(new Error("jira failure"));
+    const decisionsOnly = await validateDecisions({ issue: { key: "ABC-1" } });
+    expect(decisionsOnly.result).toBe(false);
+    expect(decisionsOnly.errorMessage).toMatch(/^Handoff Guard could not check this work item/);
+  });
 });
