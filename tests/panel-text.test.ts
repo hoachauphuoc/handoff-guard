@@ -213,6 +213,14 @@ describe("typed receipt", () => {
   });
 });
 
+describe("leaving the project", () => {
+  it("never says handed over for work that is still assigned to the person", async () => {
+    const { default: page } = await import("../src/frontend/decisions.tsx?raw");
+    expect(page).not.toContain("Handed over.");
+    expect(page).toContain("but the work item is still assigned to this person.");
+  });
+});
+
 describe("two-click buttons", () => {
   it("offer a Cancel after the first click, so nothing needs a page reload to undo", async () => {
     const { default: page } = await import("../src/frontend/decisions.tsx?raw");

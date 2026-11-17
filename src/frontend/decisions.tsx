@@ -521,7 +521,9 @@ const App = () => {
               {a.handoff === "none" ? (
                 <Text>Prepare a handoff on this work item.</Text>
               ) : a.handoff.verdict === "clear" ? (
-                <Text>Handed over.</Text>
+                <Text>
+                  Nothing missing for <User accountId={a.handoff.toId} />, but the work item is still assigned to this person.
+                </Text>
               ) : (
                 <Text>
                   Prepared to <User accountId={a.handoff.toId} />: {a.handoff.verdict === "blocked" ? "Blocked" : "Needs info"}. Resolve the findings
