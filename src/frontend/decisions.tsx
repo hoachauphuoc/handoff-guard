@@ -599,12 +599,12 @@ const App = () => {
           <Heading size="small">Export and delete (project administrators)</Heading>
           <Text>
             Export shows what the app holds for this project as JSON: decisions, drafts from Rovo, the project rules switched on, the activity
-            list, and for the open work items you can see (the first 100) their handoffs, proposals and unsigned read-back drafts. Copy it from the box.
+            list, and for the open work items you can see (the first 100) their handoffs, proposals and unsigned read-back drafts. Work items that are done, that you cannot see, or beyond the first 100 open ones are not in it, and their data stays until the app is uninstalled.
           </Text>
           <Button onClick={() => void exportData()}>Export this project's data</Button>
           {exported !== null && <CodeBlock language="json" text={exported} />}
           <Text>
-            Delete removes the same data from the app for good, and Jira is not changed. Work items that are done, that you cannot see, or beyond the first 100 open ones keep their data.
+            Delete removes the same data from the app for good, and Jira is not changed. Work items that are done, that you cannot see, or beyond the first 100 open ones keep their data until the app is uninstalled.
           </Text>
           <Label labelFor="delete-key">{`Project key to confirm (${state.projectKey})`}</Label>
           <Textfield
