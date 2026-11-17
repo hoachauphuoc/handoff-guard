@@ -177,6 +177,14 @@ describe("the receiver's date boxes", () => {
   });
 });
 
+describe("a refused set of typed answers", () => {
+  it("is shown under the button that sent it, not only above the list", () => {
+    expect(panel).toContain("ackNotes.length > 0 && !ackFromReceipt");
+    expect(panel).toContain("ackNotes.length > 0 && ackFromReceipt");
+    expect(panel.indexOf("ackNotes.length > 0 && ackFromReceipt")).toBeGreaterThan(panel.indexOf("Acknowledge all with these answers"));
+  });
+});
+
 describe("acknowledging under protocol 1", () => {
   const binding = [legal, due];
   const text = "I will keep the legal-reviewed label on and finish by 2026-12-31 at the latest";

@@ -113,6 +113,8 @@ const App = () => {
   // Refusals a person can cause are answers, not failures to check: they appear beside their box and the panel stays.
   const [contingencyNote, setContingencyNote] = useState<string | null>(null);
   const [ackNotes, setAckNotes] = useState<string[]>([]);
+  // A refusal of the typed answers is shown under their button, which sits far below the top of the list.
+  const [ackFromReceipt, setAckFromReceipt] = useState(false);
   const [explanation, setExplanation] = useState<Explanation | null>(null);
   const [practiceText, setPracticeText] = useState("");
   const [practice, setPractice] = useState<PracticeReadBackReply | null>(null);
@@ -165,6 +167,7 @@ const App = () => {
   const acknowledgeAll = () => {
     setBusy(true);
     setAckNotes([]);
+    setAckFromReceipt(false);
     setExplanation(null);
     return invoke<AcknowledgeAllReply>("acknowledgeAll", { readBack })
       .then(
@@ -185,6 +188,7 @@ const App = () => {
   const acknowledgeReceipt = () => {
     setBusy(true);
     setAckNotes([]);
+    setAckFromReceipt(true);
     setExplanation(null);
     return invoke<AcknowledgeAllReply>("acknowledgeReceipt", { receipt })
       .then(
@@ -500,7 +504,10 @@ const App = () => {
                 <Text>{`${state.isReceiver ? "Changed since you acknowledged" : "Changed since the receiver acknowledged"}: ${(state.drift[d.id] ?? []).join("; ")}.`}</Text>
               )}
               {!protocol && state.isReceiver && (!record.acknowledged.includes(d.id) || state.stale.includes(d.id)) && (
-                <Button isDisabled={busy} onClick={() => void callInPlace("acknowledgeDecision", { decisionId: d.id }, setAckNotes)}>
+                <Button isDisabled={busy} onClick={() => {
+                  setAckFromReceipt(false);
+                  void callInPlace("acknowledgeDecision", { decisionId: d.id }, setAckNotes);
+                }}>
                   {state.stale.includes(d.id) ? "Acknowledge again" : "Acknowledge"}
                 </Button>
               )}
@@ -511,7 +518,7 @@ const App = () => {
               )}
             </Stack>
           ))}
-          {ackNotes.length > 0 && (
+          {ackNotes.length > 0 && !ackFromReceipt && (
             <SectionMessage appearance="error" title="Not accepted">
               {ackNotes.map((n, i) => (
                 <Text key={i}>{n}</Text>
@@ -592,6 +599,13 @@ const App = () => {
               <Button isDisabled={busy} onClick={() => void acknowledgeReceipt()}>
                 Acknowledge all with these answers
               </Button>
+              {ackNotes.length > 0 && ackFromReceipt && (
+                <SectionMessage appearance="error" title="Not accepted">
+                  {ackNotes.map((n, i) => (
+                    <Text key={i}>{n}</Text>
+                  ))}
+                </SectionMessage>
+              )}
             </>
           )}
           {/* The practice block already says what the code reads; the same paragraph twice on one screen is noise. */}
