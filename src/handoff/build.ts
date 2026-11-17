@@ -1,3 +1,4 @@
+import { adfToText } from "../adf";
 import { bindingDecisions } from "../rules/checkHandoff";
 import { NO_RULES, type Decision, type Finding, type Handoff, type HandoffResult, type ProjectRules, type WorkItem } from "../rules/types";
 import { staleAcks } from "./drift";
@@ -29,8 +30,9 @@ export function toWorkItem(key: string, fields: JiraFields): WorkItem {
 
 /**
  * Overlays the fields a transition screen is about to save, so the check sees the state after the move.
- * Only due date and labels are applied. Description arrives as a REST v3 document tree and components
- * as objects the rules cannot trust, so they are left as stored on purpose.
+ * Due date, labels, description (a REST v3 document, read as text) and components (objects; only their
+ * names are kept) are applied. The assignee is left as stored: a change of assignee starts a new handoff
+ * through the trigger, which the transition cannot wait for.
  */
 export function applyModifiedFields(item: WorkItem, modified: Record<string, unknown> | undefined): WorkItem {
   if (!modified) return item;
@@ -42,6 +44,13 @@ export function applyModifiedFields(item: WorkItem, modified: Record<string, unk
   if ("labels" in modified) {
     const v = modified.labels;
     next.labels = Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+  }
+  if ("description" in modified) next.description = modified.description === null ? "" : adfToText(modified.description);
+  if ("components" in modified) {
+    const v = modified.components;
+    next.components = Array.isArray(v)
+      ? v.flatMap((c) => (typeof c === "object" && c !== null && typeof (c as { name?: unknown }).name === "string" ? [(c as { name: string }).name] : []))
+      : [];
   }
   return next;
 }

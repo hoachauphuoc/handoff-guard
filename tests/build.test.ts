@@ -27,9 +27,12 @@ describe("applyModifiedFields", () => {
     });
     expect(applyModifiedFields(item, { duedate: null, labels: null })).toMatchObject({ dueDate: null, labels: [] });
   });
-  it("ignores description and components, and does not mutate", () => {
-    const out = applyModifiedFields(item, { description: { type: "doc" }, components: [] });
-    expect(out).toEqual(item);
+  it("applies description as text and components by name, clearing them on null, and does not mutate", () => {
+    const doc = { type: "doc", version: 1, content: [{ type: "paragraph", content: [{ type: "text", text: "Completely new description" }] }] };
+    const out = applyModifiedFields(item, { description: doc, components: [{ id: "1", name: "legacy-billing" }, { id: "2" }, "x"] });
+    expect(out).toMatchObject({ description: "Completely new description", components: ["legacy-billing"] });
+    expect(item).toMatchObject({ description: "Body", components: ["web"] });
+    expect(applyModifiedFields(item, { description: null, components: null })).toMatchObject({ description: "", components: [] });
     expect(applyModifiedFields(item, undefined)).toBe(item);
   });
 });

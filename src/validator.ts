@@ -15,7 +15,8 @@ class ReadFailed extends Error {}
 
 // A validator payload carries no user session, so this reads as the app, unlike the panel which reads as
 // the viewer. The check can therefore see a work item the person transitioning may not be able to open.
-// A JQL condition is asked of Jira as stored, so a field changed on the transition screen is not in its answer.
+// Due date, labels, description and components from the transition screen are applied (applyModifiedFields);
+// a JQL condition is asked of Jira as stored, so a field changed on that screen is not in its answer.
 async function readAfterTransition({ issue, transition }: ValidatorPayload): Promise<{ item: WorkItem; issueId: string }> {
   const res = await api.asApp().requestJira(route`/rest/api/2/issue/${issue.key}?fields=${FIELDS}`);
   if (!res.ok) throw new ReadFailed(String(res.status));
