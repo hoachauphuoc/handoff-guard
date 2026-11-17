@@ -17,6 +17,14 @@
 - Partly covered: decisions are stored per project with a version check, so one project cannot break another. A single project with a very large number of decisions would still hit the size limit. The old site-wide key is kept, read-only, until the owner confirms the new keys work. The trigger writes a handoff record whenever an assignee changes; the app never writes to Jira, so there is no loop.
 - `npm audit` reports vulnerabilities only inside the dependencies of `@forge/react` and `@forge/bridge` (mostly an editor library). The app uses no editor and runs in Forge's sandbox; they can be fixed only by a Forge release.
 
+## When the validator cannot check
+
+The validator refuses a transition it cannot check (Jira or storage did not answer), so a failure can hold up urgent work. The refusal says "Handoff Guard could not check this work item:" and the cause.
+
+- To let work through, a Jira administrator removes the Handoff Guard validator from that transition in the workflow editor. The app has no bypass of its own, so nobody else can switch the gate off; Jira's audit log records the workflow change.
+- After recovery, the administrator adds the validator back. Work items moved in the meantime were not checked: open the Decisions page, where "Handoffs in flight" lists each handoff that is not Clear.
+- Not tried with an operations team; the refusal itself is covered by `tests/validator.test.ts` (Jira, storage and filter failures, both validators).
+
 ## Bounds the app relies on
 
 | What | Bound | Where |
