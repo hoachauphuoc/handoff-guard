@@ -82,6 +82,21 @@ describe("handoff record saves", () => {
     await expect(putRecord("2", { ...old, acknowledged: ["d1"] })).rejects.toThrow(RECORD_CHANGED);
     expect((await getRecord("2"))?.toId).toBe("c");
   });
+
+  // The stated limit, pinned: Forge storage has no compare-and-set here, so when both writers read before
+  // either writes, neither is refused and the later write is what stays. If storage ever gets a conditional
+  // write and putRecord uses it, this test must fail and be rewritten.
+  it("does not catch two saves started in the same instant: both pass the check and the later one stays", async () => {
+    const { getRecord, putRecord, replaceRecord } = await import("../src/store");
+    await replaceRecord("3", rec);
+    const copy = (await getRecord("3"))!;
+    await expect(Promise.all([putRecord("3", { ...copy, acknowledged: ["d1"] }), putRecord("3", { ...copy, contingency: "if x then y" })])).resolves.toBeDefined();
+    const kept = (await getRecord("3"))!;
+    expect(kept.acknowledged).toEqual([]);
+    expect(kept.contingency).toBe("if x then y");
+    // The next save from either copy is refused, so the loss does not spread.
+    await expect(putRecord("3", { ...copy, acknowledged: ["d2"] })).rejects.toThrow();
+  });
 });
 
 describe("project rules", () => {
