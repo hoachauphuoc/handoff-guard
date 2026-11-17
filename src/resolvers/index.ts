@@ -9,7 +9,7 @@ import { buildManualDecision, readManualInput } from "../decisions/manual";
 import { leavingView, type LeavingView } from "../decisions/leaving";
 import { ruleImpact, type RuleImpact } from "../handoff/impact";
 import { buildDecisionsPage, projectOfKey, touches, type DecisionsPageState } from "../decisions/page";
-import { acknowledge, acknowledgeAll, checkReadBack } from "../handoff/acknowledge";
+import { ACK_REFUSED, acknowledge, acknowledgeAll, checkReadBack } from "../handoff/acknowledge";
 import { mayPrepare, PREPARE_DENIED } from "../handoff/prepare";
 import { exampleReadBack } from "../handoff/example";
 import { acknowledgeWithReceipt, slotsFor, type Receipt } from "../handoff/receipt";
@@ -213,7 +213,7 @@ resolver.define("acknowledgeDecision", async ({ context, payload }) => {
   const stale = decisionId in staleAcks(record.acknowledged, record.acknowledgedWith, item, bindingDecisions(decisions, item));
   // The receiver is checked here, on the server; the button in the panel is only a convenience.
   const out = acknowledge(record, ctx.accountId ?? null, decisionId, binding, new Date().toISOString(), fingerprintOf(item), stale);
-  if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
+  if (!out.ok) throw new Error(ACK_REFUSED[out.reason]);
   await putRecord(issueId, out.record);
   await log(item.projectKey, ctx.accountId, "handoff_acknowledged", ctx.extension.issue.key);
   return panelState(ctx);
@@ -255,7 +255,7 @@ resolver.define("acknowledgeAll", async ({ context, payload }) => {
       ...(out.contradictions.length > 0 ? { explanation: await explainRefusal(readBack, out.contradictions) } : {}),
     } satisfies AcknowledgeAllReply;
   }
-  if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
+  if (!out.ok) throw new Error(ACK_REFUSED[out.reason]);
   await putRecord(issueId, out.record);
   await log(item.projectKey, ctx.accountId, "handoff_acknowledged", ctx.extension.issue.key);
   return { state: await panelState(ctx) } satisfies AcknowledgeAllReply;
@@ -277,7 +277,7 @@ resolver.define("acknowledgeReceipt", async ({ context, payload }) => {
     await log(item.projectKey, ctx.accountId, "readback_refused", ctx.extension.issue.key);
     return { reasons: out.problems } satisfies AcknowledgeAllReply;
   }
-  if (!out.ok) throw new Error(`Cannot acknowledge: ${out.reason}.`);
+  if (!out.ok) throw new Error(ACK_REFUSED[out.reason]);
   await putRecord(issueId, out.record);
   // The signed receipt is the record now; a draft left behind would be offered again.
   await deleteDraft(issueId);

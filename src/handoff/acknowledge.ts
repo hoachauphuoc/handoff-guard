@@ -9,6 +9,20 @@ export type AckResult =
   | { ok: false; reason: "not_receiver" | "not_binding" | "already_acknowledged" | "needs_read_back" };
 
 /**
+ * What the receiver reads when the server refuses an acknowledgement. Each of these means the handoff changed
+ * after their panel loaded (someone else prepared it again, reassigned the work or retired a decision), so
+ * every line says to reload.
+ */
+export const ACK_REFUSED: Record<"not_receiver" | "not_binding" | "already_acknowledged" | "needs_read_back" | "no_protocol" | "nothing_to_acknowledge", string> = {
+  not_receiver: "This handoff no longer names you as the receiver; it changed after this panel loaded. Reload the panel to see who has the work now.",
+  not_binding: "This decision no longer applies to this work item. Reload the panel.",
+  already_acknowledged: "This decision is already acknowledged. Reload the panel.",
+  needs_read_back: "This handoff asks for a read-back. Reload the panel and acknowledge with a read-back.",
+  no_protocol: "This handoff was prepared before read-backs existed. Ask the sender to prepare it again.",
+  nothing_to_acknowledge: "No decision applies to this work item any more, so there is nothing to acknowledge. Reload the panel.",
+};
+
+/**
  * Only the receiver acknowledges, and only a decision that binds this item; the caller passes the time. A
  * decision already acknowledged can be acknowledged again only when that acknowledgement went stale, and the
  * new one replaces the old time and baseline. `fingerprint` is the work item as the receiver sees it now.

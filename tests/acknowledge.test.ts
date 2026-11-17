@@ -1,5 +1,7 @@
+/// <reference types="vite/client" />
 import { describe, expect, it } from "vitest";
-import { acknowledge, acknowledgeAll, checkReadBack } from "../src/handoff/acknowledge";
+import resolverSource from "../src/resolvers/index?raw";
+import { ACK_REFUSED, acknowledge, acknowledgeAll, checkReadBack } from "../src/handoff/acknowledge";
 import { fingerprintOf } from "../src/handoff/drift";
 import type { HandoffRecord } from "../src/handoff/types";
 import type { Decision, WorkItem } from "../src/rules/types";
@@ -27,6 +29,13 @@ describe("acknowledge", () => {
   it("refuses anyone but the receiver", () => {
     expect(acknowledge(record, "a", "d1", ["d1"], "t1", fp, false)).toEqual({ ok: false, reason: "not_receiver" });
     expect(acknowledge(record, null, "d1", ["d1"], "t1", fp, false)).toEqual({ ok: false, reason: "not_receiver" });
+  });
+  it("has a plain sentence for every refusal, none showing its code name", () => {
+    for (const [reason, text] of Object.entries(ACK_REFUSED)) {
+      expect(text).not.toContain(reason);
+      expect(text).not.toMatch(/_/);
+    }
+    expect(resolverSource).not.toContain("Cannot acknowledge: ${");
   });
   it("refuses a decision that does not bind the item", () => {
     expect(acknowledge(record, "b", "x", ["d1"], "t1", fp, false)).toEqual({ ok: false, reason: "not_binding" });
