@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from "vitest";
 import panel from "../src/frontend/index.tsx?raw";
-import { nextStep, waitingFor } from "../src/guide/next";
+import { nextStep, SHOW_EVERYTHING, waitingFor } from "../src/guide/next";
 import type { PanelState } from "../src/handoff/types";
 import type { Decision, HandoffResult } from "../src/rules/types";
 
@@ -87,6 +87,10 @@ describe("focused panel", () => {
     expect(panel).toContain("const [everything, setEverything] = useState(false);");
     expect(panel).toContain("title={`Your next step: ${next.title}`}");
     expect(panel).toContain("{everything ? SHOW_LESS : SHOW_EVERYTHING}");
+  });
+
+  it("keeps the one-click label short", () => {
+    expect(SHOW_EVERYTHING.length).toBeLessThanOrEqual(30);
   });
 
   it("always shows the verdict and its findings, whatever the view", () => {

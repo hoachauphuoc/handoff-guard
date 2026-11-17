@@ -73,7 +73,7 @@ Mutation spot-check of the fixes of 2026-11-17 (the new condition inverted, the 
 | "Cannot acknowledge: not_receiver." | Panel, stale after the sender took the work back | 2b9f37c |
 | "4 handoffs prepared" beside 29 handoffs in flight, because handoffs detected from a reassignment are not in the activity list | Decisions page, activity and counts | 03f00ea: the page says so |
 
-Left, with the reason: the "Show everything: help, the full handoff, Rovo tools" button is cut at phone width, but its first two words say what it does; the context row on the work item's right side keeps its old value until the page is reloaded (Jira decides when it asks again).
+Left, with the reason: the context row on the work item's right side keeps its old value until the page is reloaded (Jira decides when it asks again).
 
 ## 5. More than 100 open work items
 

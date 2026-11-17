@@ -5,7 +5,7 @@ import type { PanelState } from "../handoff/types";
 export type NextKind = "load_samples" | "ask_admin" | "prepare" | "practice" | "read_back" | "fix" | "wait_receiver" | "done";
 export type NextStep = { kind: NextKind; title: string; how: string };
 
-export const SHOW_EVERYTHING = "Show everything: help, the full handoff, Rovo tools";
+export const SHOW_EVERYTHING = "Show everything";
 export const SHOW_LESS = "Show only my next step";
 
 /** Decisions the receiver still has to read back: not acknowledged, or acknowledged before the work item changed. */
