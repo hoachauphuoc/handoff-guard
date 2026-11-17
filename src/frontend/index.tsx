@@ -100,6 +100,8 @@ const App = () => {
   const [confirmAgain, setConfirmAgain] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [receipt, setReceipt] = useState<Record<string, string>>({});
+  // The date boxes are uncontrolled, because a controlled UI Kit field drops keys typed faster than its round trip; filling in Rovo's draft remounts them.
+  const [draftFilled, setDraftFilled] = useState(0);
   const [busy, setBusy] = useState(false);
   const [brief, setBrief] = useState<GatherOutput | null>(null);
   const [rovoNote, setRovoNote] = useState<string | null>(null);
@@ -549,20 +551,26 @@ const App = () => {
                     .filter((s) => state.draftReceipt?.[s.key])
                     .map((s) => `${s.title}: ${s.kind === "date" ? state.draftReceipt?.[s.key] : "confirmed"}`)
                     .join("; ")}. They acknowledge nothing until you send them yourself.`}</Text>
-                  <Button isDisabled={busy} onClick={() => setReceipt({ ...(state.draftReceipt ?? {}) })}>
+                  <Button
+                    isDisabled={busy}
+                    onClick={() => {
+                      setReceipt({ ...(state.draftReceipt ?? {}) });
+                      setDraftFilled((n) => n + 1);
+                    }}
+                  >
                     Fill in the draft
                   </Button>
                 </SectionMessage>
               )}
               {state.slots.map((s) =>
                 s.kind === "date" ? (
-                  <Stack key={s.key} space="space.050">
+                  <Stack key={`${s.key}-${draftFilled}`} space="space.050">
                     <Label labelFor={`slot-${s.key}`}>{`${s.title}: ${s.ask}`}</Label>
                     <Textfield
                       id={`slot-${s.key}`}
                       name={`slot-${s.key}`}
                       placeholder="YYYY-MM-DD"
-                      value={receipt[s.key] ?? ""}
+                      defaultValue={receipt[s.key] ?? ""}
                       onChange={(e: { target: { value?: string } }) => {
                         const v = e.target.value ?? "";
                         setReceipt((r) => ({ ...r, [s.key]: v }));

@@ -170,6 +170,13 @@ describe("read-back", () => {
   });
 });
 
+describe("the receiver's date boxes", () => {
+  it("are uncontrolled, so a UI Kit round trip cannot drop a key typed after another", () => {
+    expect(panel).toContain("defaultValue={receipt[s.key] ?? \"\"}");
+    expect(panel).not.toContain("value={receipt[s.key]");
+  });
+});
+
 describe("acknowledging under protocol 1", () => {
   const binding = [legal, due];
   const text = "I will keep the legal-reviewed label on and finish by 2026-12-31 at the latest";
