@@ -174,6 +174,19 @@ describe("validator", () => {
     expect(res.result).toBe(false);
   });
 
+  // The shape Jira sent on a site (2026-11-18): `modifiedFields` at the top, `transition` with only from and to.
+  it("applies a description emptied on the transition screen, sent at the top of the payload", async () => {
+    mocks.requestJira.mockResolvedValue(jiraIssue({ assignee: { accountId: "to" } }));
+    mocks.getRecord.mockResolvedValue(baseRecord);
+    const transition = { from: { id: "10000" }, to: { id: "10027" } };
+    expect(await validate({ issue: { key: "ABC-1" }, transition } as never)).toEqual({ result: true });
+
+    const res = await validate({ issue: { key: "ABC-1" }, transition, modifiedFields: { description: { version: 1, type: "doc", content: [] } } } as never);
+
+    expect(res.result).toBe(false);
+    expect(res.errorMessage).toMatch(/description/i);
+  });
+
   it("validateDecisions refuses an item breaking a decision and allows one breaking none", async () => {
     mocks.getDecisions.mockResolvedValue([dueDecision]);
 

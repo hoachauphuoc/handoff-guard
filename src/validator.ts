@@ -6,8 +6,11 @@ import { checkHandoff, checkItem } from "./rules/checkHandoff";
 import type { WorkItem } from "./rules/types";
 import { getDecisions, getRecord, getRules } from "./store";
 
+// On a site (2026-11-18) Jira sent `modifiedFields` at the top of the payload and `transition` held only
+// `from` and `to`; the Forge docs show it inside `transition`. Both places are read, the top first.
 type ValidatorPayload = {
   issue: { key: string };
+  modifiedFields?: Record<string, unknown>;
   transition?: { modifiedFields?: Record<string, unknown> };
 };
 
@@ -15,15 +18,14 @@ class ReadFailed extends Error {}
 
 // A validator payload carries no user session, so this reads as the app, unlike the panel which reads as
 // the viewer. The check can therefore see a work item the person transitioning may not be able to open.
-// Due date, labels, description and components from the transition screen are applied when Jira sends them
-// (applyModifiedFields); on a site an edited description did not reach the check (docs/READINESS.md, T04). A JQL condition
-// is asked of Jira as stored, so a field changed on that screen is not in its answer.
-async function readAfterTransition({ issue, transition }: ValidatorPayload): Promise<{ item: WorkItem; issueId: string }> {
+// Due date, labels, description and components from the transition screen are applied (applyModifiedFields).
+// A JQL condition is asked of Jira as stored, so a field changed on that screen is not in its answer.
+async function readAfterTransition({ issue, modifiedFields, transition }: ValidatorPayload): Promise<{ item: WorkItem; issueId: string }> {
   const res = await api.asApp().requestJira(route`/rest/api/2/issue/${issue.key}?fields=${FIELDS}`);
   if (!res.ok) throw new ReadFailed(String(res.status));
   const body = await res.json();
   return {
-    item: applyModifiedFields(toWorkItem(issue.key, body.fields), transition?.modifiedFields),
+    item: applyModifiedFields(toWorkItem(issue.key, body.fields), modifiedFields ?? transition?.modifiedFields),
     issueId: String(body.id),
   };
 }
