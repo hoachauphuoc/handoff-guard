@@ -14,7 +14,7 @@
 - Not covered: `propose-decisions` writes proposals to storage, also when called over MCP. It keeps at most 5 per work item and replaces that item's pending proposals, so a call can displace proposals waiting there. Nothing binds until a person confirms.
 - Covered: `draft-condition` stores a draft only for a caller Jira says is a project administrator (a failed check counts as "no"), only for a filter Jira can parse, and at most 10 per project. `check-condition` reads only, as the caller, so its counts cover only work items that person can open. A draft binds nothing: confirming it on the Decisions page runs the same administrator check, the same build and the same Jira parse as the form.
 - Not covered: a condition is evaluated by Jira, as the viewer in the panel and as the app in the validator, so the two can differ where permissions differ; only a yes or no about one work item comes back.
-- Partly covered: decisions are stored per project with a version check, so one project cannot break another. A single project with a very large number of decisions would still hit the size limit. The old site-wide key is kept, read-only, until the owner confirms the new keys work. The trigger writes a handoff record whenever an assignee changes; the app never writes to Jira, so there is no loop.
+- Partly covered: decisions are stored per project, so one project cannot break another, and a save of the decisions or of a handoff record holds only while its save count is the one read (a conditional storage transaction). A single project with a very large number of decisions would still hit the size limit. The old site-wide key is kept, read-only, until the owner confirms the new keys work. The trigger writes a handoff record whenever an assignee changes; the app never writes to Jira, so there is no loop.
 - `npm audit` reports vulnerabilities only inside the dependencies of `@forge/react` and `@forge/bridge` (mostly an editor library). The app uses no editor and runs in Forge's sandbox; they can be fixed only by a Forge release.
 
 ## When the validator cannot check
@@ -23,7 +23,8 @@ The validator refuses a transition it cannot check (Jira or storage did not answ
 
 - To let work through, a Jira administrator removes the Handoff Guard validator from that transition in the workflow editor. The app has no bypass of its own, so nobody else can switch the gate off; Jira's audit log records the workflow change.
 - After recovery, the administrator adds the validator back. Work items moved in the meantime were not checked: open the Decisions page, where "Handoffs in flight" lists each handoff that is not Clear.
-- Not tried with an operations team; the refusal itself is covered by `tests/validator.test.ts` (Jira, storage and filter failures, both validators).
+- The refusal itself is covered by `tests/validator.test.ts` (Jira, storage and filter failures, both validators).
+- Drill run by the author on the test site, 2026-11-18, production 3.66.0, project MOBL: the validator was removed from the "Architecture Review" transition; MOBL-53, whose handoff was not Clear, then moved to Architecture Review with no check; the validator was added back; Jira's audit log showed "Workflow updated" with its author for the removal and for the re-add; the Decisions page listed MOBL-53 under "Handoffs in flight"; MOBL-53 was moved back, and the same move was then refused with "The receiver has not acknowledged …". Not tried with an operations team or under time pressure.
 
 ## Bounds the app relies on
 
@@ -31,6 +32,7 @@ The validator refuses a transition it cannot check (Jira or storage did not answ
 |---|---|---|
 | Open work items read for a project page | 100, and the page says when the list was cut | `src/jira.ts` |
 | Work items read by Bounce autopsy | 50 with a stored handoff, changed in the last 60 days | `src/resolvers/index.ts` |
+| Work items reached by Export and Delete | every one the administrator can see, open or done, up to 2000 stored work items per site; the delete message says when cut | `src/store.ts`, `src/jira.ts` |
 | Activity list per project | latest 300 events | `src/audit.ts` |
 | Proposals per work item | 5 | `src/decisions/validate.ts` |
 | Decisions per project | one storage value per project; not capped by the app, so a very large number would meet the storage value limit | `src/store.ts` |
