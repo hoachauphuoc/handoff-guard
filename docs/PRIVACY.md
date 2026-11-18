@@ -1,6 +1,6 @@
 # Privacy
 
-Handoff Guard stores only work records, in Forge storage of the installation. It has no external service and no network egress of its own (the manifest has no `permissions.external`); if a site administrator enables the Rovo MCP server, the client that administrator connects receives tool results under the calling user's permissions. The Rovo agent's chat, and the work item text it reads, go through Rovo, which Atlassian governs. It uses Forge LLMs, which runs the model on Atlassian's platform (see below).
+Handoff Guard stores only work records, in Forge storage of the installation. It has no external service and no network egress of its own (the manifest has no `permissions.external`); if a site administrator enables the Rovo MCP server, a client that a user then connects receives tool results under that user's permissions. The Rovo agent's chat, and the work item text it reads, go through Rovo, which Atlassian governs. It uses Forge LLMs, which runs the model on Atlassian's platform (see below).
 
 ## What is stored
 

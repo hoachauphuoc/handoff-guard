@@ -142,7 +142,7 @@ The Rovo path **meets the JQL job** when all P0 cases pass and no case in D, R3,
 ## Known gaps to decide before running
 
 - F9: `check-condition` does not enforce the 300-character limit that saving enforces. Either enforce it there or let the draft refusal carry the message.
-- S6, S5 at full scale and R8 need a larger project or a connected MCP client; until then they are covered by unit tests only, and the plan says so in the run log.
+- S6, S5 at full scale need a larger project, and R8 needs a non-admin MCP caller (seen as a project administrator, `docs/READINESS.md` T09); until then they are covered by unit tests only, and the plan says so in the run log.
 - A real run needs a second account (B) and one more project (C); without them D2, D12, C4 and F16 stay unseen.
 
 ## Order of runs
@@ -275,7 +275,7 @@ Open: F13 (prompt: when the rule is about anything other than the one work item'
 
 Sweep part 3 ran on the production agent: of the two agents named Handoff Guard in the picker, the first is development and the second is production. N1 and D14 read the same on both.
 
-Not run: D2, C4, F16, D12, S3 to S6, R8 (second account, second project, bigger project or MCP client needed); E2 (validator on a transition); E4; proposals left from ROVO-TESTS row 7 on MOBL-53.
+Not run: D2, C4, F16, D12, S3 to S6, R8 as a non-admin (second account, second project or bigger project needed; R8 as an administrator is seen, READINESS T09); E2 (validator on a transition); E4; proposals left from ROVO-TESTS row 7 on MOBL-53.
 
 ### After the council fixes (development 10.60.0, 2026-11-16, development agent)
 
