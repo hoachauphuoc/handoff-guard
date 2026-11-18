@@ -85,6 +85,7 @@ Tried on OPS with 106 open work items (75 synthetic ones added, then moved to Do
 | Leaving the project | Says "Only the first 100 open work items you can see were checked." |
 | Bounce autopsy | Finding: only the first 50 stored handoffs were looked at, and "No Clear handoff bounced." was said without a caveat while two real bounces were out of reach. Fixed in 9f044b3: every stored handoff is looked at and only the Jira history reads are capped at 50; when the list was cut the page says an older bounce can be missing. Seen on 3.60.0: the counts add up (65 = 1 + 64) |
 | Panel on a work item | Unaffected: it reads one work item |
+| Export and delete | Not cut at 100 since 2026-11-18: they list every work item the app holds records for (a storage query) and ask Jira, as the administrator, which are in the project, open or done (bulk fetch, 100 per call). Cut at 2000 stored work items per site, and the delete message says so |
 
 Left: the cut keeps the 100 that Jira returns first, so the newest work items are the ones dropped on the Decisions page and the least recently changed ones in the autopsy. Both pages say the list was cut.
 
@@ -105,7 +106,7 @@ An outside technical review read the code at 4d4f7e0 and set ten acceptance test
 | T05 Two people saving at once | Fixed: handoff records and decisions are written with a conditional transaction, so one of two simultaneous saves is refused (section 2, tests in `tests/store.test.ts`). The rule switches and the activity list are still read-then-write |
 | T06 Jira or storage failing | Tests (ba122c0): both validators refuse. What an administrator does is in `docs/SECURITY.md`, "When the validator cannot check". A drill with an operations team is not done |
 | T07 The if-then rule on its own, contingency empty | Fixed in a606da7: Needs info, "the sender has not written a contingency" |
-| T08 Export and delete beyond 100 open items or on done items | Section 5. They are not reached; the Decisions page and `docs/PRIVACY.md` say their data stays until the app is uninstalled (sentence put back in e4fd975) |
+| T08 Export and delete beyond 100 open items or on done items | Fixed: both reach every work item of the project the administrator can see, open or done (section 5, `tests/resolvers.test.ts`, `tests/held-items.test.ts`). A work item the administrator cannot see, or one deleted from Jira, keeps its data until the app is uninstalled, as the Decisions page and `docs/PRIVACY.md` say |
 | T09 MCP calls by people with different roles | Not tried: no live call from an outside MCP client yet |
 | T10 An outside pilot | Not done; the protocol is in `docs/PILOT.md` |
 

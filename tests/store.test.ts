@@ -21,7 +21,25 @@ vi.mock("@forge/kvs", () => {
   return {
     Filter,
     FilterConditions: { equalTo: (v: unknown) => ({ op: "eq", v }), notExists: () => ({ op: "nx" }) },
+    WhereConditions: { beginsWith: (v: string) => v },
     kvs: {
+      // Keys in order, pages of `limit`, the cursor being the index of the next key.
+      query: () => {
+        let prefix = "";
+        let size = 100;
+        let from = 0;
+        const q = {
+          where: (_f: string, p: string) => ((prefix = p), q),
+          limit: (n: number) => ((size = n), q),
+          cursor: (c: string) => ((from = Number(c)), q),
+          getMany: async () => {
+            const keys = [...data.keys()].filter((k) => k.startsWith(prefix)).sort();
+            const page = keys.slice(from, from + size);
+            return { results: page.map((key) => ({ key, value: data.get(key) })), nextCursor: from + size < keys.length ? String(from + size) : undefined };
+          },
+        };
+        return q;
+      },
       get: async (k: string) => data.get(k),
       set: async (k: string, v: unknown) => void data.set(k, v),
       delete: async (k: string) => void data.delete(k),
@@ -184,6 +202,29 @@ describe("handoff record saves", () => {
     const copy = (await getRecord("6"))!;
     await Promise.allSettled([putRecord("6", { ...copy, acknowledged: ["d1"] }), replaceRecord("6", { ...rec, toId: "c" })]);
     expect((await getRecord("6"))?.toId).toBe("c");
+  });
+});
+
+describe("storedItemIds", () => {
+  it("lists every work item with a handoff, proposals or a read-back draft, once, across pages", async () => {
+    const { storedItemIds } = await import("../src/store");
+    for (let i = 0; i < 150; i++) data.set(`handoff:${1000 + i}`, {});
+    data.set("proposals:1000", []);
+    data.set("proposals:7", []);
+    data.set("receipt-draft:8", {});
+    data.set("decisions:ops", { version: 1, decisions: [] });
+    const { ids, capped } = await storedItemIds();
+    expect(capped).toBe(false);
+    expect(ids).toHaveLength(152);
+    expect(ids).toEqual(expect.arrayContaining(["1000", "1149", "7", "8"]));
+  });
+
+  it("says when the list was cut", async () => {
+    const { storedItemIds, STORED_ITEM_CAP } = await import("../src/store");
+    for (let i = 0; i <= STORED_ITEM_CAP; i++) data.set(`handoff:${i}`, {});
+    const { ids, capped } = await storedItemIds();
+    expect(capped).toBe(true);
+    expect(ids).toHaveLength(STORED_ITEM_CAP);
   });
 });
 

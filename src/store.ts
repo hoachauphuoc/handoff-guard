@@ -1,4 +1,4 @@
-import { Filter, FilterConditions, kvs } from "@forge/kvs";
+import { Filter, FilterConditions, kvs, WhereConditions } from "@forge/kvs";
 import { appendEvent, type AuditEvent } from "./audit";
 import { touches } from "./decisions/page";
 import { MAX_CANDIDATES } from "./decisions/validate";
@@ -7,7 +7,7 @@ import type { Proposal } from "./decisions/types";
 import type { HandoffRecord } from "./handoff/types";
 import { NO_RULES, type Decision, type ProjectRules } from "./rules/types";
 
-// Reads are gets, never queries: kvs queries are eventually consistent, and a panel that just saved must read its own write.
+// Reads are gets, not queries (the one exception is storedItemIds below): kvs queries are eventually consistent, and a panel that just saved must read its own write.
 // Decisions are stored per project, so a save in one project can not overwrite another's and no single value
 // grows with the whole site. The old site-wide key is only read; nothing writes it except "Delete this project's app data".
 const LEGACY_DECISIONS = "decisions";
@@ -126,6 +126,29 @@ export async function addAudit(projectKey: string, event: AuditEvent): Promise<v
   } catch (e) {
     console.log(`audit write failed: ${e instanceof Error ? e.name : typeof e}`);
   }
+}
+
+const ITEM_PREFIXES = ["handoff:", "proposals:", "receipt-draft:"];
+export const STORED_ITEM_CAP = 2000;
+
+/**
+ * Every work item id the app holds a handoff, proposals or a read-back draft for, on the whole site. The one
+ * query in this file: export and delete run long after the writes they list, so an eventually consistent
+ * list is enough. Past the cap the list is cut and says so.
+ */
+export async function storedItemIds(): Promise<{ ids: string[]; capped: boolean }> {
+  const ids = new Set<string>();
+  for (const prefix of ITEM_PREFIXES) {
+    let cursor: string | undefined;
+    do {
+      const query = kvs.query().where("key", WhereConditions.beginsWith(prefix)).limit(100);
+      const page = await (cursor ? query.cursor(cursor) : query).getMany<unknown>();
+      for (const r of page.results) ids.add(r.key.slice(prefix.length));
+      if (ids.size > STORED_ITEM_CAP) return { ids: [...ids].slice(0, STORED_ITEM_CAP), capped: true };
+      cursor = page.nextCursor;
+    } while (cursor);
+  }
+  return { ids: [...ids], capped: false };
 }
 
 // Used only by "Delete this project's app data". The decisions key is emptied, not removed: a removed key

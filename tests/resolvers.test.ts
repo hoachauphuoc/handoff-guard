@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   readItem: vi.fn(),
   recentItems: vi.fn(),
   changes: vi.fn(),
+  itemsAmong: vi.fn(),
 }));
 
 vi.mock("@forge/resolver", () => ({
@@ -40,6 +41,7 @@ vi.mock("../src/jira", async () => ({
   readItemAsUser: mocks.readItem,
   recentItemsAsUser: mocks.recentItems,
   changesAsUser: mocks.changes,
+  projectItemsAmongAsUser: mocks.itemsAmong,
   doneStatusIdsAsUser: async () => [],
 }));
 
@@ -67,6 +69,12 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.isAdmin.mockResolvedValue(true);
   mocks.openItems.mockResolvedValue({ items, capped: false });
+  // Stored on the site: two items of OPS (one of them could be done) and one of another project.
+  vi.mocked(store.storedItemIds).mockResolvedValue({ ids: ["101", "102", "900"], capped: false });
+  mocks.itemsAmong.mockResolvedValue([
+    { issueId: "101", key: "OPS-1" },
+    { issueId: "102", key: "OPS-2" },
+  ]);
   mocks.readItem.mockResolvedValue({ item: { key: "OPS-1", projectKey: "OPS" }, issueId: "10001" });
   vi.mocked(store.getDecisions).mockResolvedValue([]);
   vi.mocked(store.getConditionDrafts).mockResolvedValue([]);
@@ -153,8 +161,10 @@ describe("delete project data", () => {
     expect(writes()).toBe(0);
   });
 
-  it("clears every per-project key and each open item's data, and leaves one activity line", async () => {
+  it("clears every per-project key and the data of each stored item Jira places in the project, open or done, and leaves one activity line", async () => {
     expect(await call("deleteProjectData", { confirm: "ops" })).toEqual({ items: 2, capped: false });
+    expect(mocks.itemsAmong).toHaveBeenCalledWith("OPS", ["101", "102", "900"]);
+    expect(mocks.openItems).not.toHaveBeenCalled();
     expect(vi.mocked(store.deleteItemData).mock.calls.map((c) => c[0])).toEqual(["101", "102"]);
     expect(store.updateDecisions).toHaveBeenCalledWith("OPS", expect.any(Function));
     expect(store.purgeLegacyDecisions).toHaveBeenCalledWith("OPS");
@@ -172,6 +182,8 @@ describe("export project data", () => {
     expect(Object.keys(out)).toEqual(expect.arrayContaining(["rules", "decisions", "drafts", "handoffs", "proposals", "readBackDrafts", "activity"]));
     expect(out.handoffs.map((h: { key: string }) => h.key)).toEqual(["OPS-1"]);
     expect(out.readBackDrafts.map((h: { key: string }) => h.key)).toEqual(["OPS-2"]);
+    expect(mocks.itemsAmong).toHaveBeenCalledWith("OPS", ["101", "102", "900"]);
+    expect(out.storedItemsCapped).toBe(false);
     expect(writes()).toBe(0);
   });
 });

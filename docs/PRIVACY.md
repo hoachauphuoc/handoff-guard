@@ -10,7 +10,7 @@ Handoff Guard stores only work records, in Forge storage of the installation. It
 - Two texts a person types in the panel, both work-record text: the sender's contingency (at most 300 characters) and the receiver's read-back (at most 600 characters, replaced each time it is given). Neither is written by Rovo or by an action, and neither is chat.
 - An activity list per project (the latest 300 entries): the action (for example "prepared a handoff", "had a read-back refused"), the account id of the person, the time, and the work item key or decision id. No text anyone typed is kept in it. It is shown on the Decisions page and the monthly counts are computed from it.
 - When the receiver acknowledges with typed answers instead of a read-back: one value per slot, a date or "yes". No free text.
-- A draft of typed answers Rovo made for the receiver (the same values, per work item), removed when the receiver sends the answers, or when the project's data is deleted (open work items only, the first 100).
+- A draft of typed answers Rovo made for the receiver (the same values, per work item), removed when the receiver sends the answers, or when the project's data is deleted.
 - Per project, which of the three optional rules a project administrator switched on (three true/false values).
 - Conditions drafted with Rovo, per project (at most 10): a title, the Jira filter (JQL), the decision it would replace, who asked and when. Nothing of the chat is stored with it. A draft binds nothing until a project administrator confirms or discards it on the Decisions page.
 - Proposals waiting for a person (at most 5 per work item): title, scope, constraints, and the evidence quote (up to 300 characters) copied from a work item description, or a visible comment, with where it came from.
@@ -38,9 +38,9 @@ Every write goes through `src/store.ts`. One row per kind of key; `<project>` is
 |---|---|---|---|
 | `decisions:<project>` | Confirmed decisions, with a save count | Yes | Yes (emptied, not removed, so the old key below is not read again) |
 | `decisions` (old, site-wide) | Decisions saved before 2026-11-13; only read now | The project's part, only while `decisions:<project>` does not exist yet | Yes, the project's part; a label decision with no project stays, as it belongs to every project |
-| `handoff:<item>` | The handoff record, its acknowledgements, fingerprints, contingency and read-back | Yes, first 100 open items | Yes, first 100 open items |
-| `proposals:<item>` | Proposals waiting for a person | Yes, first 100 open items | Yes, first 100 open items |
-| `receipt-draft:<item>` | Typed answers Rovo drafted for the receiver | Yes, first 100 open items | Yes, first 100 open items |
+| `handoff:<item>` | The handoff record, its acknowledgements, fingerprints, contingency and read-back | Yes, every work item of the project the administrator can see | Yes, the same |
+| `proposals:<item>` | Proposals waiting for a person | Yes, every work item of the project the administrator can see | Yes, the same |
+| `receipt-draft:<item>` | Typed answers Rovo drafted for the receiver | Yes, every work item of the project the administrator can see | Yes, the same |
 | `condition-drafts:<project>` | Conditions drafted with Rovo | Yes | Yes |
 | `settings:<project>` | The three optional rule switches | Yes | Yes |
 | `audit:<project>` | The activity list | Yes | Cleared; one new entry records the deletion |
@@ -48,4 +48,4 @@ Every write goes through `src/store.ts`. One row per kind of key; `<project>` is
 
 ## Deletion
 
-Uninstalling the app removes its Forge storage. A project administrator can also export what the app holds for a project as JSON from the Decisions page, and delete it there; the administrator types the project key to confirm. The table above says what each covers. Records on closed work items, or on open ones past the first 100 that administrator can see, stay until the app is uninstalled. Account IDs are kept in handoff records and in the activity list (the latest 300 events), and deleting one person's data on request is not supported; ask through the repository's GitHub issues, and do not post personal data there (issues are public). Dismissing a proposal deletes it; it may be proposed again.
+Uninstalling the app removes its Forge storage. A project administrator can also export what the app holds for a project as JSON from the Decisions page, and delete it there; the administrator types the project key to confirm. The table above says what each covers. Export and delete find the records of work items the app holds, then ask Jira, as the administrator, which of them are in the project, open or done. Records of a work item that administrator cannot see, or of one deleted from Jira, stay until the app is uninstalled. Account IDs are kept in handoff records and in the activity list (the latest 300 events), and deleting one person's data on request is not supported; ask through the repository's GitHub issues, and do not post personal data there (issues are public). Dismissing a proposal deletes it; it may be proposed again.

@@ -195,8 +195,8 @@ const App = () => {
         setDeleteKey("");
         setExported(null);
         setDataNote(
-          `Deleted: this project's decisions and activity, and the handoffs and proposals of ${count(done.items, "open work item")}${
-            done.capped ? " (the list was cut at 100; handoffs of other items remain)" : ""
+          `Deleted: this project's decisions and activity, and the handoffs and proposals of ${count(done.items, "work item")}${
+            done.capped ? " (the app holds data for more than 2000 work items on this site; delete again for the rest)" : ""
           }. Nothing was changed in Jira.`,
         );
         return load();
@@ -599,12 +599,12 @@ const App = () => {
           <Heading size="small">Export and delete (project administrators)</Heading>
           <Text>
             Export shows what the app holds for this project as JSON: decisions, drafts from Rovo, the project rules switched on, the activity
-            list, and for the open work items you can see (the first 100) their handoffs, proposals and unsigned read-back drafts. Work items that are done, that you cannot see, or beyond the first 100 open ones are not in it, and their data stays until the app is uninstalled.
+            list, and for every work item of this project you can see, open or done, its handoff, proposals and unsigned read-back draft. Data of a work item you cannot see, or one deleted from Jira, is not in it and stays until the app is uninstalled.
           </Text>
           <Button onClick={() => void exportData()}>Export this project's data</Button>
           {exported !== null && <CodeBlock language="json" text={exported} />}
           <Text>
-            Delete removes the same data from the app for good, and Jira is not changed. Work items that are done, that you cannot see, or beyond the first 100 open ones keep their data until the app is uninstalled.
+            Delete removes the same data from the app for good, and Jira is not changed. A work item you cannot see, or one deleted from Jira, keeps its data until the app is uninstalled.
           </Text>
           <Label labelFor="delete-key">{`Project key to confirm (${state.projectKey})`}</Label>
           <Textfield
@@ -615,7 +615,7 @@ const App = () => {
             onChange={(e: { target: { value?: string } }) => setDeleteKey(e.target.value ?? "")}
           />
           <Button appearance="danger" onClick={() => void deleteData()}>
-            Delete decisions, activity and open items' handoffs
+            Delete decisions, activity and work items' handoffs
           </Button>
           {dataNote !== null && <Text>{dataNote}</Text>}
         </Stack>

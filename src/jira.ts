@@ -110,6 +110,29 @@ export async function projectsAsUser(): Promise<StartProject[]> {
   return (body.values ?? []).map((p) => ({ key: p.key, name: p.name, type: p.projectTypeKey ?? "software" }));
 }
 
+/**
+ * Which of the given work item ids are in the project now, done or not, as the caller. The app's records carry
+ * no project key, so export and delete use this to find every record of a project. A bulk fetch, not a search:
+ * an id that no longer exists or that the caller cannot see is skipped instead of failing the whole query.
+ */
+export async function projectItemsAmongAsUser(projectKey: string, ids: string[]): Promise<{ issueId: string; key: string }[]> {
+  const numeric = ids.filter((id) => /^\d+$/.test(id));
+  const batches = Array.from({ length: Math.ceil(numeric.length / 100) }, (_, i) => numeric.slice(i * 100, i * 100 + 100));
+  const found = await Promise.all(
+    batches.map(async (batch) => {
+      const res = await api.asUser().requestJira(route`/rest/api/3/issue/bulkfetch`, {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify({ issueIdsOrKeys: batch, fields: ["project"] }),
+      });
+      checkStatus(res, projectKey);
+      const body = (await res.json()) as { issues?: { id: string; key: string; fields?: { project?: { key?: string } } }[] };
+      return (body.issues ?? []).filter((i) => i.fields?.project?.key?.toUpperCase() === projectKey.toUpperCase()).map((i) => ({ issueId: String(i.id), key: i.key }));
+    }),
+  );
+  return found.flat();
+}
+
 // The open work item changed last, so the start page links to something real. Null when there is none.
 export async function latestOpenItemAsUser(projectKey: string): Promise<string | null> {
   if (!/^[A-Za-z][A-Za-z0-9_]*$/.test(projectKey)) throw new JiraReadError("jira_error", "That project key is not valid.");

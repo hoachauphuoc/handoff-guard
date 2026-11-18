@@ -21,7 +21,7 @@ import type { AcknowledgeAllReply, HandoffRecord, PanelState, PracticeReadBackRe
 import { explainRefusal } from "../llm";
 import { MANAGE_DENIED } from "../authz";
 import { monthCounts, type AuditAction, type AuditEvent, type MonthCounts } from "../audit";
-import { changesAsUser, doneStatusIdsAsUser, isProjectAdminAsUser, jqlErrorsAsUser, latestOpenItemAsUser, withConditions, openItemsAsUser, projectsAsUser, RECENT_DAYS, recentItemsAsUser, readItemAsUser as readItem } from "../jira";
+import { changesAsUser, doneStatusIdsAsUser, isProjectAdminAsUser, jqlErrorsAsUser, latestOpenItemAsUser, withConditions, openItemsAsUser, projectItemsAmongAsUser, projectsAsUser, RECENT_DAYS, recentItemsAsUser, readItemAsUser as readItem } from "../jira";
 import { firstProject, startView, type StartProject, type StartView } from "../guide/start";
 import { bindingDecisions, checkHandoff } from "../rules/checkHandoff";
 import { watchAssignee, watchConflicts } from "../rules/advisories";
@@ -39,6 +39,7 @@ import {
   deleteConditionDrafts,
   deleteDraft,
   deleteItemData,
+  storedItemIds,
   deleteRules,
   getAudit,
   getConditionDrafts,
@@ -623,27 +624,34 @@ resolver.define("bounceAutopsy", async ({ context }): Promise<AutopsyState> => {
   return { ...autopsy(handoffs), withHandoff: held.length, capped: open.capped || wasClear.length > AUTOPSY_CAP, notClear, days: RECENT_DAYS };
 });
 
+// The work items of the project, open or done, that the app holds anything for and the caller can see. The
+// records carry no project key, so the stored ids are listed first and Jira says which are in the project.
+async function heldInProject(projectKey: string): Promise<{ items: { issueId: string; key: string }[]; capped: boolean }> {
+  const stored = await storedItemIds();
+  return { items: await projectItemsAmongAsUser(projectKey, stored.ids), capped: stored.capped };
+}
+
 // What the app holds for one project, for a project administrator: decisions, Rovo's condition drafts, the
-// project rules switched on, the activity list, and for each open work item the administrator can see its
-// handoff, proposals and unsigned read-back draft. Read only.
+// project rules switched on, the activity list, and for each work item of the project the administrator can
+// see, open or done, its handoff, proposals and unsigned read-back draft. Read only.
 resolver.define("exportProject", async ({ context }) => {
   const projectKey = String((context as { extension: { project: { key: string } } }).extension.project.key);
   await requireAdmin(projectKey);
-  const [open, decisions, activity, drafts, rules] = await Promise.all([
-    openItemsAsUser(projectKey),
+  const [held, decisions, activity, drafts, rules] = await Promise.all([
+    heldInProject(projectKey),
     getDecisions(projectKey),
     getAudit(projectKey),
     getConditionDrafts(projectKey),
     getRules(projectKey),
   ]);
-  const held = await Promise.all(
-    open.items.map(async (i) => ({ key: i.item.key, record: await getRecord(i.issueId), proposals: await getProposals(i.issueId), draft: await getDraft(i.issueId) })),
+  const rows = await Promise.all(
+    held.items.map(async (i) => ({ key: i.key, record: await getRecord(i.issueId), proposals: await getProposals(i.issueId), draft: await getDraft(i.issueId) })),
   );
-  const handoffs = held.flatMap((h) => (h.record ? [{ key: h.key, record: h.record }] : []));
-  const proposals = held.flatMap((h) => (h.proposals.length > 0 ? [{ key: h.key, proposals: h.proposals }] : []));
-  const readBackDrafts = held.flatMap((h) => (h.draft ? [{ key: h.key, draft: h.draft }] : []));
+  const handoffs = rows.flatMap((h) => (h.record ? [{ key: h.key, record: h.record }] : []));
+  const proposals = rows.flatMap((h) => (h.proposals.length > 0 ? [{ key: h.key, proposals: h.proposals }] : []));
+  const readBackDrafts = rows.flatMap((h) => (h.draft ? [{ key: h.key, draft: h.draft }] : []));
   return JSON.stringify(
-    { project: projectKey, exportedAt: new Date().toISOString(), openItemsCapped: open.capped, rules, decisions, drafts, handoffs, proposals, readBackDrafts, activity },
+    { project: projectKey, exportedAt: new Date().toISOString(), storedItemsCapped: held.capped, rules, decisions, drafts, handoffs, proposals, readBackDrafts, activity },
     null,
     2,
   );
@@ -658,14 +666,14 @@ resolver.define("deleteProjectData", async ({ context, payload }) => {
   if (String((payload as { confirm?: string }).confirm ?? "").trim().toUpperCase() !== projectKey.toUpperCase()) {
     throw new Error(`Type the project key ${projectKey} to confirm. Nothing was deleted.`);
   }
-  const open = await openItemsAsUser(projectKey);
-  await Promise.all(open.items.map((i) => deleteItemData(i.issueId)));
+  const held = await heldInProject(projectKey);
+  await Promise.all(held.items.map((i) => deleteItemData(i.issueId)));
   await updateDecisions(projectKey, () => []);
   await purgeLegacyDecisions(projectKey);
   await deleteConditionDrafts(projectKey);
   await deleteRules(projectKey);
   await resetAudit(projectKey, { at: new Date().toISOString(), who: ctx.accountId ?? "unknown", action: "data_deleted", ref: projectKey });
-  return { items: open.items.length, capped: open.capped };
+  return { items: held.items.length, capped: held.capped };
 });
 
 export const handler = resolver.getDefinitions();
