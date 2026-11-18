@@ -276,7 +276,7 @@ const App = () => {
       {state.drafts.length > 0 && (
         <Stack space="space.100">
           <Heading size="small">Drafted with Rovo (not in force)</Heading>
-          <Text>These conditions were drafted in a chat with the Handoff Guard agent. They bind no work item until a project administrator confirms them here.</Text>
+          <Text>These conditions were drafted in a chat with the Handoff Guard agent or by an MCP client. They bind no work item until a project administrator confirms them here.</Text>
           {draftError && <SectionMessage appearance="error">{draftError}</SectionMessage>}
           {state.drafts.map((d) => (
             <Stack key={d.id} space="space.050">
