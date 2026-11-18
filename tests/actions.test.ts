@@ -442,8 +442,10 @@ describe("callerCloudId", () => {
 });
 
 describe("callerAccountId", () => {
-  it("prefers payload.context.accountId and falls back to the second argument", () => {
-    expect(callerAccountId({ context: { accountId: "a1" } }, { accountId: "a2" })).toBe("a1");
+  it("prefers the platform's fields over what the payload names", () => {
+    expect(callerAccountId({ context: { accountId: "a1" } }, { principal: { accountId: "a3" } })).toBe("a3");
+    expect(callerAccountId({ context: { accountId: "a1" } }, { accountId: "a2" })).toBe("a2");
+    expect(callerAccountId({ context: { accountId: "a1" } }, undefined)).toBe("a1");
     expect(callerAccountId({}, { accountId: "a2" })).toBe("a2");
     expect(callerAccountId(undefined, undefined)).toBeNull();
     expect(callerAccountId({ issueKey: "OPS-1" }, { principal: { accountId: "a3" } })).toBe("a3");
