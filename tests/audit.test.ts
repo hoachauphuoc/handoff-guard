@@ -1,7 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { AUDIT_CAP, appendEvent, monthCounts, type AuditEvent } from "../src/audit";
+import { AUDIT_CAP, appendEvent, auditText, monthCounts, type AuditEvent } from "../src/audit";
 
 const ev = (at: string, action: AuditEvent["action"]): AuditEvent => ({ at, who: "u1", action, ref: "OPS-1" });
+
+describe("auditText", () => {
+  const rule = (ref: string): AuditEvent => ({ at: "2026-11-18T00:00:00Z", who: "u1", action: "rule_changed", ref });
+  it("says which check was switched on or off, by its label", () => {
+    expect(auditText(rule("requireIfThen on"))).toBe('switched on the check "Require a contingency written as "if … then …"".');
+    expect(auditText(rule("requireContingency off"))).toBe('switched off the check "Require a contingency from the sender".');
+  });
+  it("reads lines stored with the old words the same way", () => {
+    expect(auditText(rule("requireIfThen released"))).toMatch(/^switched on the check/);
+    expect(auditText(rule("requireIfThen retired"))).toMatch(/^switched off the check/);
+  });
+  it("keeps the id for every other action", () => {
+    expect(auditText(ev("2026-11-18T00:00:00Z", "decision_added"))).toBe("added a decision (OPS-1).");
+  });
+});
 
 describe("appendEvent", () => {
   it("puts the newest first and never grows past the cap", () => {

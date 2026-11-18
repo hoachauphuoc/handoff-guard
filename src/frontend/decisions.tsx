@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ForgeReconciler, { Button, CodeBlock, DatePicker, Heading, Inline, Label, Link, Lozenge, SectionMessage, Select, Stack, Strong, Text, Textfield, User, UserPicker } from "@forge/react";
 import { invoke } from "@forge/bridge";
 import type { LeavingView } from "../decisions/leaving";
-import { AUDIT_TEXT } from "../audit";
+import { RULE_LABELS, auditText } from "../audit";
 import { COMMITMENT_TEXT, LINK_NOTE } from "../decisions/reach";
 import { MANAGE_DENIED } from "../authz";
 import { plainError } from "../errors";
@@ -408,9 +408,9 @@ const App = () => {
       {ruleError !== null && <Text>{ruleError}</Text>}
       {(
         [
-          ["requireContingency", "Require a contingency from the sender", "no_contingency"],
-          ["requireIfThen", 'Require a contingency written as "if … then …"', "contingency_not_if_then"],
-          ["requireReceiverAssigned", "Require the work item to be assigned to the receiver", "receiver_not_assignee"],
+          ["requireContingency", RULE_LABELS.requireContingency, "no_contingency"],
+          ["requireIfThen", RULE_LABELS.requireIfThen, "contingency_not_if_then"],
+          ["requireReceiverAssigned", RULE_LABELS.requireReceiverAssigned, "receiver_not_assignee"],
         ] as const
       ).map(([rule, label, cause]) => {
         const seen = autopsy?.causes.find((c) => c.id === cause);
@@ -581,7 +581,7 @@ const App = () => {
         <Text key={i}>
           {`${e.at.slice(0, 16).replace("T", " ")} UTC: `}
           <User accountId={e.who} />
-          {` ${AUDIT_TEXT[e.action]} (${e.ref}).`}
+          {` ${auditText(e)}`}
         </Text>
       ))}
       <Heading size="small">Counts by month</Heading>

@@ -32,9 +32,26 @@ export const AUDIT_TEXT: Record<AuditAction, string> = {
   handoff_acknowledged: "acknowledged with a read-back",
   readback_refused: "had a read-back refused",
   data_deleted: "deleted this project's app data",
-  rule_changed: "released or retired a project rule",
+  rule_changed: "switched a project check",
   draft_discarded: "discarded a condition drafted with Rovo",
 };
+
+export const RULE_LABELS: Record<string, string> = {
+  requireContingency: "Require a contingency from the sender",
+  requireIfThen: 'Require a contingency written as "if … then …"',
+  requireReceiverAssigned: "Require the work item to be assigned to the receiver",
+};
+
+/** What the person did, as read after their name. A rule switch reads "on"/"off"; older lines said "released"/"retired". */
+export function auditText(e: AuditEvent): string {
+  if (e.action === "rule_changed") {
+    const [rule = "", state] = e.ref.split(" ");
+    const label = RULE_LABELS[rule];
+    const on = state === "on" || state === "released";
+    if (label !== undefined && (on || state === "off" || state === "retired")) return `switched ${on ? "on" : "off"} the check "${label}".`;
+  }
+  return `${AUDIT_TEXT[e.action]} (${e.ref}).`;
+}
 
 export type MonthCounts = { month: string; prepared: number; acknowledged: number; refused: number; decisions: number };
 

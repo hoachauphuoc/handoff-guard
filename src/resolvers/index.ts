@@ -567,7 +567,7 @@ resolver.define("setProjectRule", async ({ context, payload }) => {
   // Anything but a plain true or false is refused: a malformed call must not read as "switch it off".
   if (typeof on !== "boolean") throw new Error("Say whether the rule is on or off.");
   const next = await setRule(projectKey, rule, on);
-  await log(projectKey, ctx.accountId, "rule_changed", `${rule} ${on ? "released" : "retired"}`);
+  await log(projectKey, ctx.accountId, "rule_changed", `${rule} ${on ? "on" : "off"}`);
   return next;
 });
 
