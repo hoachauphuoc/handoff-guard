@@ -24,7 +24,7 @@ Known and left: any person who can see a work item can have the agent store prop
 
 ## 2. Conflicting flows: two people, one record
 
-Forge storage has no lock. A handoff record carries a save count (`rev`): a change made from an older copy is refused, and a new handoff raises the count so the old receiver's change cannot land on it (`src/store.ts`). This narrows the race to a few milliseconds; it does not close it.
+Forge storage has no lock, but a transaction can hold a condition on a custom entity. A handoff record and a project's decisions each carry a save count, kept in a `revision` entity; the value and the next count are written in one transaction that holds only while the count is still the one read (`src/store.ts`). A change made from an older copy is refused, a new handoff raises the count so the old receiver's change cannot land on it, and of two saves made in the same instant one is refused. The project rule switches and the activity list have no save count.
 
 | Case | How | Result |
 |---|---|---|
@@ -36,7 +36,7 @@ Forge storage has no lock. A handoff record carries a save count (`rev`): a chan
 | The due date changed between panel load and acknowledgement | Test, same block | The acknowledgement stores the date Jira has at that moment |
 | 25 reassignments in 0.65 s | Site, OPS-7 to OPS-31 | All 25 handoffs recorded |
 | Reassignment to the same receiver, to another, back to the sender | Tests (existing), `tests/reassign.test.ts` | Acknowledgements kept, dropped, or the record kept for the bounce, as documented |
-| Two saves started in the same instant, both read before either writes | Test, `tests/store.test.ts` | Neither is refused and the later write stays; the next save from an older copy is refused. This is the stated limit, now pinned by a test |
+| Two saves started in the same instant, both read before either writes | Test, `tests/store.test.ts` | One is refused with "changed a moment ago … reload", the other is kept; the same for decisions, and for a save that lands between the read and the commit. On the development site (10.85.0, MOBL-58) a contingency was saved twice and the sample decisions removed and loaded again through the guarded writes |
 | Three assignee changes sent at once on one work item, 8 work items | Site, OPS-40 to OPS-47 (two changes landed 0.1 s apart on OPS-44) | The stored handoff names the assignee Jira ended with, on all 8 |
 | Activity lines written in a burst | Read of the code | The activity list has no save count; lines can be lost in a burst. It is a trail, not an input to any verdict |
 
@@ -102,7 +102,7 @@ An outside technical review read the code at 4d4f7e0 and set ten acceptance test
 | T02 No handoff to oneself; only the receiver acknowledges; only an administrator records a decision | Tests (`same_person` in `tests/checkHandoff.test.ts`; section 1 above); site, section 1 |
 | T03 An acknowledgement goes stale when the work item changes | Site, smoke row 7 (due date); labels and components in `tests/drift.test.ts`; a new or replacing decision has no acknowledgement until read back |
 | T04 Fields edited on the transition screen | Code (1c00119): due date, labels, description and components in `modifiedFields` are applied before the check (test). Site, 2026-11-18, production 3.62.0, MOBL-58 with the project's default screen put on the transition for the test: the description emptied on the screen went through; typed on the screen over an empty one, it was refused with "The description is empty." So the check used the stored description; why Jira did not bring the edit is not known (no app log could be read). Stated in `docs/LIMITS.md` and `docs/SECURITY.md`: edit those fields before the transition. Not fixed. The screen was taken off again |
-| T05 Two people saving at once | Section 2. Forge storage transactions offer set and delete only, with no condition, so the window of a few milliseconds stays and is stated |
+| T05 Two people saving at once | Fixed: handoff records and decisions are written with a conditional transaction, so one of two simultaneous saves is refused (section 2, tests in `tests/store.test.ts`). The rule switches and the activity list are still read-then-write |
 | T06 Jira or storage failing | Tests (ba122c0): both validators refuse. What an administrator does is in `docs/SECURITY.md`, "When the validator cannot check". A drill with an operations team is not done |
 | T07 The if-then rule on its own, contingency empty | Fixed in a606da7: Needs info, "the sender has not written a contingency" |
 | T08 Export and delete beyond 100 open items or on done items | Section 5. They are not reached; the Decisions page and `docs/PRIVACY.md` say their data stays until the app is uninstalled (sentence put back in e4fd975) |

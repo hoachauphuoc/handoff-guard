@@ -21,6 +21,6 @@ describe("product principles that a grep can hold", () => {
       expect(code(text), `${path} touches storage`).not.toMatch(/kvs\.(set|delete)|storage\.(set|delete)/);
     }
     const keys = [...code(sources["../src/store.ts"] as string).matchAll(/`([a-z-]+):\$\{/g)].map((m) => m[1]);
-    expect(new Set(keys)).toEqual(new Set(["decisions", "handoff", "proposals", "audit", "settings", "receipt-draft", "condition-drafts"]));
+    expect(new Set(keys)).toEqual(new Set(["decisions", "handoff", "proposals", "audit", "settings", "receipt-draft", "condition-drafts", "rev"]));
   });
 });

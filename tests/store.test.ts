@@ -1,10 +1,58 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Decision } from "../src/rules/types";
 
+// An in-memory store with Forge's conditional transaction: every condition is checked, then every write is
+// made, in one step. `beforeCommit` lets a test land another writer's save between the reads and the commit.
 const data = new Map<string, unknown>();
-vi.mock("@forge/kvs", () => ({
-  kvs: { get: async (k: string) => data.get(k), set: async (k: string, v: unknown) => void data.set(k, v) },
-}));
+const entities = new Map<string, unknown>();
+let beforeCommit: (() => void) | null = null;
+type Clause = { op: "eq"; v: unknown } | { op: "nx" };
+vi.mock("@forge/kvs", () => {
+  class Filter {
+    items: [string, Clause][] = [];
+    and(field: string, c: Clause) {
+      this.items.push([field, c]);
+      return this;
+    }
+  }
+  const holds = (current: Record<string, unknown> | undefined, f: Filter) =>
+    f.items.every(([field, c]) => (c.op === "nx" ? current?.[field] === undefined : current?.[field] === c.v));
+  type Op = { k: string; v: unknown; e?: { entityName: string; conditions?: Filter } };
+  return {
+    Filter,
+    FilterConditions: { equalTo: (v: unknown) => ({ op: "eq", v }), notExists: () => ({ op: "nx" }) },
+    kvs: {
+      get: async (k: string) => data.get(k),
+      set: async (k: string, v: unknown) => void data.set(k, v),
+      delete: async (k: string) => void data.delete(k),
+      entity: (name: string) => ({
+        get: async (k: string) => entities.get(`${name}/${k}`),
+        delete: async (k: string) => void entities.delete(`${name}/${k}`),
+      }),
+      transact: () => {
+        const ops: Op[] = [];
+        const builder = {
+          set(k: string, v: unknown, e?: Op["e"]) {
+            ops.push({ k, v, e });
+            return builder;
+          },
+          async execute() {
+            const hook = beforeCommit;
+            beforeCommit = null;
+            hook?.();
+            for (const o of ops) {
+              if (o.e?.conditions && !holds(entities.get(`${o.e.entityName}/${o.k}`) as Record<string, unknown> | undefined, o.e.conditions)) {
+                throw new Error("condition not met");
+              }
+            }
+            for (const o of ops) (o.e ? entities.set(`${o.e.entityName}/${o.k}`, o.v) : data.set(o.k, o.v));
+          },
+        };
+        return builder;
+      },
+    },
+  };
+});
 const { getDecisions, updateDecisions } = await import("../src/store");
 
 const dec = (id: string, projectKey: string): Decision => ({
@@ -16,7 +64,11 @@ const dec = (id: string, projectKey: string): Decision => ({
   constraints: [{ kind: "dueNotAfter", date: "2026-12-31" }],
 });
 
-beforeEach(() => data.clear());
+beforeEach(() => {
+  data.clear();
+  entities.clear();
+  beforeCommit = null;
+});
 
 describe("per-project decisions", () => {
   it("reads this project's decisions from the old site-wide key until the new key exists, and never writes the old key", async () => {
@@ -39,14 +91,24 @@ describe("per-project decisions", () => {
     expect((await getDecisions("OPS")).map((d) => d.id)).toEqual(["a"]);
   });
 
-  it("refuses a save when someone else saved in between", async () => {
+  it("refuses a save when someone else saved in between, and keeps theirs", async () => {
     await updateDecisions("OPS", () => [dec("a", "OPS")]);
-    await expect(
-      updateDecisions("OPS", (c) => {
-        data.set("decisions:ops", { version: 99, decisions: [] });
-        return c;
-      }),
-    ).rejects.toThrow("Someone else changed");
+    beforeCommit = () => {
+      data.set("decisions:ops", { version: 2, decisions: [dec("theirs", "OPS")] });
+      entities.set("revision/rev:decisions:ops", { rev: 2 });
+    };
+    await expect(updateDecisions("OPS", (c) => [...c, dec("mine", "OPS")])).rejects.toThrow("Someone else changed");
+    expect((await getDecisions("OPS")).map((d) => d.id)).toEqual(["theirs"]);
+  });
+
+  it("refuses one of two saves started in the same instant from the same copy", async () => {
+    await updateDecisions("OPS", () => [dec("a", "OPS")]);
+    const results = await Promise.allSettled([
+      updateDecisions("OPS", (c) => [...c, dec("b", "OPS")]),
+      updateDecisions("OPS", (c) => [...c, dec("c", "OPS")]),
+    ]);
+    expect(results.filter((r) => r.status === "rejected")).toHaveLength(1);
+    expect((await getDecisions("OPS")).length).toBe(2);
   });
 });
 
@@ -83,19 +145,45 @@ describe("handoff record saves", () => {
     expect((await getRecord("2"))?.toId).toBe("c");
   });
 
-  // The stated limit, pinned: Forge storage has no compare-and-set here, so when both writers read before
-  // either writes, neither is refused and the later write is what stays. If storage ever gets a conditional
-  // write and putRecord uses it, this test must fail and be rewritten.
-  it("does not catch two saves started in the same instant: both pass the check and the later one stays", async () => {
-    const { getRecord, putRecord, replaceRecord } = await import("../src/store");
+  it("refuses one of two saves started in the same instant, so neither change is lost without a message", async () => {
+    const { getRecord, putRecord, replaceRecord, RECORD_CHANGED } = await import("../src/store");
     await replaceRecord("3", rec);
     const copy = (await getRecord("3"))!;
-    await expect(Promise.all([putRecord("3", { ...copy, acknowledged: ["d1"] }), putRecord("3", { ...copy, contingency: "if x then y" })])).resolves.toBeDefined();
+    const results = await Promise.allSettled([putRecord("3", { ...copy, acknowledged: ["d1"] }), putRecord("3", { ...copy, contingency: "if x then y" })]);
+    expect(results.map((r) => r.status)).toEqual(["fulfilled", "rejected"]);
+    expect((results[1] as PromiseRejectedResult).reason.message).toBe(RECORD_CHANGED);
     const kept = (await getRecord("3"))!;
-    expect(kept.acknowledged).toEqual([]);
-    expect(kept.contingency).toBe("if x then y");
-    // The next save from either copy is refused, so the loss does not spread.
-    await expect(putRecord("3", { ...copy, acknowledged: ["d2"] })).rejects.toThrow();
+    expect(kept.acknowledged).toEqual(["d1"]);
+    expect(kept.contingency).toBeUndefined();
+  });
+
+  it("refuses a change when another save lands between the read and the commit", async () => {
+    const { getRecord, putRecord, replaceRecord, RECORD_CHANGED } = await import("../src/store");
+    await replaceRecord("5", rec);
+    const copy = (await getRecord("5"))!;
+    beforeCommit = () => {
+      data.set("handoff:5", { ...copy, acknowledged: ["theirs"], rev: copy.rev! + 1 });
+      entities.set("revision/rev:handoff:5", { rev: copy.rev! + 1 });
+    };
+    await expect(putRecord("5", { ...copy, acknowledged: ["mine"] })).rejects.toThrow(RECORD_CHANGED);
+    expect((await getRecord("5"))?.acknowledged).toEqual(["theirs"]);
+  });
+
+  it("takes over a record saved before revisions existed, then guards it", async () => {
+    const { getRecord, putRecord, RECORD_CHANGED } = await import("../src/store");
+    data.set("handoff:4", { ...rec, rev: 5 });
+    const copy = (await getRecord("4"))!;
+    await putRecord("4", { ...copy, acknowledged: ["d1"] });
+    expect(entities.get("revision/rev:handoff:4")).toEqual({ rev: 6 });
+    await expect(putRecord("4", { ...copy, acknowledged: ["d2"] })).rejects.toThrow(RECORD_CHANGED);
+  });
+
+  it("a replacement saved in the same instant as a change still wins, by reading again", async () => {
+    const { getRecord, putRecord, replaceRecord } = await import("../src/store");
+    await replaceRecord("6", rec);
+    const copy = (await getRecord("6"))!;
+    await Promise.allSettled([putRecord("6", { ...copy, acknowledged: ["d1"] }), replaceRecord("6", { ...rec, toId: "c" })]);
+    expect((await getRecord("6"))?.toId).toBe("c");
   });
 });
 

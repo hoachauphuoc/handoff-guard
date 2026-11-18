@@ -44,6 +44,7 @@ Every write goes through `src/store.ts`. One row per kind of key; `<project>` is
 | `condition-drafts:<project>` | Conditions drafted with Rovo | Yes | Yes |
 | `settings:<project>` | The three optional rule switches | Yes | Yes |
 | `audit:<project>` | The activity list | Yes | Cleared; one new entry records the deletion |
+| `rev:<key>` (entity `revision`) | The save count of a handoff record or of a project's decisions, so two saves from one copy cannot both land | No (a number, no content) | With the handoff record it belongs to; a project's count stays, as its decisions are emptied, not removed |
 
 ## Deletion
 

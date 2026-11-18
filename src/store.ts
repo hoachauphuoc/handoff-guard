@@ -1,4 +1,4 @@
-import { kvs } from "@forge/kvs";
+import { Filter, FilterConditions, kvs } from "@forge/kvs";
 import { appendEvent, type AuditEvent } from "./audit";
 import { touches } from "./decisions/page";
 import { MAX_CANDIDATES } from "./decisions/validate";
@@ -7,7 +7,7 @@ import type { Proposal } from "./decisions/types";
 import type { HandoffRecord } from "./handoff/types";
 import { NO_RULES, type Decision, type ProjectRules } from "./rules/types";
 
-// Only get/set: kvs queries are eventually consistent, and a panel that just saved must read its own write.
+// Reads are gets, never queries: kvs queries are eventually consistent, and a panel that just saved must read its own write.
 // Decisions are stored per project, so a save in one project can not overwrite another's and no single value
 // grows with the whole site. The old site-wide key is only read; nothing writes it except "Delete this project's app data".
 const LEGACY_DECISIONS = "decisions";
@@ -15,6 +15,34 @@ const decisionsKey = (projectKey: string) => `decisions:${projectKey.toLowerCase
 type Stored = { version: number; decisions: Decision[] };
 const proposalsKey = (issueId: string) => `proposals:${issueId}`;
 const recordKey = (issueId: string) => `handoff:${issueId}`;
+
+// A plain key-value write has no condition, but a transaction may hold a condition on a custom entity. Each
+// versioned value (a handoff record, a project's decisions) has a "revision" entity holding its save count; the
+// value and the next count are written in one transaction that holds only while the count is still the one read.
+// Two saves made from the same copy can then not both land: the second is refused, never silently dropped.
+const REVISION = "revision";
+type Revision = { rev: number };
+const revisionKey = (key: string) => `rev:${key}`;
+
+async function storedRevision(key: string): Promise<number | null> {
+  return (await kvs.entity<Revision>(REVISION).get(revisionKey(key)))?.rev ?? null;
+}
+
+/**
+ * Writes `value` with save count `next`, only if the stored count is still `expected` (null: none stored yet, as
+ * for a value saved before revisions existed). Returns false when someone else saved in between.
+ */
+async function writeIfUnchanged(key: string, value: unknown, expected: number | null, next: number): Promise<boolean> {
+  const unchanged = new Filter<Revision>().and("rev", expected === null ? FilterConditions.notExists() : FilterConditions.equalTo(expected));
+  try {
+    await kvs.transact().set(key, value).set(revisionKey(key), { rev: next }, { entityName: REVISION, conditions: unchanged }).execute();
+    return true;
+  } catch (e) {
+    // A failed condition is told apart by reading the count again, not by the error's wording.
+    if ((await storedRevision(key)) !== expected) return false;
+    throw e;
+  }
+}
 
 async function readDecisions(projectKey: string): Promise<Stored> {
   const own = await kvs.get<Stored>(decisionsKey(projectKey));
@@ -28,17 +56,17 @@ export async function getDecisions(projectKey: string): Promise<Decision[]> {
   return (await readDecisions(projectKey)).decisions;
 }
 
-/**
- * Read, change, write. The version is read again just before the write and a newer one stops the save with a
- * message to retry. This narrows the race, it does not close it: Forge storage has no atomic compare-and-set
- * here, so two saves within a few milliseconds (or two first saves of a project) can still lose one.
- */
+export const DECISIONS_CHANGED = "Someone else changed the decisions a moment ago. Reload the page and try again.";
+
+/** Read, change, write; the write holds only if nobody saved this project's decisions in between. */
 export async function updateDecisions(projectKey: string, change: (current: Decision[]) => Decision[]): Promise<void> {
+  const key = decisionsKey(projectKey);
+  const revision = await storedRevision(key);
   const before = await readDecisions(projectKey);
+  if (revision !== null && revision !== before.version) throw new Error(DECISIONS_CHANGED);
   const next = change(before.decisions).filter((d) => touches(d, projectKey));
-  const now = await readDecisions(projectKey);
-  if (now.version !== before.version) throw new Error("Someone else changed the decisions a moment ago. Reload the page and try again.");
-  await kvs.set(decisionsKey(projectKey), { version: before.version + 1, decisions: next } satisfies Stored);
+  const version = before.version + 1;
+  if (!(await writeIfUnchanged(key, { version, decisions: next } satisfies Stored, revision, version))) throw new Error(DECISIONS_CHANGED);
 }
 
 export async function getRecord(issueId: string): Promise<HandoffRecord | null> {
@@ -48,22 +76,31 @@ export async function getRecord(issueId: string): Promise<HandoffRecord | null> 
 export const RECORD_CHANGED = "This handoff was changed a moment ago by someone else. Reload the panel and try again.";
 
 /**
- * Saves a change to an existing record. The stored copy is read again first; if its save count differs from
- * the copy the change was made from, the save is refused, so an acknowledgement or a contingency written at
- * nearly the same moment is not silently dropped. As with decisions, this narrows the race, it does not close it.
+ * Saves a change to an existing record, made from the copy whose save count is `record.rev`. If anyone saved
+ * the record since that copy was read, the save is refused, so an acknowledgement or a contingency written at
+ * the same moment is never silently dropped.
  */
 export async function putRecord(issueId: string, record: HandoffRecord): Promise<void> {
+  const key = recordKey(issueId);
+  const base = record.rev ?? 0;
+  const revision = await storedRevision(key);
   const stored = await getRecord(issueId);
-  if (stored !== null && (stored.rev ?? 0) !== (record.rev ?? 0)) throw new Error(RECORD_CHANGED);
-  await kvs.set(recordKey(issueId), { ...record, rev: (record.rev ?? 0) + 1 });
+  if ((stored !== null && (stored.rev ?? 0) !== base) || (revision !== null && revision !== base)) throw new Error(RECORD_CHANGED);
+  if (!(await writeIfUnchanged(key, { ...record, rev: base + 1 }, revision, base + 1))) throw new Error(RECORD_CHANGED);
 }
 
 /** Starts a new handoff: preparing (again) and a detected reassignment replace whatever was stored, on purpose. */
 export async function replaceRecord(issueId: string, record: HandoffRecord): Promise<void> {
   // The save count keeps rising across a replacement, so a change made from the old record can no longer match
-  // and overwrite the new receiver's record.
-  const stored = await getRecord(issueId);
-  await kvs.set(recordKey(issueId), { ...record, rev: (stored?.rev ?? 0) + 1 });
+  // and overwrite the new receiver's record. A replacement wins over a change saved in the same instant, so it
+  // reads again and retries instead of refusing.
+  const key = recordKey(issueId);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const revision = await storedRevision(key);
+    const next = Math.max(revision ?? 0, (await getRecord(issueId))?.rev ?? 0) + 1;
+    if (await writeIfUnchanged(key, { ...record, rev: next }, revision, next)) return;
+  }
+  throw new Error(RECORD_CHANGED);
 }
 
 export async function getProposals(issueId: string): Promise<Proposal[]> {
@@ -94,7 +131,12 @@ export async function addAudit(projectKey: string, event: AuditEvent): Promise<v
 // Used only by "Delete this project's app data". The decisions key is emptied, not removed: a removed key
 // would make the next read fall back to the old site-wide key and bring the decisions back.
 export async function deleteItemData(issueId: string): Promise<void> {
-  await Promise.all([kvs.delete(recordKey(issueId)), kvs.delete(proposalsKey(issueId)), kvs.delete(draftKey(issueId))]);
+  await Promise.all([
+    kvs.delete(recordKey(issueId)),
+    kvs.entity(REVISION).delete(revisionKey(recordKey(issueId))),
+    kvs.delete(proposalsKey(issueId)),
+    kvs.delete(draftKey(issueId)),
+  ]);
 }
 
 // Delete is the one place that writes the old site-wide key: it takes this project's decisions out of it, so

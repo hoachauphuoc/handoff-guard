@@ -311,6 +311,13 @@ app:
   id: ari:cloud:ecosystem::app/8d2f4029-5c7f-49b4-a2b7-701a0ca1c1d2
   runtime:
     name: nodejs22.x
+  storage:
+    # The save count of each versioned value, so a write can be made conditional on it (src/store.ts).
+    entities:
+      - name: revision
+        attributes:
+          rev:
+            type: integer
 permissions:
   scopes:
     - read:jira-work
