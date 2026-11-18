@@ -573,8 +573,8 @@ const App = () => {
       )}
       <Heading size="small">Activity</Heading>
       <Text>
-        Who changed decisions and handoffs in this project, newest first. Only the action, the person, the time and the work item or decision are
-        kept; nothing anyone typed. A handoff detected from a change of assignee is not listed here; it shows under Handoffs in flight.
+        Who changed decisions and handoffs in this project, newest first: the action, the person, the time and the item, never what anyone typed.
+        A handoff detected from a change of assignee is not listed here; it shows under Handoffs in flight.
       </Text>
       {state.activity.length === 0 && <Text>Nothing recorded yet.</Text>}
       {state.activity.map((e, i) => (
@@ -599,13 +599,14 @@ const App = () => {
           <Heading size="small">Export and delete (project administrators)</Heading>
           <Text>
             Export shows what the app holds for this project as JSON: decisions, drafts from Rovo, the project rules switched on, the activity
-            list, and for every work item of this project you can see, open or done, its handoff, proposals and unsigned read-back draft. Data of a work item you cannot see, or one deleted from Jira, is not in it and stays until the app is uninstalled.
+            list, and for every work item of this project you can see, open or done, its handoff, proposals and unsigned read-back draft.
           </Text>
           <Button onClick={() => void exportData()}>Export this project's data</Button>
           {exported !== null && <CodeBlock language="json" text={exported} />}
           <Text>
-            Delete removes the same data from the app for good, and Jira is not changed. A work item you cannot see, or one deleted from Jira, keeps its data until the app is uninstalled.
+            Delete removes the same data from the app for good, and Jira is not changed.
           </Text>
+          <Text>A work item you cannot see, or one deleted from Jira, is in neither: its data stays until the app is uninstalled.</Text>
           <Label labelFor="delete-key">{`Project key to confirm (${state.projectKey})`}</Label>
           <Textfield
             id="delete-key"
