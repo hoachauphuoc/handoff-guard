@@ -446,6 +446,7 @@ describe("callerAccountId", () => {
     expect(callerAccountId({ context: { accountId: "a1" } }, { accountId: "a2" })).toBe("a1");
     expect(callerAccountId({}, { accountId: "a2" })).toBe("a2");
     expect(callerAccountId(undefined, undefined)).toBeNull();
+    expect(callerAccountId({ issueKey: "OPS-1" }, { principal: { accountId: "a3" } })).toBe("a3");
   });
 });
 

@@ -94,9 +94,11 @@ export function callerCloudId(
   return SITE_ARI.exec(context?.installContext ?? "")?.[1] ?? null;
 }
 
-export function callerAccountId(payload: unknown, context: { accountId?: string } | undefined): string | null {
+// A Rovo call carries the caller in payload.context; an outside MCP call carried none there (T09, 2026-11-18),
+// and Forge documents the invoking user as context.principal.accountId.
+export function callerAccountId(payload: unknown, context: { accountId?: string; principal?: { accountId?: unknown } } | undefined): string | null {
   const fromPayload = (payload as { context?: { accountId?: unknown } } | null | undefined)?.context?.accountId;
-  const id = [fromPayload, context?.accountId].find((v) => typeof v === "string" && v.trim() !== "");
+  const id = [fromPayload, context?.accountId, context?.principal?.accountId].find((v) => typeof v === "string" && v.trim() !== "");
   return typeof id === "string" ? id.trim() : null;
 }
 

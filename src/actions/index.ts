@@ -11,7 +11,7 @@ import {
 import { runCheckCondition, runDraftCondition } from "./conditions";
 import { conditionDeps, depsFor } from "./deps";
 
-type Ctx = { accountId?: string; cloudId?: string; installContext?: string };
+type Ctx = { accountId?: string; cloudId?: string; installContext?: string; principal?: { accountId?: unknown } };
 
 // Only the brief reads the graph, so only it needs the cloud id; the others never call `people`.
 const plain = depsFor(null);
