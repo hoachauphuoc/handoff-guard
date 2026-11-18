@@ -39,7 +39,7 @@ Forge storage has no lock, but a transaction can hold a condition on a custom en
 | Two saves started in the same instant, both read before either writes | Test, `tests/store.test.ts` | One is refused with "changed a moment ago … reload", the other is kept; the same for decisions, and for a save that lands between the read and the commit. On the development site (10.85.0, MOBL-58) a contingency was saved twice and the sample decisions removed and loaded again through the guarded writes |
 | Three assignee changes sent at once on one work item, 8 work items | Site, OPS-40 to OPS-47 (two changes landed 0.1 s apart on OPS-44) | The stored handoff names the assignee Jira ended with, on all 8 |
 | Activity lines written in a burst | Test, `tests/store.test.ts` "activity list" | Two lines appended in the same instant are both kept; a reset (project data deleted) is not undone by an append that read the old list. Until 2026-11-18 lines could be lost in a burst |
-| Two rule switches in the same instant | Test, `tests/store.test.ts` "project rules" | Both stay on; a switch that meets another administrator's save is redone on top of it; after three clashes it fails with a message |
+| Two rule switches in the same instant | Test, `tests/store.test.ts` "project rules" | Both stay on; a switch that meets another administrator's save is redone on top of it; after three clashes it fails with a message. On the development site (MOBL, 491027b) a switch turned on and off again was saved both times, with both Activity lines |
 
 ## 3. Regression: what worked must still work
 
