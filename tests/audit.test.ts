@@ -6,8 +6,8 @@ const ev = (at: string, action: AuditEvent["action"]): AuditEvent => ({ at, who:
 describe("auditText", () => {
   const rule = (ref: string): AuditEvent => ({ at: "2026-11-18T00:00:00Z", who: "u1", action: "rule_changed", ref });
   it("says which check was switched on or off, by its label", () => {
-    expect(auditText(rule("requireIfThen on"))).toBe('switched on the check "Require a contingency written as "if … then …"".');
-    expect(auditText(rule("requireContingency off"))).toBe('switched off the check "Require a contingency from the sender".');
+    expect(auditText(rule("requireIfThen on"))).toBe('switched on the check: Require a contingency written as "if … then …".');
+    expect(auditText(rule("requireContingency off"))).toBe("switched off the check: Require a contingency from the sender.");
   });
   it("reads lines stored with the old words the same way", () => {
     expect(auditText(rule("requireIfThen released"))).toMatch(/^switched on the check/);

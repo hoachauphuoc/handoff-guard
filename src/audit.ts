@@ -48,7 +48,7 @@ export function auditText(e: AuditEvent): string {
     const [rule = "", state] = e.ref.split(" ");
     const label = RULE_LABELS[rule];
     const on = state === "on" || state === "released";
-    if (label !== undefined && (on || state === "off" || state === "retired")) return `switched ${on ? "on" : "off"} the check "${label}".`;
+    if (label !== undefined && (on || state === "off" || state === "retired")) return `switched ${on ? "on" : "off"} the check: ${label}.`;
   }
   return `${AUDIT_TEXT[e.action]} (${e.ref}).`;
 }
