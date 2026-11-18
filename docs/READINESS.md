@@ -24,7 +24,7 @@ Known and left: any person who can see a work item can have the agent store prop
 
 ## 2. Conflicting flows: two people, one record
 
-Forge storage has no lock, but a transaction can hold a condition on a custom entity. A handoff record and a project's decisions each carry a save count, kept in a `revision` entity; the value and the next count are written in one transaction that holds only while the count is still the one read (`src/store.ts`). A change made from an older copy is refused, a new handoff raises the count so the old receiver's change cannot land on it, and of two saves made in the same instant one is refused. The project rule switches and the activity list have no save count.
+Forge storage has no lock, but a transaction can hold a condition on a custom entity. A handoff record and a project's decisions each carry a save count, kept in a `revision` entity; the value and the next count are written in one transaction that holds only while the count is still the one read (`src/store.ts`). A change made from an older copy is refused, a new handoff raises the count so the old receiver's change cannot land on it, and of two saves made in the same instant one is refused. The project rule switches and the activity list have a save count too (since 2026-11-18); a change to them only adds to what is stored, so a clash is redone on the newer copy instead of refused.
 
 | Case | How | Result |
 |---|---|---|
@@ -38,7 +38,8 @@ Forge storage has no lock, but a transaction can hold a condition on a custom en
 | Reassignment to the same receiver, to another, back to the sender | Tests (existing), `tests/reassign.test.ts` | Acknowledgements kept, dropped, or the record kept for the bounce, as documented |
 | Two saves started in the same instant, both read before either writes | Test, `tests/store.test.ts` | One is refused with "changed a moment ago … reload", the other is kept; the same for decisions, and for a save that lands between the read and the commit. On the development site (10.85.0, MOBL-58) a contingency was saved twice and the sample decisions removed and loaded again through the guarded writes |
 | Three assignee changes sent at once on one work item, 8 work items | Site, OPS-40 to OPS-47 (two changes landed 0.1 s apart on OPS-44) | The stored handoff names the assignee Jira ended with, on all 8 |
-| Activity lines written in a burst | Read of the code | The activity list has no save count; lines can be lost in a burst. It is a trail, not an input to any verdict |
+| Activity lines written in a burst | Test, `tests/store.test.ts` "activity list" | Two lines appended in the same instant are both kept; a reset (project data deleted) is not undone by an append that read the old list. Until 2026-11-18 lines could be lost in a burst |
+| Two rule switches in the same instant | Test, `tests/store.test.ts` "project rules" | Both stay on; a switch that meets another administrator's save is redone on top of it; after three clashes it fails with a message |
 
 ## 3. Regression: what worked must still work
 
@@ -103,12 +104,20 @@ An outside technical review read the code at 4d4f7e0 and set ten acceptance test
 | T02 No handoff to oneself; only the receiver acknowledges; only an administrator records a decision | Tests (`same_person` in `tests/checkHandoff.test.ts`; section 1 above); site, section 1 |
 | T03 An acknowledgement goes stale when the work item changes | Site, smoke row 7 (due date); labels and components in `tests/drift.test.ts`; a new or replacing decision has no acknowledgement until read back |
 | T04 Fields edited on the transition screen | Code (1c00119): due date, labels, description and components in `modifiedFields` are applied before the check (test). Site, 2026-11-18, production 3.62.0, MOBL-58 with the project's default screen put on the transition for the test: the description emptied on the screen went through, so the check used the stored description. A development build that showed the payload's keys in its refusal found why: Jira sends `modifiedFields` at the top of the payload, and `transition` holds only `from` and `to`; the code read it from `transition`, as the Forge docs show. Fixed to read both places; on development 10.90.0 and production 3.66.0 (1b9a4a8) the same edit is refused with "The description is empty.", the work item stays as it was, and the same transition with nothing edited goes through. The screen and the development validator were taken off again |
-| T05 Two people saving at once | Fixed: handoff records and decisions are written with a conditional transaction, so one of two simultaneous saves is refused (section 2, tests in `tests/store.test.ts`). The rule switches and the activity list are still read-then-write |
+| T05 Two people saving at once | Fixed: handoff records and decisions are written with a conditional transaction, so one of two simultaneous saves is refused (section 2, tests in `tests/store.test.ts`). The rule switches and the activity list are written under a save count too, and a clash is redone (after the follow-up review, see below) |
 | T06 Jira or storage failing | Tests (ba122c0): both validators refuse. What an administrator does is in `docs/SECURITY.md`, "When the validator cannot check". Drill run by the author on 2026-11-18 (production 3.66.0, MOBL): validator removed, a not-Clear item moved through, validator added back, both changes in Jira's audit log, the item listed under "Handoffs in flight", the same move refused again. Not done with an operations team |
 | T07 The if-then rule on its own, contingency empty | Fixed in a606da7: Needs info, "the sender has not written a contingency" |
 | T08 Export and delete beyond 100 open items or on done items | Fixed: both reach every work item of the project the administrator can see, open or done (section 5, `tests/resolvers.test.ts`, `tests/held-items.test.ts`; on development 10.90.0 Export ran through the storage query and Jira's bulk fetch and listed MOBL-53 and MOBL-58). A work item the administrator cannot see, or one deleted from Jira, keeps its data until the app is uninstalled, as the Decisions page and `docs/PRIVACY.md` say |
 | T09 MCP calls by people with different roles | Not tried: no live call from an outside MCP client yet |
 | T10 An outside pilot | Not done; the protocol is in `docs/PILOT.md` |
+
+## Follow-up review, 2026-11-18
+
+The same reviewer checked the answers at 866a3a0 against the code, the tests and CI (a source and documentation review, not an audit of a site). Their reading: all six findings have a fix, a test, a drill by the author, or a stated limit; T01 to T08 have a result; T09 and T10 are not done. Their verdict was positive for this contest entry, conditional for a narrow trial (only where the Jira administrator knows the recovery steps and the data limits), and not yet recommended for broad use on critical work.
+
+Closed after it: the rule switches and the activity list now use the save count (section 2), which was their residual point 2.
+
+Left, each stated where a reader meets it: a Jira filter is answered on the stored work item and other screen fields are read as stored (T04, `docs/LIMITS.md`); transitions made while the validator is removed are not checked (`docs/SECURITY.md`); export and delete stop at 2000 stored work items and miss hidden or deleted ones, and there is no delete for one person's data (`docs/PRIVACY.md`); the validator reads as the app, the panel as the person (`docs/SECURITY.md`); the read-back check is a fixed set of patterns and the figures are agreement with labels (README). T09 waits for a site with Rovo MCP turned on; T10 needs outside teams.
 
 ## Not tried
 

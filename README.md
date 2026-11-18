@@ -148,7 +148,7 @@ The four that matter most.
 
 - The read-back checks that each decision is addressed and catches a fixed list of contradictions; it does not prove the receiver understood.
 - Reaching a real Clear needs a second person as receiver; one account shows a refused and an accepted read-back, and a practice verdict that is not stored.
-- Decisions and handoff records are saved with a conditional Forge storage transaction, so one of two simultaneous saves is refused; the three rule switches and the activity list have no such check.
+- Decisions and handoff records are saved with a conditional Forge storage transaction, so one of two simultaneous saves is refused; a rule switch or an activity line that meets another save in the same instant is redone on top of it.
 - The app is Jira-only, and the Rovo, MCP and Teamwork Graph paths name their source when they are unavailable.
 
 The full list is in `docs/LIMITS.md`.

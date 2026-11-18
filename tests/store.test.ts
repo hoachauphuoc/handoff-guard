@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { AuditEvent } from "../src/audit";
 import type { Decision } from "../src/rules/types";
 
 // An in-memory store with Forge's conditional transaction: every condition is checked, then every write is
@@ -242,5 +243,57 @@ describe("project rules", () => {
     await setRule("OPS", "requireContingency", true);
     await setRule("OPS", "requireIfThen", true);
     expect(await getRules("OPS")).toMatchObject({ requireContingency: true, requireIfThen: true });
+  });
+
+  it("two rules switched in the same instant both stay on", async () => {
+    const { getRules, setRule } = await import("../src/store");
+    await Promise.all([setRule("OPS", "requireContingency", true), setRule("OPS", "requireIfThen", true)]);
+    expect(await getRules("OPS")).toMatchObject({ requireContingency: true, requireIfThen: true });
+  });
+
+  it("redoes a switch on what another administrator saved between the read and the commit", async () => {
+    const { getRules, setRule } = await import("../src/store");
+    beforeCommit = () => {
+      data.set("settings:ops", { requireIfThen: true });
+      entities.set("revision/rev:settings:ops", { rev: 1 });
+    };
+    await setRule("OPS", "requireContingency", true);
+    expect(await getRules("OPS")).toMatchObject({ requireContingency: true, requireIfThen: true });
+  });
+
+  it("gives up with an error when every attempt clashes", async () => {
+    const { setRule } = await import("../src/store");
+    let n = 0;
+    const clash = () => {
+      entities.set("revision/rev:settings:ops", { rev: 100 + n++ });
+      if (n < 3) beforeCommit = clash;
+    };
+    beforeCommit = clash;
+    await expect(setRule("OPS", "requireContingency", true)).rejects.toThrow("kept changing");
+  });
+});
+
+describe("activity list", () => {
+  const ev = (n: number): AuditEvent => ({ at: `2026-11-18T00:00:0${n}Z`, who: "a", action: "decision_added", ref: `e${n}` });
+
+  it("keeps both events appended in the same instant", async () => {
+    const { addAudit, getAudit } = await import("../src/store");
+    await Promise.all([addAudit("OPS", ev(1)), addAudit("OPS", ev(2))]);
+    expect(await getAudit("OPS")).toHaveLength(2);
+  });
+
+  it("a reset is not undone by an append that read the old list", async () => {
+    const { addAudit, getAudit, resetAudit } = await import("../src/store");
+    await addAudit("OPS", ev(1));
+    // The reset lands while the append is between its read and its commit.
+    beforeCommit = () => {
+      data.set("audit:ops", [ev(9)]);
+      entities.set("revision/rev:audit:ops", { rev: 2 });
+    };
+    await addAudit("OPS", ev(2));
+    await resetAudit("HR", ev(9));
+    expect(entities.get("revision/rev:audit:hr")).toEqual({ rev: 1 });
+    const kept = await getAudit("OPS");
+    expect(kept.map((e) => e.ref)).toEqual(["e2", "e9"]);
   });
 });

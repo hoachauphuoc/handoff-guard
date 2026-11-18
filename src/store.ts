@@ -44,6 +44,19 @@ async function writeIfUnchanged(key: string, value: unknown, expected: number | 
   }
 }
 
+/**
+ * For values where a change merges into what is stored (one rule switched, one event appended): read, change,
+ * write under the save count, and on a clash read again and redo the change, so neither save is lost.
+ */
+async function changeWithRetry<T>(key: string, read: () => Promise<T>, change: (current: T) => T): Promise<T> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const revision = await storedRevision(key);
+    const next = change(await read());
+    if (await writeIfUnchanged(key, next, revision, (revision ?? 0) + 1)) return next;
+  }
+  throw new Error(`${key} kept changing; not saved`);
+}
+
 async function readDecisions(projectKey: string): Promise<Stored> {
   const own = await kvs.get<Stored>(decisionsKey(projectKey));
   if (own) return own;
@@ -122,7 +135,7 @@ export async function getAudit(projectKey: string): Promise<AuditEvent[]> {
 // so it is reported to the log by name only and the action still succeeds.
 export async function addAudit(projectKey: string, event: AuditEvent): Promise<void> {
   try {
-    await kvs.set(auditKey(projectKey), appendEvent(await getAudit(projectKey), event));
+    await changeWithRetry(auditKey(projectKey), () => getAudit(projectKey), (events) => appendEvent(events, event));
   } catch (e) {
     console.log(`audit write failed: ${e instanceof Error ? e.name : typeof e}`);
   }
@@ -180,7 +193,8 @@ export async function purgeLegacyDecisions(projectKey: string): Promise<number> 
 }
 
 export async function resetAudit(projectKey: string, first: AuditEvent): Promise<void> {
-  await kvs.set(auditKey(projectKey), [first]);
+  // Under the save count too, so an append in flight cannot write the old list back over the reset.
+  await changeWithRetry(auditKey(projectKey), async () => null, () => [first]);
 }
 
 const rulesKey = (projectKey: string) => `settings:${projectKey.toLowerCase()}`;
@@ -190,20 +204,14 @@ export async function getRules(projectKey: string): Promise<ProjectRules> {
   return { ...NO_RULES, ...((await kvs.get<Partial<ProjectRules>>(rulesKey(projectKey))) ?? {}) };
 }
 
-/**
- * Changes one rule. The stored rules are read once, just before the write, so a rule another administrator
- * switched earlier is kept. There is no version check like the one for decisions: two switches within
- * milliseconds can still lose one.
- */
+/** Changes one rule and keeps the others, also when another administrator switches one in the same instant. */
 export async function setRule(projectKey: string, rule: keyof ProjectRules, on: boolean): Promise<ProjectRules> {
-  const next = { ...(await getRules(projectKey)), [rule]: on };
-  await kvs.set(rulesKey(projectKey), next);
-  return next;
+  return changeWithRetry(rulesKey(projectKey), () => getRules(projectKey), (rules) => ({ ...rules, [rule]: on }));
 }
 
 // Used only by "Delete this project's app data": no stored rules means none are switched on.
 export async function deleteRules(projectKey: string): Promise<void> {
-  await kvs.delete(rulesKey(projectKey));
+  await Promise.all([kvs.delete(rulesKey(projectKey)), kvs.entity(REVISION).delete(revisionKey(rulesKey(projectKey)))]);
 }
 
 const conditionDraftsKey =(projectKey: string) => `condition-drafts:${projectKey.toLowerCase()}`;
