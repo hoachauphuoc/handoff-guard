@@ -33,14 +33,16 @@ Sources: [List a Forge app](https://developer.atlassian.com/platform/marketplace
 | Source licence matches what is reported | Claude | `LICENSE` is MIT, `package.json` says MIT |
 | Listing in the Partner Portal | Owner | Open |
 
-## The install-link problem and the fix
+## The install-link problem
 
-Once an app is listed, it can no longer be shared by the Developer Console install link. The Codegeist entry uses that link. The way out (already in `docs/MARKETPLACE.md`): list a **separate app with a new app ID** and keep the current app for the link. That costs a second `forge register`, a manifest copy with its own ID, and its own deploy and install. It is the owner's decision; it is a second app to keep in step during the code freeze.
+Once an app is listed, it can no longer be shared by the Developer Console install link, and the Codegeist entry uses that link. Atlassian staff answered this in the Codegeist 2026 Q&A webinar (pasted by the owner on 2026-11-25; not read from a page): an entry that is already listed may be installed by the judges from the Marketplace, so no extra link is needed, and a separate unlisted copy of the same app is also acceptable. Preview modules (Rovo MCP, skills, Teamwork Graph) may be used in a listed app. Not confirmed on a written page, so keep the install link working until the owner has the rules or a staff reply in writing.
+
+So listing does not force a second app. The earlier idea of a second app with its own ID (`docs/MARKETPLACE.md`) is only needed if the owner wants to keep sharing a link after listing, or if listing happens before the judges install.
 
 ## Order
 
 1. Owner: open the Partner Verification ticket now (14-day clock).
 2. Claude: draft the Privacy and Security answers and the security questionnaire answers into a local file (no submission) once the owner has read the questions in the portal.
 3. Owner: banner and three screenshots, a support mailbox, the End User Terms choice.
-4. Decide on the second app. If yes, Claude prepares the manifest copy after 2026-12-10 only if the owner says so; the freeze stays.
+4. A second app is no longer needed for the judges (see above); decide only if a shareable link must outlive the listing.
 5. Submit after the Codegeist submission, unless the owner wants the "Best Marketplace published app" prize and has confirmed its proof and deadline on the rules page (`docs/MARKETPLACE.md` section 5, still unverified).
