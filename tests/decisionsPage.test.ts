@@ -167,6 +167,18 @@ describe("the page keeps the rest of a long in-flight list one click away", () =
   });
 });
 
+describe("the page's text boxes are uncontrolled", () => {
+  it("keeps no Textfield bound to state with value=, which drops keys typed in quick succession", async () => {
+    const { default: page } = await import("../src/frontend/decisions.tsx?raw");
+    const fields = page.match(/<Textfield[\s\S]*?\/>/g) ?? [];
+    expect(fields.length).toBeGreaterThanOrEqual(5);
+    for (const f of fields) {
+      expect(f).not.toMatch(/\svalue=\{/);
+      expect(f).toMatch(/\skey=\{/);
+    }
+  });
+});
+
 describe("browsePath", () => {
   it("opens a plain work item key and leaves anything else as text", () => {
     expect(browsePath("OPS-12")).toBe("/browse/OPS-12");

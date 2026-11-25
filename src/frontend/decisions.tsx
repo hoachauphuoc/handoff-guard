@@ -45,6 +45,8 @@ const App = () => {
   const [autopsyNote, setAutopsyNote] = useState<string | null>(null);
   const [exported, setExported] = useState<string | null>(null);
   const [deleteKey, setDeleteKey] = useState("");
+  // The text boxes are uncontrolled, because a controlled UI Kit field drops keys typed faster than its round trip; a reset remounts them.
+  const [fieldsKey, setFieldsKey] = useState(0);
   const [ruleError, setRuleError] = useState<string | null>(null);
   const [ruleBusy, setRuleBusy] = useState(false);
   const [pending, setPending] = useState<{ rule: RuleName; impact: RuleImpact } | null>(null);
@@ -137,6 +139,7 @@ const App = () => {
     invoke("addDecision", { ...form, supersede }).then(
       () => {
         setForm(EMPTY_FORM);
+        setFieldsKey((n) => n + 1);
         setPreview(null);
         return load();
       },
@@ -193,6 +196,7 @@ const App = () => {
       (r) => {
         const done = r as { items: number; capped: boolean };
         setDeleteKey("");
+        setFieldsKey((n) => n + 1);
         setExported(null);
         setDataNote(
           `Deleted: this project's decisions and activity, and the handoffs and proposals of ${count(done.items, "work item")}${
@@ -315,7 +319,7 @@ const App = () => {
             you save it; nothing here changes Jira.
           </Text>
           <Label labelFor="decision-title">Title</Label>
-          <Textfield id="decision-title" name="decision-title" placeholder="Title, up to 120 characters" value={form.title} onChange={(e: { target: { value?: string } }) => edit({ title: e.target.value ?? "" })} />
+          <Textfield key={`title-${fieldsKey}`} id="decision-title" name="decision-title" placeholder="Title, up to 120 characters" defaultValue={form.title} onChange={(e: { target: { value?: string } }) => edit({ title: e.target.value ?? "" })} />
           <Label labelFor="decision-scope">Applies to</Label>
           <Select
             inputId="decision-scope"
@@ -328,10 +332,11 @@ const App = () => {
             <>
             <Label labelFor="decision-scope-value">{form.scope === "label" ? "Label" : "Work item key"}</Label>
             <Textfield
+              key={`scope-${form.scope}-${fieldsKey}`}
               id="decision-scope-value"
               name="decision-scope-value"
               placeholder={form.scope === "label" ? "Label" : `Work item key, for example ${state.projectKey}-12`}
-              value={form.scopeValue}
+              defaultValue={form.scopeValue}
               onChange={(e: { target: { value?: string } }) => edit({ scopeValue: e.target.value ?? "" })}
             />
             </>
@@ -344,20 +349,22 @@ const App = () => {
             <>
               <Label labelFor="decision-rule-value">{valueLabel(form.constraint)}</Label>
               <Textfield
+                key={`rule-${form.constraint}-${fieldsKey}`}
                 id="decision-rule-value"
                 name="decision-rule-value"
                 placeholder={valueHint(form.constraint)}
-                value={form.constraintValue}
+                defaultValue={form.constraintValue}
                 onChange={(e: { target: { value?: string } }) => edit({ constraintValue: e.target.value ?? "" })}
               />
             </>
           )}
           <Label labelFor="decision-source-url">Where it was decided (optional link)</Label>
           <Textfield
+            key={`source-${fieldsKey}`}
             id="decision-source-url"
             name="decision-source-url"
             placeholder="https://… a page, a ticket or a contract"
-            value={form.sourceUrl}
+            defaultValue={form.sourceUrl}
             onChange={(e: { target: { value?: string } }) => edit({ sourceUrl: e.target.value ?? "" })}
           />
           <Text>{`The link is shown beside the decision. ${LINK_NOTE}`}</Text>
@@ -609,10 +616,11 @@ const App = () => {
           <Text>A work item you cannot see, or one deleted from Jira, is in neither: its data stays until the app is uninstalled.</Text>
           <Label labelFor="delete-key">{`Project key to confirm (${state.projectKey})`}</Label>
           <Textfield
+            key={`delete-${fieldsKey}`}
             id="delete-key"
             name="delete-key"
             placeholder={`Type ${state.projectKey} to confirm`}
-            value={deleteKey}
+            defaultValue={deleteKey}
             onChange={(e: { target: { value?: string } }) => setDeleteKey(e.target.value ?? "")}
           />
           <Button appearance="danger" onClick={() => void deleteData()}>
