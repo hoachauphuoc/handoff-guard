@@ -18,8 +18,8 @@ Every panel step uses the production app, "Handoff Guard". Never pick "Handoff G
 
 | # | What | Who |
 |---|---|---|
-| 1 | Create the component `legacy-billing` in MOBL (Project settings, Components). It does not exist today: on 2026-11-27 Jira answered "The value 'legacy-billing' does not exist for the field 'component'." | You, once |
-| 2 | Set the start state S1 (next section). Claude then checks it over MCP: `check-handoff` on MOBL-53 must give Blocked with the four findings below, you as the sender and Meo Vat IT as the receiver. | You, then Claude |
+| 1 | The component `legacy-billing` exists in MOBL (created 2026-11-27; before that Jira answered "The value 'legacy-billing' does not exist for the field 'component'."). | Done |
+| 2 | The start state S1 (next section) was set on 2026-11-27 and checked over MCP: `check-handoff` on MOBL-53 gave Blocked with the four findings below, you as the sender and Meo Vat IT as the receiver. On filming day, ask Claude to check it again; if anything moved, set it again. | Done; Claude checks again on the day |
 | 3 | One panel and one Rovo agent on screen. Remove the development validator from the "In Progress" transition (workflow editor), then Claude uninstalls the development app from this site and reinstalls it after filming. Uninstalling deletes what the development app stored on this site, which is test data only. If you keep it, pick "Handoff Guard" each time and never move an item to "In Progress", where the development validator answers. | You (workflow), Claude (uninstall) |
 | 4 | Rehearse the whole path once on production (`docs/VIDEO.md`, Before filming) and record the result in `docs/PROGRESS.md`. | You and Claude, before 2026-12-15 |
 | 5 | In the rehearsal, take 3 must show "Written by a model (Forge LLMs (Claude Haiku 4.5))". If it shows "No model explanation: ...", tell Claude before filming: Forge LLMs has no free credits (webinar). | You |
@@ -28,16 +28,16 @@ Every panel step uses the production app, "Handoff Guard". Never pick "Handoff G
 
 ## Start state S1
 
-MOBL-53 must be: status To Do, a description, due date 2027-01-15, the component `legacy-billing`, no label `launch`, assigned to Meo Vat IT, and a handoff from you to Meo Vat IT with no acknowledgement. Today it holds an older handoff to you and has no due date, so set it once in window A:
+MOBL-53 must be: status To Do, a description, due date 2027-01-15, the component `legacy-billing`, no label `launch`, assigned to Meo Vat IT, and a handoff from you to Meo Vat IT with no acknowledgement. It was set on 2026-11-27. To set it again, in window A:
 
 1. Status: To Do.
 2. Assignee: Meo Vat IT.
 3. Due date: 2027-01-15. Components: add `legacy-billing`.
 4. Open the panel (the apps icon under the title, then Handoff Guard). Click "Show everything", pick Meo Vat IT under "Receiver", click "Prepare again", then "Yes, prepare again" (with no handoff stored, the button reads "Prepare handoff" and one click is enough). This names you as the sender and clears every acknowledgement.
-5. The card must read **Blocked**, "Handoff <you> to Meo Vat IT", and exactly these four lines:
+5. The card must read **Blocked**, "Handoff <you> to Meo Vat IT", and exactly these four lines, in this order:
    - Contradicts "Work ships by the end of 2026": due date 2027-01-15 is after 2026-12-31.
-   - Contradicts "Stop using the legacy billing component": component "legacy-billing" is not allowed.
    - The receiver has not acknowledged "Work ships by the end of 2026".
+   - Contradicts "Stop using the legacy billing component": component "legacy-billing" is not allowed.
    - The receiver has not acknowledged "Stop using the legacy billing component".
 
 The same five steps are the reset for a retake (below).
