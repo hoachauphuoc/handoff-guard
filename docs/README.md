@@ -18,6 +18,7 @@
 | File | What it is |
 |---|---|
 | `VIDEO.md` | The demo video script and what must be on the site before filming |
+| `SHOOTING-SCRIPT.md` | How the video is filmed: the windows, the start state, each take and its reset |
 | `USER-TEST.md`, `TESTERS.md` | An outside user test: script, interview guide and the message to testers |
 | `PILOT.md` | A pilot protocol; not run |
 | `COMMUNITY-POST.md` | A draft post for the Atlassian Community |
